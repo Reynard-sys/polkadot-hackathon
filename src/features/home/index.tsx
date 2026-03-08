@@ -1,5 +1,4 @@
 "use client";
-
 import { motion } from "motion/react";
 
 export default function Home() {
@@ -7,7 +6,7 @@ export default function Home() {
         <div className="relative min-h-screen w-full bg-[#0d0d12] overflow-hidden flex flex-col items-center justify-center">
             {/* Top Center Blurred Triangle */}
             <motion.div
-                className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[115vw] h-[90vw] max-w-[1150px] max-h-[900px] blur-[200px] sm:blur-[250px] opacity-70 pointer-events-none"
+                className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-screen h-[60vw] max-w-[1150px] max-h-[900px] blur-[50px] lg:blur-[100px] opacity-80 pointer-events-none"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
@@ -25,7 +24,7 @@ export default function Home() {
 
             {/* Left Center Blob */}
             <motion.div
-                className="absolute top-[-20%] left-[-15%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-[#4C5B8B] rounded-full blur-[120px] sm:blur-[160px] opacity-40 pointer-events-none"
+                className="absolute top-[-20%] left-[-15%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-[#6F74AC] rounded-full blur-[120px] sm:blur-[160px] opacity-40 pointer-events-none"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 }}
