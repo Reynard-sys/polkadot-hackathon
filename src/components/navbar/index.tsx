@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { web3Accounts, web3Enable } from "@polkadot/extension-dapp";
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
@@ -20,6 +20,21 @@ export default function Navbar() {
     const [account, setAccount] = useState<InjectedAccountWithMeta | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showConfirm, setShowConfirm] = useState(false);
+
+    // Ref for the wallet button area — used to close popover on outside click
+    const walletRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!showConfirm) return;
+        const handleOutside = (e: MouseEvent) => {
+            if (walletRef.current && !walletRef.current.contains(e.target as Node)) {
+                setShowConfirm(false);
+            }
+        };
+        document.addEventListener("mousedown", handleOutside);
+        return () => document.removeEventListener("mousedown", handleOutside);
+    }, [showConfirm]);
 
     const connectWallet = async () => {
         setIsConnecting(true);
@@ -44,7 +59,6 @@ export default function Navbar() {
                 return;
             }
 
-            // Use the first account as the active account
             setAccount(accounts[0]);
         } catch (err) {
             console.error("Wallet connection failed:", err);
@@ -54,9 +68,17 @@ export default function Navbar() {
         }
     };
 
-    const disconnectWallet = () => {
+    /**
+     * Hard logout — clears all wallet state and reloads the page so that
+     * web3Enable loses its in-memory session, forcing the extension
+     * to re-prompt on the next connect attempt.
+     */
+    const confirmDisconnect = () => {
+        setShowConfirm(false);
         setAccount(null);
         setError(null);
+        // Force a full page reload so the extension session is flushed
+        window.location.reload();
     };
 
     /** Truncates a Polkadot address: "5GrwvaEF...keqoYy2T" */
@@ -98,31 +120,72 @@ export default function Navbar() {
                 {/* Right Side: Wallet & Menu */}
                 <div className="flex gap-3 sm:gap-6 items-center">
                     {account ? (
-                        /* ── Connected: wallet info overlaid on walletFrame.svg ── */
-                        <button
-                            onClick={disconnectWallet}
-                            title="Click to disconnect"
-                            className="relative cursor-pointer transition-transform hover:scale-105 active:scale-95 group flex-shrink-0"
-                            style={{ width: 180, minWidth: 180, height: 47, minHeight: 47 }}
-                        >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src="/walletFrame.svg"
-                                alt="Wallet Frame"
-                                width={180}
-                                height={47}
-                                className="absolute inset-0 w-full h-full"
-                            />
-                            {/* Text overlay — centered inside the frame */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 pointer-events-none">
-                                <span className="text-white/70 text-[10px] font-medium leading-tight truncate w-full text-center group-hover:text-white/90 transition-colors">
-                                    {account.meta.name ?? "Unnamed Account"}
-                                </span>
-                                <span className="text-white font-mono text-xs leading-tight truncate w-full text-center group-hover:text-white/80 transition-colors">
-                                    {truncateAddress(account.address)}
-                                </span>
-                            </div>
-                        </button>
+                        /* ── Connected: wallet frame + disconnect confirmation popover ── */
+                        <div ref={walletRef} className="relative flex-shrink-0">
+                            <button
+                                onClick={() => setShowConfirm((prev) => !prev)}
+                                title="Click to manage wallet"
+                                className="relative cursor-pointer transition-transform hover:scale-105 active:scale-95 group flex-shrink-0"
+                                style={{ width: 180, minWidth: 180, height: 47, minHeight: 47 }}
+                            >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src="/walletFrame.svg"
+                                    alt="Wallet Frame"
+                                    width={180}
+                                    height={47}
+                                    className="absolute inset-0 w-full h-full"
+                                />
+                                {/* Text overlay — centered inside the frame */}
+                                <div className="absolute inset-0 flex flex-col items-center justify-center px-6 pointer-events-none">
+                                    <span className="text-white/70 text-[10px] font-medium leading-tight truncate w-full text-center group-hover:text-white/90 transition-colors">
+                                        {account.meta.name ?? "Unnamed Account"}
+                                    </span>
+                                    <span className="text-white font-mono text-xs leading-tight truncate w-full text-center group-hover:text-white/80 transition-colors">
+                                        {truncateAddress(account.address)}
+                                    </span>
+                                </div>
+                            </button>
+
+                            {/* ── Confirmation popover ── */}
+                            {showConfirm && (
+                                <div className="absolute top-full right-0 mt-2 w-56 rounded-xl border border-white/10 bg-[#0d1230] shadow-2xl shadow-black/60 overflow-hidden z-50">
+                                    {/* Account info header */}
+                                    <div className="px-4 py-3 border-b border-white/10">
+                                        <p className="text-white/50 text-[10px] font-medium uppercase tracking-wider mb-0.5">
+                                            Connected as
+                                        </p>
+                                        <p className="text-white text-sm font-semibold truncate">
+                                            {account.meta.name ?? "Unnamed Account"}
+                                        </p>
+                                        <p className="text-white/50 font-mono text-[10px] truncate">
+                                            {truncateAddress(account.address)}
+                                        </p>
+                                    </div>
+
+                                    {/* Disconnect confirmation */}
+                                    <div className="px-4 py-3">
+                                        <p className="text-white/70 text-xs mb-3">
+                                            Are you sure you want to disconnect?
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={confirmDisconnect}
+                                                className="flex-1 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                                            >
+                                                Disconnect
+                                            </button>
+                                            <button
+                                                onClick={() => setShowConfirm(false)}
+                                                className="flex-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/5 text-white text-xs font-semibold transition-colors cursor-pointer"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                     ) : (
                         /* ── Not connected: show connect button ── */

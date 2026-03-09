@@ -1,9 +1,9 @@
 import PageBackground from "@/components/page-background";
 
-export default function Home() {
+export default function MarketplacePage() {
     return (
         <PageBackground>
-            {/* Home page content goes here */}
+            {/* Marketplace page content goes here */}
         </PageBackground>
     );
 }

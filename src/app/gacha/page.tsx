@@ -1,9 +1,9 @@
 import PageBackground from "@/components/page-background";
 
-export default function Home() {
+export default function GachaPage() {
     return (
         <PageBackground>
-            {/* Home page content goes here */}
+            {/* Gacha page content goes here */}
         </PageBackground>
     );
 }
