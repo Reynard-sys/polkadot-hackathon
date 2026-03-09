@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "motion/react";
+import HeroSection from "./components/hero-section";
 
 export default function Home() {
     return (
@@ -32,7 +33,7 @@ export default function Home() {
 
             {/* Content Container */}
             <div className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center text-white">
-                {/* Children content goes here */}
+                <HeroSection />
             </div>
         </div>
     );
