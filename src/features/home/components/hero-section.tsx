@@ -5,16 +5,16 @@ import CardBack from "@/components/card-back";
 import Card from "@/components/card";
 
 const cardBackSpread = [
-  { rotate: -10, x: -160, y: 20, zIndex: 1 },
-  { rotate: -5, x: -120, y: 8, zIndex: 2 },
-  { rotate: 5, x: 120, y: 8, zIndex: 2 },
-  { rotate: 10, x: 160, y: 20, zIndex: 1 },
+  { rotate: -6, x: -200, y: 20, zIndex: 1 },
+  { rotate: -4, x: -150, y: 8, zIndex: 2 },
+  { rotate: 4, x: 150, y: 8, zIndex: 2 },
+  { rotate: 6, x: 200, y: 20, zIndex: 1 },
 ];
 
 const cardSpread = [
-  { rotate: -4, x: -80, y: 3 },
-  { rotate: 0, x: 0, y: -5 },
-  { rotate: 4, x: 80, y: 3 },
+  { rotate: -2, x: -100, y: 3 },
+  { rotate: 0, x: 0, y: 0 },
+  { rotate: 2, x: 100, y: 3 },
 ];
 
 const sampleCards = [
@@ -58,7 +58,7 @@ const sampleCards = [
 
 // Keyframe times: [stacked, spread, hold-spread, unspread, hold-stacked]
 const times = [0, 0.2, 0.5, 0.7, 1];
-const LOOP_DURATION = 5;
+const LOOP_DURATION = 3;
 const ENTRANCE_DURATION = 0.7;
 
 export default function HeroSection() {
@@ -87,7 +87,7 @@ export default function HeroSection() {
               repeat: Infinity,
               ease: "easeInOut",
               times,
-              delay: ENTRANCE_DURATION + 0.05 * i,
+              // delay: ENTRANCE_DURATION + 0.05 * i,
             }}
           >
             <CardBack />
@@ -115,7 +115,7 @@ export default function HeroSection() {
               repeat: Infinity,
               ease: "easeInOut",
               times,
-              delay: ENTRANCE_DURATION + 0.2 + 0.06 * i,
+              // delay: ENTRANCE_DURATION + 0.2 + 0.06 * i,
             }}
           >
             <Card {...sampleCards[i]} />
