@@ -82,13 +82,13 @@ export default function HeroSection() {
         transition={{ duration: ENTRANCE_DURATION, ease: "easeOut" }}
       >
         {/* ── Mobile: content inside phone frame ── */}
-        <div className="relative w-[calc(100vw-40px)] max-w-110 lg:hidden">
+        <div className="relative w-[calc(100vw-40px)] pt-24 max-w-110 lg:hidden">
           <Image
             src="/assets/mobile-frame.svg"
             alt=""
             width={379}
             height={602}
-            className="w-full h-auto pointer-events-none"
+            className="w-full h-full pointer-events-none"
             aria-hidden="true"
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 px-6 py-8">
@@ -103,7 +103,7 @@ export default function HeroSection() {
               Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris penatibus varius sagittis mi diam eget penatibus.
             </p>
             {/* Card stack scaled for mobile frame */}
-            <div className="relative w-59.75 h-83.75">
+            <div className="relative w-60 h-60">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="scale-[0.45] origin-center">
                   {cardStack}
@@ -112,11 +112,10 @@ export default function HeroSection() {
             </div>
             <button className="flex justify-center items-center cursor-pointer transition-transform hover:scale-105 active:scale-95">
               <Image
-                src="/assets/connect-wallet-homepage.svg"
+                src="/assets/connect-wallet-btn.svg"
                 alt="Connect Wallet"
-                width={352}
-                height={70}
-                className="w-[55%]"
+                width={230}
+                height={47}
               />
             </button>
           </div>

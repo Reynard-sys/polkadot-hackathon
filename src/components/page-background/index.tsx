@@ -36,7 +36,7 @@ export default function PageBackground({ children }: PageBackgroundProps) {
             />
 
             {/* Content Container */}
-            <div className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center text-white">
+            <div className="relative z-10 w-full min-h-screen flex flex-col items-center justify-start lg:justify-center text-white">
                 {children}
             </div>
         </div>
