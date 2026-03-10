@@ -1,14 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "motion/react";
 import CardBack from "@/components/card-back";
-import Card from "@/components/card";
 
 const cardBackSpread = [
-  { rotate: -6, x: -200, y: 20, zIndex: 1 },
-  { rotate: -4, x: -150, y: 8, zIndex: 2 },
-  { rotate: 4, x: 150, y: 8, zIndex: 2 },
-  { rotate: 6, x: 200, y: 20, zIndex: 1 },
+  { rotate: -6, x: -250, y: 20, zIndex: 1 },
+  { rotate: -4, x: -180, y: 8, zIndex: 2 },
+  { rotate: 4, x: 180, y: 8, zIndex: 2 },
+  { rotate: 6, x: 250, y: 20, zIndex: 1 },
 ];
 
 const cardSpread = [
@@ -17,43 +17,10 @@ const cardSpread = [
   { rotate: 2, x: 100, y: 3 },
 ];
 
-const sampleCards = [
-  {
-    rank: 1,
-    power: 95,
-    cardImage: "/assets/placeholder-image.png",
-    tag: "tag",
-    subtitle: "Lorem Ipsum",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    packName: "Lorem Ipsum",
-    title: "Lorem Ipsum",
-    ctaLabel: "Lorem Ipsum",
-  },
-  {
-    rank: 2,
-    power: 88,
-    cardImage: "/assets/placeholder-image.png",
-    tag: "tag",
-    subtitle: "Lorem Ipsum",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    packName: "Lorem Ipsum",
-    title: "Lorem Ipsum",
-    ctaLabel: "Lorem Ipsum",
-  },
-  {
-    rank: 3,
-    power: 82,
-    cardImage: "/assets/placeholder-image.png",
-    tag: "tag",
-    subtitle: "Lorem Ipsum",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    packName: "Lorem Ipsum",
-    title: "Lorem Ipsum",
-    ctaLabel: "Lorem Ipsum",
-  },
+const cardImages = [
+  { src: "/assets/left-card.svg", alt: "Left card" },
+  { src: "/assets/center-card.svg", alt: "Center card" },
+  { src: "/assets/right-card.svg", alt: "Right card" },
 ];
 
 // Keyframe times: [stacked, spread, hold-spread, unspread, hold-stacked]
@@ -66,11 +33,26 @@ export default function HeroSection() {
     <div className="relative w-full flex items-center justify-center py-20">
       {/* Container fade-in while cards are stacked */}
       <motion.div
-        className="relative w-[368px] h-[515px]"
+        className="flex flex-col items-center gap-10 pt-24"
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: ENTRANCE_DURATION, ease: "easeOut" }}
       >
+        {/* Logo above the card stack */}
+        <Image
+          src="/logo.svg"
+          alt="Logo"
+          width={629}
+          height={231}
+          className="pointer-events-none"
+        />
+
+        <p className="text-center text-lg font-bold max-w-xl">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+
+        {/* Card stack */}
+        <div className="relative w-[368px] h-[515px]">
         {/* 4 Card Backs (bottom layer) */}
         {cardBackSpread.map((spread, i) => (
           <motion.div
@@ -87,7 +69,6 @@ export default function HeroSection() {
               repeat: Infinity,
               ease: "easeInOut",
               times,
-              // delay: ENTRANCE_DURATION + 0.05 * i,
             }}
           >
             <CardBack />
@@ -115,12 +96,29 @@ export default function HeroSection() {
               repeat: Infinity,
               ease: "easeInOut",
               times,
-              // delay: ENTRANCE_DURATION + 0.2 + 0.06 * i,
             }}
           >
-            <Card {...sampleCards[i]} />
+            <Image
+              src={cardImages[i].src}
+              alt={cardImages[i].alt}
+              width={368}
+              height={515}
+              className="pointer-events-none"
+              draggable={false}
+            />
           </motion.div>
         ))}
+        </div>
+
+        {/* Connect Wallet button */}
+        <button className="cursor-pointer transition-transform hover:scale-105 active:scale-95">
+          <Image
+            src="/assets/connect-wallet-homepage.svg"
+            alt="Connect Wallet"
+            width={352}
+            height={70}
+          />
+        </button>
       </motion.div>
     </div>
   );
