@@ -224,7 +224,7 @@ export default function HeroSection() {
   );
 
   return (
-    <div className="relative w-full flex items-center justify-center py-12 lg:py-20">
+    <div className="relative w-full flex items-center justify-center lg:py-10">
       <motion.div
         className="flex items-center justify-center"
         initial={{ opacity: 0, scale: 0.92 }}
