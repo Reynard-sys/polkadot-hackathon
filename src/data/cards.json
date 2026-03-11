@@ -1,0 +1,1932 @@
+[
+  {
+    "id": "naruto_common_naruto_01",
+    "nftTokenId": "1",
+    "name": "Naruto Uzumaki",
+    "subtitle": "Child of Prophecy",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 3,
+    "hp": 3,
+    "element": "Air",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Clone"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "SpawnClone",
+      "description": "Flip the card to represent a Shadow Clone (1 power / 1 health). The clone attacks first. When the clone is destroyed, flip the card back upright.",
+      "value": null,
+      "target": "Self",
+      "duration": "UntilCloneDies",
+      "condition": null,
+      "cloneStats": {
+        "power": 1,
+        "hp": 1
+      }
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Clone"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_naruto_01.png"
+  },
+  {
+    "id": "naruto_common_sakura_01",
+    "nftTokenId": "2",
+    "name": "Sakura Haruno",
+    "subtitle": "Medical Trainee",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 4,
+    "element": "Earth",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Heal"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Heal",
+      "description": "Heal 2 HP to one friendly unit or your player.",
+      "value": 2,
+      "target": "FriendlyUnitOrPlayer",
+      "duration": null,
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Backline",
+      "Support",
+      "Healer"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_sakura_01.png"
+  },
+  {
+    "id": "naruto_common_lee_01",
+    "nftTokenId": "3",
+    "name": "Rock Lee",
+    "subtitle": "Taijutsu Prodigy",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 4,
+    "hp": 4,
+    "element": "Earth",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "CombatTrigger",
+      "FirstStrike"
+    ],
+    "ability": {
+      "trigger": "CombatTrigger",
+      "type": "PowerBoost",
+      "description": "If this is the first unit to attack this turn, gain +1 Power until end of turn.",
+      "value": 1,
+      "target": "Self",
+      "duration": "EndOfTurn",
+      "condition": "FirstAttackerThisTurn"
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Burst",
+      "Taijutsu"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_lee_01.png"
+  },
+  {
+    "id": "naruto_common_shikamaru_01",
+    "nftTokenId": "4",
+    "name": "Shikamaru Nara",
+    "subtitle": "Tactical Genius",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 2,
+    "hp": 4,
+    "element": "Air",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Disable"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Disable",
+      "description": "Rotate one enemy unit 180 degrees to mark it disabled. That unit cannot attack next turn.",
+      "value": 1,
+      "target": "EnemyUnit",
+      "duration": "1Turn",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Backline",
+      "Control",
+      "Disrupt",
+      "Tactician"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_shikamaru_01.png"
+  },
+  {
+    "id": "naruto_common_hinata_01",
+    "nftTokenId": "5",
+    "name": "Hinata Hyuga",
+    "subtitle": "Gentle Fist Adept",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 3,
+    "hp": 3,
+    "element": "Water",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "Passive",
+      "ShieldBreak",
+      "GuardBypass"
+    ],
+    "ability": {
+      "trigger": "Passive",
+      "type": "ShieldBreak",
+      "description": "When this unit attacks, ignore the target's Shield and bypass Guard effects.",
+      "value": null,
+      "target": "AttackTarget",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Frontline",
+      "Precision",
+      "Hyuga"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_hinata_01.png"
+  },
+  {
+    "id": "naruto_common_kiba_01",
+    "nftTokenId": "6",
+    "name": "Kiba Inuzuka",
+    "subtitle": "Fang of the Pack",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 3,
+    "hp": 4,
+    "element": "Earth",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "CombatTrigger",
+      "ComboBoost"
+    ],
+    "ability": {
+      "trigger": "CombatTrigger",
+      "type": "PowerBoost",
+      "description": "If at least one other friendly unit already attacked this turn, gain +2 Power until end of turn.",
+      "value": 2,
+      "target": "Self",
+      "duration": "EndOfTurn",
+      "condition": "AnotherAllyAttackedThisTurn"
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Combo",
+      "Beast"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_kiba_01.png"
+  },
+  {
+    "id": "naruto_common_tenten_01",
+    "nftTokenId": "7",
+    "name": "Tenten",
+    "subtitle": "Weapon Specialist",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 3,
+    "element": "Air",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "MultiHit"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "DamageMultiple",
+      "description": "Deal 1 damage to up to two different enemy units.",
+      "value": 1,
+      "target": "TwoEnemyUnits",
+      "duration": null,
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Backline",
+      "Utility",
+      "MultiHit",
+      "Weapons"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_tenten_01.png"
+  },
+  {
+    "id": "naruto_common_iruka_01",
+    "nftTokenId": "8",
+    "name": "Iruka Umino",
+    "subtitle": "Village Guardian",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 1,
+    "hp": 4,
+    "element": "Earth",
+    "zone": "Reserve",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Draw"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "DrawCard",
+      "description": "Draw 1 card.",
+      "value": 1,
+      "target": "Self",
+      "duration": null,
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Reserve",
+      "Support",
+      "Draw",
+      "Mentor"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_iruka_01.png"
+  },
+  {
+    "id": "naruto_common_konohamaru_01",
+    "nftTokenId": "9",
+    "name": "Konohamaru",
+    "subtitle": "Future Hokage",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 1,
+    "power": 2,
+    "hp": 2,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "Aura",
+      "Synergy"
+    ],
+    "ability": {
+      "trigger": "Aura",
+      "type": "ConditionalPowerBoost",
+      "description": "If a card named Naruto Uzumaki is on your side of the board, this unit permanently gains +1 Power.",
+      "value": 1,
+      "target": "Self",
+      "duration": "Permanent",
+      "condition": "NarutoUzumakiOnBoard"
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Scaling",
+      "Student"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_konohamaru_01.png"
+  },
+  {
+    "id": "naruto_common_scroll_01",
+    "nftTokenId": "10",
+    "name": "Ninja Scroll",
+    "subtitle": "Hidden Technique",
+    "anime": "Naruto",
+    "rarity": "Common",
+    "mana": 1,
+    "power": 0,
+    "hp": 2,
+    "element": "Air",
+    "zone": "Reserve",
+    "leaderEligible": false,
+    "keywords": [
+      "Aura",
+      "Buff"
+    ],
+    "ability": {
+      "trigger": "Aura",
+      "type": "NextAttackBuff",
+      "description": "The next friendly unit that attacks this turn gains +2 Power for that attack. Flip this card face-down after triggered to mark it spent.",
+      "value": 2,
+      "target": "NextFriendlyAttacker",
+      "duration": "OneUse",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Common",
+      "Reserve",
+      "Support",
+      "Buff",
+      "Technique"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_scroll_01.png"
+  },
+  {
+    "id": "naruto_rare_kakashi_01",
+    "nftTokenId": "11",
+    "name": "Kakashi Hatake",
+    "subtitle": "Copy Ninja",
+    "anime": "Naruto",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 4,
+    "hp": 5,
+    "element": "Air",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "CopyAbility"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "CopyAbility",
+      "description": "Choose one enemy unit on the board. This unit gains a copy of that unit's ability for the rest of the game.",
+      "value": null,
+      "target": "EnemyUnit",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Rare",
+      "Frontline",
+      "Control",
+      "Copy",
+      "Sharingan"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_rare_kakashi_01.png"
+  },
+  {
+    "id": "naruto_rare_gaara_01",
+    "nftTokenId": "12",
+    "name": "Gaara",
+    "subtitle": "Sand Guardian",
+    "anime": "Naruto",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 4,
+    "hp": 6,
+    "element": "Earth",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Shield"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Shield",
+      "description": "This unit ignores the next 2 instances of damage. Each block is consumed one at a time.",
+      "value": 2,
+      "target": "Self",
+      "duration": "UntilConsumed",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Rare",
+      "Frontline",
+      "Tank",
+      "Defense",
+      "Sand"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_rare_gaara_01.png"
+  },
+  {
+    "id": "naruto_rare_neji_01",
+    "nftTokenId": "13",
+    "name": "Neji Hyuga",
+    "subtitle": "The Greatest Genius in Hyuga clan",
+    "anime": "Naruto",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 4,
+    "hp": 5,
+    "element": "Air",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Seal"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "SealAbility",
+      "description": "Rotate one enemy unit 180 degrees to mark it sealed until next turn.",
+      "value": 1,
+      "target": "EnemyUnit",
+      "duration": "1Turn",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Naruto",
+      "Rare",
+      "Frontline",
+      "Control",
+      "Silence",
+      "Hyuga"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_rare_neji_01.png"
+  },
+  {
+    "id": "naruto_legendary_itachi_01",
+    "nftTokenId": "14",
+    "name": "Itachi Uchiha",
+    "subtitle": "Mangekyo Illusion",
+    "anime": "Naruto",
+    "rarity": "Legendary",
+    "mana": 5,
+    "power": 5,
+    "hp": 6,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "OnSummon",
+      "Sleep"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Sleep",
+      "description": "Flip one enemy unit face-down to mark it asleep for 2 turns.",
+      "value": 2,
+      "target": "EnemyUnit",
+      "duration": "2Turns",
+      "condition": null
+    },
+    "leaderAbility": {
+      "type": "Sleep",
+      "description": "Once per game turn the card 180 degrees to put one enemy unit to sleep for 2 turns without playing this card.",
+      "value": 2,
+      "target": "EnemyUnit",
+      "duration": "2Turns"
+    },
+    "traits": [
+      "Naruto",
+      "Legendary",
+      "Frontline",
+      "Control",
+      "Sleep",
+      "Genjutsu",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 500,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_legendary_itachi_01.png"
+  },
+  {
+    "id": "naruto_legendary_jiraiya_01",
+    "nftTokenId": "15",
+    "name": "Jiraiya",
+    "subtitle": "Pervy Sage",
+    "anime": "Naruto",
+    "rarity": "Legendary",
+    "mana": 5,
+    "power": 5,
+    "hp": 6,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "OnSummon",
+      "Clone"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "SpawnClone",
+      "description": "Flip this card to represent a Toad Clone (2 power / 3 health). When the Toad Clone is destroyed, flip Jiraiya back upright.",
+      "value": null,
+      "target": "Self",
+      "duration": "UntilCloneDies",
+      "condition": null,
+      "cloneStats": {
+        "power": 2,
+        "hp": 3
+      }
+    },
+    "leaderAbility": {
+      "type": "PowerHealthBoost",
+      "description": "Once per game turn the card 180 degrees to give one friendly unit +2 Power and +2 HP until end of turn.",
+      "value": 2,
+      "target": "FriendlyUnit",
+      "duration": "EndOfTurn"
+    },
+    "traits": [
+      "Naruto",
+      "Legendary",
+      "Frontline",
+      "Support",
+      "Clone",
+      "Sage",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 500,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_legendary_jiraiya_01.png"
+  },
+  {
+    "id": "naruto_mythic_naruto_01",
+    "nftTokenId": "16",
+    "name": "Naruto Uzumaki",
+    "subtitle": "Sage of Six Paths",
+    "anime": "Naruto",
+    "rarity": "Mythic",
+    "mana": 6,
+    "power": 6,
+    "hp": 7,
+    "element": "Air",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "OnSummon",
+      "AuraBuff"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "BuffAllAllies",
+      "description": "All friendly units gain +1 Power and +1 HP until end of turn.",
+      "value": 1,
+      "target": "AllFriendlyUnits",
+      "duration": "EndOfTurn",
+      "condition": null
+    },
+    "leaderAbility": {
+      "type": "BuffAllAllies",
+      "description": "Once per game rotate 180 degrees to activate this effect without playing the card.",
+      "value": 1,
+      "target": "AllFriendlyUnits",
+      "duration": "EndOfTurn"
+    },
+    "traits": [
+      "Naruto",
+      "Mythic",
+      "Frontline",
+      "Leader",
+      "Finisher",
+      "Aura",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 30,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_mythic_naruto_01.png"
+  },
+  {
+    "id": "onepiece_common_luffy_01",
+    "nftTokenId": "17",
+    "name": "Monkey D. Luffy",
+    "subtitle": "Strawhat Luffy",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 3,
+    "hp": 3,
+    "element": "Air",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "Passive",
+      "CounterImmune"
+    ],
+    "ability": {
+      "trigger": "Passive",
+      "type": "CounterImmune",
+      "description": "This unit takes no retaliation damage when attacking any unit with the Counter keyword.",
+      "value": null,
+      "target": "Self",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Brawler",
+      "Captain"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_luffy_01.png"
+  },
+  {
+    "id": "onepiece_common_zoro_01",
+    "nftTokenId": "18",
+    "name": "Roronoa Zoro",
+    "subtitle": "Three Sword Style",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 4,
+    "hp": 4,
+    "element": "Earth",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "Aura",
+      "ConditionalBoost"
+    ],
+    "ability": {
+      "trigger": "Aura",
+      "type": "ConditionalPowerBoost",
+      "description": "If the enemy player is at 15 HP or less, this unit permanently gains +2 Power.",
+      "value": 2,
+      "target": "Self",
+      "duration": "Permanent",
+      "condition": "EnemyPlayerHP15OrLess"
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Swordsman",
+      "Burst"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_zoro_01.png"
+  },
+  {
+    "id": "onepiece_common_nami_01",
+    "nftTokenId": "19",
+    "name": "Nami",
+    "subtitle": "Cat Burglar",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 3,
+    "element": "Air",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "Aura",
+      "ElementBuff"
+    ],
+    "ability": {
+      "trigger": "Aura",
+      "type": "ElementPowerBuff",
+      "description": "While Nami is on the board, all friendly Air units gain +1 Power.",
+      "value": 1,
+      "target": "FriendlyAirUnits",
+      "duration": "WhileOnBoard",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Backline",
+      "Support",
+      "Utility",
+      "Navigator"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_nami_01.png"
+  },
+  {
+    "id": "onepiece_common_ussop_01",
+    "nftTokenId": "20",
+    "name": "Usopp",
+    "subtitle": "Captain Usopp",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 3,
+    "hp": 2,
+    "element": "Air",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "Passive",
+      "BacklineStrike"
+    ],
+    "ability": {
+      "trigger": "Passive",
+      "type": "BacklineStrike",
+      "description": "This unit may target enemy Backline units directly, ignoring Frontline protection.",
+      "value": null,
+      "target": "EnemyBacklineUnit",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Backline",
+      "Ranged",
+      "Precision",
+      "Aggro"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_ussop_01.png"
+  },
+  {
+    "id": "onepiece_common_sanji_01",
+    "nftTokenId": "21",
+    "name": "Sanji",
+    "subtitle": "Black Leg",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 4,
+    "hp": 4,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "CombatTrigger",
+      "SoloBoost"
+    ],
+    "ability": {
+      "trigger": "CombatTrigger",
+      "type": "PowerBoost",
+      "description": "If this is the only friendly unit that attacks this turn, gain +2 Power for that attack.",
+      "value": 2,
+      "target": "Self",
+      "duration": "EndOfTurn",
+      "condition": "OnlyAttackerThisTurn"
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Burst",
+      "MartialArtist"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_sanji_01.png"
+  },
+  {
+    "id": "onepiece_common_chopper_01",
+    "nftTokenId": "22",
+    "name": "Tony Tony Chopper",
+    "subtitle": "Doctor",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 1,
+    "hp": 3,
+    "element": "Earth",
+    "zone": "Reserve",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Heal"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Heal",
+      "description": "Restore 2 HP to any one friendly unit or player.",
+      "value": 2,
+      "target": "FriendlyUnitOrPlayer",
+      "duration": null,
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Reserve",
+      "Support",
+      "Healer",
+      "Beast"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_chopper_01.png"
+  },
+  {
+    "id": "onepiece_common_robin_01",
+    "nftTokenId": "23",
+    "name": "Nico Robin",
+    "subtitle": "Devil Child",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 3,
+    "hp": 4,
+    "element": "Earth",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Bind"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Bind",
+      "description": "Rotate one enemy unit 180 degrees to mark it bound. That unit cannot use its ability next turn.",
+      "value": 1,
+      "target": "EnemyUnit",
+      "duration": "1Turn",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Backline",
+      "Control",
+      "Disrupt",
+      "Scholar"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_robin_01.png"
+  },
+  {
+    "id": "onepiece_common_franky_01",
+    "nftTokenId": "24",
+    "name": "Franky",
+    "subtitle": "Cyborg Engineer",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 3,
+    "hp": 5,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Shield"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Shield",
+      "description": "This unit ignores the next 2 instances of damage.",
+      "value": 2,
+      "target": "Self",
+      "duration": "UntilConsumed",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Frontline",
+      "Tank",
+      "Shield",
+      "Cyborg"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_franky_01.png"
+  },
+  {
+    "id": "onepiece_common_brook_01",
+    "nftTokenId": "25",
+    "name": "Brook",
+    "subtitle": "Soul Musician",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 3,
+    "element": "Air",
+    "zone": "Reserve",
+    "leaderEligible": false,
+    "keywords": [
+      "OnDefeat",
+      "Revive"
+    ],
+    "ability": {
+      "trigger": "OnDefeat",
+      "type": "Revive",
+      "description": "When this unit is destroyed, flip it face-down. At the start of your next turn, flip it face-up with 1 HP. On Defeat effects do not trigger on the first death.",
+      "value": 1,
+      "target": "Self",
+      "duration": "OncePerGame",
+      "condition": "FirstDeath"
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Reserve",
+      "Utility",
+      "Revive",
+      "Undead"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_brook_01.png"
+  },
+  {
+    "id": "onepiece_common_jinbe_01",
+    "nftTokenId": "26",
+    "name": "Jinbe",
+    "subtitle": "Fishman Karate Master",
+    "anime": "OnePiece",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 4,
+    "hp": 4,
+    "element": "Water",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "CombatTrigger",
+      "ElementBonus"
+    ],
+    "ability": {
+      "trigger": "CombatTrigger",
+      "type": "BonusDamageVsElement",
+      "description": "When this unit attacks a Fire-element unit, deal +1 bonus damage on top of any elemental advantage bonus.",
+      "value": 1,
+      "target": "FireEnemyUnit",
+      "duration": "Permanent",
+      "condition": "TargetIsFire"
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Common",
+      "Frontline",
+      "Tank",
+      "MartialArtist",
+      "Water"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_jinbe_01.png"
+  },
+  {
+    "id": "onepiece_rare_law_01",
+    "nftTokenId": "27",
+    "name": "Trafalgar Law",
+    "subtitle": "Room Surgeon",
+    "anime": "OnePiece",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 4,
+    "hp": 5,
+    "element": "Air",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "SwapPosition"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "SwapPositions",
+      "description": "Swap the physical positions of any two units on the board, friend or foe. Frontline becomes Backline and vice versa.",
+      "value": null,
+      "target": "AnyTwoUnits",
+      "duration": null,
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Rare",
+      "Backline",
+      "Control",
+      "Positioning",
+      "Surgeon"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_rare_law_01.png"
+  },
+  {
+    "id": "onepiece_rare_doflamigo_01",
+    "nftTokenId": "28",
+    "name": "Donquixote Doflamingo",
+    "subtitle": "String Tyrant",
+    "anime": "OnePiece",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 5,
+    "hp": 5,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Puppet"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "ForceAttack",
+      "description": "Choose one enemy unit. That unit immediately attacks another enemy unit of your choice.",
+      "value": null,
+      "target": "EnemyUnit",
+      "duration": null,
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Rare",
+      "Frontline",
+      "Control",
+      "Manipulation",
+      "Villain"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_rare_doflamigo_01.png"
+  },
+  {
+    "id": "onepiece_rare_hancock_01",
+    "nftTokenId": "29",
+    "name": "Boa Hancock",
+    "subtitle": "Pirate Empress",
+    "anime": "OnePiece",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 4,
+    "hp": 5,
+    "element": "Fire",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Stone"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Stone",
+      "description": "Flip one enemy unit face-down to mark it stoned. That unit cannot attack or use abilities until next turn.",
+      "value": 1,
+      "target": "EnemyUnit",
+      "duration": "1Turn",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "OnePiece",
+      "Rare",
+      "Backline",
+      "Control",
+      "Stun",
+      "Leader"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_rare_hancock_01.png"
+  },
+  {
+    "id": "onepiece_legendary_whitebeard_01",
+    "nftTokenId": "30",
+    "name": "Edward Newgate",
+    "subtitle": "The Strongest Man",
+    "anime": "OnePiece",
+    "rarity": "Legendary",
+    "mana": 5,
+    "power": 6,
+    "hp": 7,
+    "element": "Earth",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "Aura",
+      "AllyBuff"
+    ],
+    "ability": {
+      "trigger": "Aura",
+      "type": "BuffAllAllies",
+      "description": "While Whitebeard is on the board, all other friendly units gain +1 Power.",
+      "value": 1,
+      "target": "AllOtherFriendlyUnits",
+      "duration": "WhileOnBoard",
+      "condition": null
+    },
+    "leaderAbility": {
+      "type": "BuffAllAllies",
+      "description": "Once per game turn the card 180 degrees to give all friendly units +2 Power until end of turn.",
+      "value": 2,
+      "target": "AllFriendlyUnits",
+      "duration": "EndOfTurn"
+    },
+    "traits": [
+      "OnePiece",
+      "Legendary",
+      "Frontline",
+      "Leader",
+      "Aura",
+      "Tank",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 500,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_legendary_whitebeard_01.png"
+  },
+  {
+    "id": "onepiece_legendary_shanks_01",
+    "nftTokenId": "31",
+    "name": "Shanks",
+    "subtitle": "Red-Haired Emperor",
+    "anime": "OnePiece",
+    "rarity": "Legendary",
+    "mana": 5,
+    "power": 5,
+    "hp": 6,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "OnSummon",
+      "PermanentSilence"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "PermanentSilence",
+      "description": "Choose one enemy unit. That unit permanently loses its ability for the rest of the game.",
+      "value": null,
+      "target": "EnemyUnit",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": {
+      "type": "CancelAllReserve",
+      "description": "Once per game turn the card 180 degrees to cancel the abilities of all enemy Reserve cards for this turn.",
+      "value": null,
+      "target": "AllEnemyReserveCards",
+      "duration": "ThisTurn"
+    },
+    "traits": [
+      "OnePiece",
+      "Legendary",
+      "Frontline",
+      "Control",
+      "Cancel",
+      "Leader",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 500,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_legendary_shanks_01.png"
+  },
+  {
+    "id": "onepiece_mythic_roger_01",
+    "nftTokenId": "32",
+    "name": "Gol D. Roger",
+    "subtitle": "Pirate King",
+    "anime": "OnePiece",
+    "rarity": "Mythic",
+    "mana": 6,
+    "power": 7,
+    "hp": 7,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "OnSummon",
+      "ExecutionStrike"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "ConditionalDamageBoost",
+      "description": "If the enemy player is at 10 HP or less, this unit deals +3 damage on its first attack this turn.",
+      "value": 3,
+      "target": "Self",
+      "duration": "FirstAttackThisTurn",
+      "condition": "EnemyPlayerHP10OrLess"
+    },
+    "leaderAbility": {
+      "type": "GrantRush",
+      "description": "Once per game turn the card 180 degrees to give all friendly units Rush this turn.",
+      "value": null,
+      "target": "AllFriendlyUnits",
+      "duration": "ThisTurn"
+    },
+    "traits": [
+      "OnePiece",
+      "Mythic",
+      "Frontline",
+      "Finisher",
+      "Leader",
+      "Burst",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 30,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_mythic_roger_01.png"
+  },
+  {
+    "id": "pokemon_common_charmander_01",
+    "nftTokenId": "33",
+    "name": "Charmander",
+    "subtitle": "Flame Lizard",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 3,
+    "hp": 3,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Burn"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Burn",
+      "description": "Rotate one enemy unit 180 degrees to mark it burned. That unit takes 1 damage at the end of each of its owner's turns for 2 turns.",
+      "value": 1,
+      "target": "EnemyUnit",
+      "duration": "2Turns",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Burn",
+      "Fire"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_charmander_01.png"
+  },
+  {
+    "id": "pokemon_common_squirtle_01",
+    "nftTokenId": "34",
+    "name": "Squirtle",
+    "subtitle": "Tiny Defender",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 4,
+    "element": "Water",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "Passive",
+      "DamageReduction"
+    ],
+    "ability": {
+      "trigger": "Passive",
+      "type": "DamageReduction",
+      "description": "This unit reduces all incoming damage by 1.",
+      "value": 1,
+      "target": "Self",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Frontline",
+      "Tank",
+      "Defense",
+      "Water"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_squirtle_01.png"
+  },
+  {
+    "id": "pokemon_common_bulbasaur_01",
+    "nftTokenId": "35",
+    "name": "Bulbasaur",
+    "subtitle": "Seed Pokemon",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 4,
+    "element": "Earth",
+    "zone": "Reserve",
+    "leaderEligible": false,
+    "keywords": [
+      "Aura",
+      "HealPerTurn"
+    ],
+    "ability": {
+      "trigger": "Aura",
+      "type": "HealAllyPerTurn",
+      "description": "At the start of your turn, restore 1 HP to one friendly unit of your choice while Bulbasaur is on the board.",
+      "value": 1,
+      "target": "FriendlyUnit",
+      "duration": "WhileOnBoard",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Reserve",
+      "Support",
+      "Heal",
+      "Earth"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_bulbasaur_01.png"
+  },
+  {
+    "id": "pokemon_common_pikachu_01",
+    "nftTokenId": "36",
+    "name": "Pikachu",
+    "subtitle": "Electric Ace",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 3,
+    "hp": 3,
+    "element": "Air",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Stun"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Stun",
+      "description": "Rotate one enemy unit 180 degrees to mark it stunned. That unit cannot attack next turn.",
+      "value": 1,
+      "target": "EnemyUnit",
+      "duration": "1Turn",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Frontline",
+      "Aggro",
+      "Stun",
+      "Electric"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_pikachu_01.png"
+  },
+  {
+    "id": "pokemon_common_pidgeotto_01",
+    "nftTokenId": "37",
+    "name": "Pidgeotto",
+    "subtitle": "Sky Hunter",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 3,
+    "element": "Air",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "Passive",
+      "Initiative"
+    ],
+    "ability": {
+      "trigger": "Passive",
+      "type": "AttackFirst",
+      "description": "This unit always attacks before all other units in the Battle Phase. If two units share this effect, the active player chooses order.",
+      "value": null,
+      "target": "Self",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Backline",
+      "Speed",
+      "Aggro",
+      "Air"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_pidgeotto_01.png"
+  },
+  {
+    "id": "pokemon_common_geodude_01",
+    "nftTokenId": "38",
+    "name": "Geodude",
+    "subtitle": "Rock Defender",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 3,
+    "power": 3,
+    "hp": 5,
+    "element": "Earth",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Shield",
+      "Guard"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "ShieldAndGuard",
+      "description": "This unit ignores the next 1 instance of damage. Guard: enemies must target this unit before other Frontline units if able.",
+      "value": 1,
+      "target": "Self",
+      "duration": "UntilConsumed",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Frontline",
+      "Tank",
+      "Shield",
+      "Guard",
+      "Earth"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_geodude_01.png"
+  },
+  {
+    "id": "pokemon_common_magikarp_01",
+    "nftTokenId": "39",
+    "name": "Magikarp",
+    "subtitle": "Stubborn Splasher",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 1,
+    "power": 1,
+    "hp": 2,
+    "element": "Water",
+    "zone": "Reserve",
+    "leaderEligible": false,
+    "keywords": [
+      "Aura",
+      "Patience"
+    ],
+    "ability": {
+      "trigger": "Aura",
+      "type": "PatienceCounter",
+      "description": "Deal 3 damage directly to the enemy player after your turn 3, then remove Magikarp from the board.",
+      "value": 3,
+      "target": "EnemyPlayer",
+      "duration": "UntilTriggered",
+      "condition": "PatienceCounterReaches3",
+      "onTrigger": {
+        "type": "DirectDamage",
+        "value": 3,
+        "then": "RemoveSelf"
+      }
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Reserve",
+      "Scaling",
+      "Water",
+      "Patience"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_magikarp_01.png"
+  },
+  {
+    "id": "pokemon_common_eevee_01",
+    "nftTokenId": "40",
+    "name": "Eevee",
+    "subtitle": "Adaptive Pokemon",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 3,
+    "element": "Earth",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "AdaptElement"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "DeclareElement",
+      "description": "When played, choose one element: Fire, Water, Earth, or Air. This unit becomes that element permanently for the rest of the game. Both players acknowledge the declared element.",
+      "value": null,
+      "target": "Self",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Frontline",
+      "Adaptive",
+      "Flexible",
+      "Utility"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_eevee_01.png"
+  },
+  {
+    "id": "pokemon_common_psyduck_01",
+    "nftTokenId": "41",
+    "name": "Psyduck",
+    "subtitle": "Confused Psychic",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 3,
+    "hp": 3,
+    "element": "Water",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "CombatTrigger",
+      "Random"
+    ],
+    "ability": {
+      "trigger": "CombatTrigger",
+      "type": "RandomEffect",
+      "description": "Each time this unit attacks, a random effect triggers with equal probability: Stun target / Burn target / Heal yourself 1 HP / Draw 1 card.",
+      "value": null,
+      "target": "Variable",
+      "duration": null,
+      "condition": null,
+      "randomEffects": [
+        {
+          "type": "Stun",
+          "target": "AttackTarget",
+          "value": 1
+        },
+        {
+          "type": "Burn",
+          "target": "AttackTarget",
+          "value": 1
+        },
+        {
+          "type": "Heal",
+          "target": "FriendlyPlayer",
+          "value": 1
+        },
+        {
+          "type": "DrawCard",
+          "target": "Self",
+          "value": 1
+        }
+      ]
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Frontline",
+      "Random",
+      "Utility",
+      "Psychic"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_psyduck_01.png"
+  },
+  {
+    "id": "pokemon_common_oddfish_01",
+    "nftTokenId": "42",
+    "name": "Oddish",
+    "subtitle": "Grass Sprout",
+    "anime": "Pokemon",
+    "rarity": "Common",
+    "mana": 2,
+    "power": 2,
+    "hp": 3,
+    "element": "Earth",
+    "zone": "Reserve",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Poison"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "Poison",
+      "description": "Turn one enemy unit 180 degrees to mark it poisoned. That unit takes 1 damage at the end of each of its owner's turns until it leaves the board.",
+      "value": 1,
+      "target": "EnemyUnit",
+      "duration": "UntilUnitLeaves",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Common",
+      "Reserve",
+      "Poison",
+      "Control",
+      "Earth"
+    ],
+    "maxSupply": 10000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_oddfish_01.png"
+  },
+  {
+    "id": "pokemon_rare_charmeleon_01",
+    "nftTokenId": "43",
+    "name": "Charmeleon",
+    "subtitle": "Flame Warrior",
+    "anime": "Pokemon",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 5,
+    "hp": 5,
+    "element": "Fire",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "Burn",
+      "BurnScaling"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "BurnAndScale",
+      "description": "Turn one enemy unit 180 degrees to mark it burned. Each time any burned unit takes its burn damage this game, Charmeleon permanently gains +1 Power.",
+      "value": 1,
+      "target": "EnemyUnit",
+      "duration": "Permanent",
+      "condition": null,
+      "scalingTrigger": {
+        "type": "PowerBoost",
+        "value": 1,
+        "condition": "AnyBurnDamageTaken"
+      }
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Rare",
+      "Frontline",
+      "Aggro",
+      "Burn",
+      "Scaling",
+      "Fire"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_rare_charmeleon_01.png"
+  },
+  {
+    "id": "pokemon_rare_wartortle_01",
+    "nftTokenId": "44",
+    "name": "Wartortle",
+    "subtitle": "Shell Guardian",
+    "anime": "Pokemon",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 3,
+    "hp": 6,
+    "element": "Water",
+    "zone": "Frontline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "ShieldAllies"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "ShieldAllFrontline",
+      "description": "Each friendly Frontline unit currently on the board ignores the next 1 instance of damage.",
+      "value": 1,
+      "target": "AllFriendlyFrontlineUnits",
+      "duration": "UntilConsumed",
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Rare",
+      "Frontline",
+      "Support",
+      "Shield",
+      "Water"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_rare_wartortle_01.png"
+  },
+  {
+    "id": "pokemon_rare_ivysaur_01",
+    "nftTokenId": "45",
+    "name": "Ivysaur",
+    "subtitle": "Bloom Fighter",
+    "anime": "Pokemon",
+    "rarity": "Rare",
+    "mana": 4,
+    "power": 3,
+    "hp": 5,
+    "element": "Earth",
+    "zone": "Backline",
+    "leaderEligible": false,
+    "keywords": [
+      "OnSummon",
+      "HealSplit"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "DistributeHeal",
+      "description": "Distribute 2 HP across any friendly units currently on the board in any combination.",
+      "value": 2,
+      "target": "AllFriendlyUnits",
+      "duration": null,
+      "condition": null
+    },
+    "leaderAbility": null,
+    "traits": [
+      "Pokemon",
+      "Rare",
+      "Backline",
+      "Support",
+      "Heal",
+      "Growth"
+    ],
+    "maxSupply": 3000,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_rare_ivysaur_01.png"
+  },
+  {
+    "id": "pokemon_legendary_gyarados_01",
+    "nftTokenId": "46",
+    "name": "Gyarados",
+    "subtitle": "Sea Fury",
+    "anime": "Pokemon",
+    "rarity": "Legendary",
+    "mana": 5,
+    "power": 6,
+    "hp": 6,
+    "element": "Water",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "Passive",
+      "RageStrike"
+    ],
+    "ability": {
+      "trigger": "Passive",
+      "type": "FirstAttackDouble",
+      "description": "The first attack this unit makes deals double damage. Bonus is consumed after the first attack.",
+      "value": 2,
+      "target": "Self",
+      "duration": "FirstAttackOnly",
+      "condition": null
+    },
+    "leaderAbility": {
+      "type": "GrantDoubleAttack",
+      "description": "Once per game turn Leader 180 degrees to give one friendly unit double damage on its next attack this turn.",
+      "value": 2,
+      "target": "FriendlyUnit",
+      "duration": "NextAttack"
+    },
+    "traits": [
+      "Pokemon",
+      "Legendary",
+      "Frontline",
+      "Finisher",
+      "Burst",
+      "Water",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 500,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_legendary_gyarados_01.png"
+  },
+  {
+    "id": "pokemon_legendary_dragonite_01",
+    "nftTokenId": "47",
+    "name": "Dragonite",
+    "subtitle": "Sky Guardian",
+    "anime": "Pokemon",
+    "rarity": "Legendary",
+    "mana": 5,
+    "power": 5,
+    "hp": 6,
+    "element": "Air",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "Passive",
+      "DoubleAttack"
+    ],
+    "ability": {
+      "trigger": "Passive",
+      "type": "AttackTwice",
+      "description": "This unit may attack twice per turn. The second attack may only target a unit, not the enemy player directly.",
+      "value": 2,
+      "target": "Self",
+      "duration": "Permanent",
+      "condition": null,
+      "secondAttackRestriction": "UnitsOnly"
+    },
+    "leaderAbility": {
+      "type": "GrantAttackTwice",
+      "description": "Once per game turn Leader 180 degrees to allow all friendly Frontline units to attack twice this turn. Second attacks may only target units.",
+      "value": null,
+      "target": "AllFriendlyFrontlineUnits",
+      "duration": "ThisTurn"
+    },
+    "traits": [
+      "Pokemon",
+      "Legendary",
+      "Frontline",
+      "Finisher",
+      "MultiAttack",
+      "Air",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 500,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_legendary_dragonite_01.png"
+  },
+  {
+    "id": "pokemon_mythic_mewto_01",
+    "nftTokenId": "48",
+    "name": "Mewtwo",
+    "subtitle": "Psychic Apex",
+    "anime": "Pokemon",
+    "rarity": "Mythic",
+    "mana": 6,
+    "power": 6,
+    "hp": 7,
+    "element": "Air",
+    "zone": "Frontline",
+    "leaderEligible": true,
+    "keywords": [
+      "OnSummon",
+      "CopyAbility"
+    ],
+    "ability": {
+      "trigger": "OnSummon",
+      "type": "CopyAbility",
+      "description": "Choose one enemy unit on the board. Mewtwo permanently gains a copy of that unit's ability in addition to its own.",
+      "value": null,
+      "target": "EnemyUnit",
+      "duration": "Permanent",
+      "condition": null
+    },
+    "leaderAbility": {
+      "type": "DisableAllReserve",
+      "description": "Once per game turn Leader 180 degrees to turn all enemy Reserve cards 180 degrees, preventing their abilities from activating this turn.",
+      "value": null,
+      "target": "AllEnemyReserveCards",
+      "duration": "ThisTurn"
+    },
+    "traits": [
+      "Pokemon",
+      "Mythic",
+      "Frontline",
+      "Control",
+      "Copy",
+      "Psychic",
+      "Leader-Eligible"
+    ],
+    "maxSupply": 30,
+    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_mythic_mewto_01.png"
+  }
+]
