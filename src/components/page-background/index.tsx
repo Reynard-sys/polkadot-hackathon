@@ -11,7 +11,7 @@ export default function PageBackground({ children }: PageBackgroundProps) {
         <div className="relative min-h-screen w-full bg-[#0d0d12] overflow-hidden flex flex-col items-center justify-center">
             {/* Top Center Blurred Triangle */}
             <motion.div
-                className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-screen h-[60vw] max-w-[1150px] max-h-[900px] blur-[50px] lg:blur-[100px] opacity-80 pointer-events-none"
+                className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[300vw] h-[60vh] sm:w-screen sm:h-[60vw] max-w-[1150px] max-h-[900px] blur-[120px] lg:blur-[100px] opacity-80 pointer-events-none"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
@@ -36,7 +36,7 @@ export default function PageBackground({ children }: PageBackgroundProps) {
             />
 
             {/* Content Container */}
-            <div className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center text-white">
+            <div className="relative z-10 w-full min-h-screen flex flex-col items-center justify-start lg:justify-center text-white">
                 {children}
             </div>
         </div>
