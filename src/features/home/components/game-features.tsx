@@ -59,7 +59,7 @@ const desktopFeaturesCol2 = [
 
 export default function GameFeatures() {
   return (
-    <section className="w-full flex flex-col items-center gap-6 px-5 py-12 lg:py-20">
+    <section className="w-full flex flex-col items-center gap-6 px-5 lg:py-10">
       <p className="text-3xl font-bold">Game Features</p>
 
       {/* Mobile layout */}
