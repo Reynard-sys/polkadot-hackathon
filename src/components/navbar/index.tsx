@@ -2,10 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@/context/wallet-context";
 
 export default function Navbar() {
+    const pathname = usePathname();
+    const hideOnMobile = pathname === "/inventory";
+
     const navLinks = [
         { name: "Home", href: "/" },
         { name: "Deck", href: "/deck" },
@@ -32,7 +36,7 @@ export default function Navbar() {
 
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-linear-to-b from-[#2d3548] to-[#030a30]">
+        <nav className={`fixed top-0 left-0 right-0 z-50 w-full bg-linear-to-b from-[#2d3548] to-[#030a30] ${hideOnMobile ? "hidden md:block" : ""}`}>
             <div className="px-6 lg:px-8 py-3 flex justify-between items-center">
                 {/* Left Side: Logo */}
                 <div className="flex items-center cursor-pointer">

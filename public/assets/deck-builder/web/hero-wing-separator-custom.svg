@@ -1,0 +1,35 @@
+<svg width="1257" height="75" viewBox="0 0 1257 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="leftWing" x1="0" y1="37.5" x2="612" y2="37.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B3FF3"/>
+      <stop offset="0.6" stop-color="#1B3FF3"/>
+      <stop offset="1" stop-color="#0F27B7"/>
+    </linearGradient>
+    <linearGradient id="rightWing" x1="645" y1="37.5" x2="1257" y2="37.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F27B7"/>
+      <stop offset="0.4" stop-color="#1B3FF3"/>
+      <stop offset="1" stop-color="#1B3FF3"/>
+    </linearGradient>
+    <linearGradient id="leftStreak" x1="120" y1="56" x2="612" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#204BFF"/>
+      <stop offset="1" stop-color="#204BFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rightStreak" x1="645" y1="56" x2="1137" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#204BFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#204BFF"/>
+    </linearGradient>
+    <linearGradient id="starFill" x1="628.5" y1="20" x2="628.5" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3556FF"/>
+      <stop offset="1" stop-color="#1230D6"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M0 34C30 66 133 77 284 55C385 40 483 38 612 74C503 47 401 47 286 63C143 83 35 83 0 58V34Z" fill="url(#leftWing)"/>
+  <path d="M1257 34C1227 66 1124 77 973 55C872 40 774 38 645 74C754 47 856 47 971 63C1114 83 1222 83 1257 58V34Z" fill="url(#rightWing)"/>
+
+  <path d="M120 53C220 30 354 27 504 48C395 37 273 42 120 58V53Z" fill="url(#leftStreak)"/>
+  <path d="M1137 53C1037 30 903 27 753 48C862 37 984 42 1137 58V53Z" fill="url(#rightStreak)"/>
+
+  <path d="M628.5 16L637.5 30L653 37.5L637.5 45L628.5 59L619.5 45L604 37.5L619.5 30L628.5 16Z" fill="#0A0F2D" opacity="0.9"/>
+  <path d="M628.5 20L635.5 31L647 37.5L635.5 44L628.5 56L621.5 44L610 37.5L621.5 31L628.5 20Z" fill="url(#starFill)"/>
+</svg>

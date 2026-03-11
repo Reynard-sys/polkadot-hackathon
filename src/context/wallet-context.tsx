@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import { web3Accounts, web3Enable } from "@polkadot/extension-dapp";
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
 const APP_NAME = "Gacha Polkadot";
@@ -26,6 +25,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         setIsConnecting(true);
         setError(null);
         try {
+            if (typeof window === "undefined") {
+                setError("Wallet connection is only available in the browser.");
+                return;
+            }
+
+            const { web3Accounts, web3Enable } = await import("@polkadot/extension-dapp");
             const extensions = await web3Enable(APP_NAME);
             if (extensions.length === 0) {
                 setError("No Polkadot wallet extension found. Please install Polkadot.js, Talisman, or SubWallet.");
@@ -50,7 +55,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const confirmDisconnect = () => {
         setAccount(null);
         setError(null);
-        window.location.reload();
+        if (typeof window !== "undefined") {
+            window.location.reload();
+        }
     };
 
     const truncateAddress = (address: string) =>
