@@ -78,9 +78,9 @@ export default function GameFeatures() {
       </div>
 
       {/* Desktop layout — 2-column grid */}
-      <div className="hidden lg:grid grid-cols-2 w-full gap-4 pt-14 px-10">
+      <div className="hidden lg:grid grid-cols-2 w-full max-w-7xl mx-auto gap-7 pt-14 px-10 ">
         {/* Column 1 */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-7">
           {desktopFeaturesCol1.map((feature) => (
             <Image
               key={feature.src}
@@ -88,14 +88,14 @@ export default function GameFeatures() {
               alt={feature.alt}
               width={522}
               height={187}
-              className="w-full h-auto pointer-events-none"
+              className="w-auto h-auto pointer-events-none"
               draggable={false}
             />
           ))}
         </div>
 
         {/* Column 2 */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-7">
           {desktopFeaturesCol2.map((feature) => (
             <Image
               key={feature.src}
@@ -103,7 +103,7 @@ export default function GameFeatures() {
               alt={feature.alt}
               width={522}
               height={187}
-              className="w-full h-auto pointer-events-none"
+              className="w-auto h-auto pointer-events-none"
               draggable={false}
             />
           ))}
