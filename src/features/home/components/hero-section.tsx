@@ -18,9 +18,9 @@ const cardSpread = [
 ];
 
 const cardImages = [
-  { src: "/assets/left-card.svg", alt: "Left card" },
-  { src: "/assets/center-card.svg", alt: "Center card" },
-  { src: "/assets/right-card.svg", alt: "Right card" },
+  { src: "/assets/left-card.webp", alt: "Left card" },
+  { src: "/assets/center-card.webp", alt: "Center card" },
+  { src: "/assets/right-card.webp", alt: "Right card" },
 ];
 
 // Keyframe times: [stacked, spread, hold-spread, unspread, hold-stacked]
@@ -35,13 +35,18 @@ export default function HeroSection() {
         <motion.div
           key={`back-${i}`}
           className="absolute inset-0"
-          style={{ zIndex: spread.zIndex }}
+          style={{ zIndex: spread.zIndex, willChange: "transform" }}
           animate={{
             rotate: [0, spread.rotate, spread.rotate, 0, 0],
             x: [0, spread.x, spread.x, 0, 0],
             y: [0, spread.y, spread.y, 0, 0],
           }}
-          transition={{ duration: LOOP_DURATION, repeat: Infinity, ease: "easeInOut", times }}
+          transition={{
+            duration: LOOP_DURATION,
+            repeat: Infinity,
+            ease: "easeInOut",
+            times,
+          }}
         >
           <CardBack />
         </motion.div>
@@ -51,20 +56,30 @@ export default function HeroSection() {
           key={`card-${i}`}
           className="absolute inset-0"
           style={{
-            zIndex: i === 1 ? cardBackSpread.length + cardSpread.length : cardBackSpread.length + i,
+            zIndex:
+              i === 1
+                ? cardBackSpread.length + cardSpread.length
+                : cardBackSpread.length + i,
+            willChange: "transform",
           }}
           animate={{
             rotate: [0, spread.rotate, spread.rotate, 0, 0],
             x: [0, spread.x, spread.x, 0, 0],
             y: [0, spread.y, spread.y, 0, 0],
           }}
-          transition={{ duration: LOOP_DURATION, repeat: Infinity, ease: "easeInOut", times }}
+          transition={{
+            duration: LOOP_DURATION,
+            repeat: Infinity,
+            ease: "easeInOut",
+            times,
+          }}
         >
           <Image
             src={cardImages[i].src}
             alt={cardImages[i].alt}
-            width={368}
-            height={515}
+            width={736}
+            height={1030}
+            priority
             className="pointer-events-none"
             draggable={false}
           />
@@ -100,14 +115,13 @@ export default function HeroSection() {
               className="pointer-events-none"
             />
             <p className="text-center text-xl font-normal leading-5">
-              Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris penatibus varius sagittis mi diam eget penatibus.
+              Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris
+              penatibus varius sagittis mi diam eget penatibus.
             </p>
             {/* Card stack scaled for mobile frame */}
             <div className="relative w-60 h-60">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="scale-[0.45] origin-center">
-                  {cardStack}
-                </div>
+                <div className="scale-[0.45] origin-center">{cardStack}</div>
               </div>
             </div>
             <button className="flex justify-center items-center cursor-pointer transition-transform hover:scale-105 active:scale-95">
@@ -131,11 +145,10 @@ export default function HeroSection() {
             className="pointer-events-none"
           />
           <p className="text-center text-lg font-bold max-w-xl">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua.
           </p>
-          <div className="relative w-92 h-128.75">
-            {cardStack}
-          </div>
+          <div className="relative w-92 h-128.75">{cardStack}</div>
           <button className="cursor-pointer transition-transform hover:scale-105 active:scale-95">
             <Image
               src="/assets/connect-wallet-homepage.svg"
