@@ -3,10 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { web3Accounts, web3Enable } from "@polkadot/extension-dapp";
-import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
-
-const APP_NAME = "Gacha Polkadot";
+import { useWallet } from "@/context/wallet-context";
 
 export default function Navbar() {
     const navLinks = [
@@ -17,12 +14,9 @@ export default function Navbar() {
         { name: "Tournament", href: "/tournament" },
     ];
 
-    const [account, setAccount] = useState<InjectedAccountWithMeta | null>(null);
-    const [isConnecting, setIsConnecting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [showConfirm, setShowConfirm] = useState(false);
+    const { account, isConnecting, error, connectWallet, confirmDisconnect, truncateAddress } = useWallet();
 
-    // Ref for the wallet button area — used to close popover on outside click
+    const [showConfirm, setShowConfirm] = useState(false);
     const walletRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -36,54 +30,6 @@ export default function Navbar() {
         return () => document.removeEventListener("mousedown", handleOutside);
     }, [showConfirm]);
 
-    const connectWallet = async () => {
-        setIsConnecting(true);
-        setError(null);
-
-        try {
-            // Request access to the browser extension (e.g. Polkadot.js, Talisman, SubWallet)
-            const extensions = await web3Enable(APP_NAME);
-
-            if (extensions.length === 0) {
-                setError("No Polkadot wallet extension found. Please install Polkadot.js, Talisman, or SubWallet.");
-                setIsConnecting(false);
-                return;
-            }
-
-            // Retrieve all accounts from the extension
-            const accounts = await web3Accounts();
-
-            if (accounts.length === 0) {
-                setError("No accounts found. Please create or import an account in your wallet extension.");
-                setIsConnecting(false);
-                return;
-            }
-
-            setAccount(accounts[0]);
-        } catch (err) {
-            console.error("Wallet connection failed:", err);
-            setError("Failed to connect wallet. Please try again.");
-        } finally {
-            setIsConnecting(false);
-        }
-    };
-
-    /**
-     * Hard logout — clears all wallet state and reloads the page so that
-     * web3Enable loses its in-memory session, forcing the extension
-     * to re-prompt on the next connect attempt.
-     */
-    const confirmDisconnect = () => {
-        setShowConfirm(false);
-        setAccount(null);
-        setError(null);
-        // Force a full page reload so the extension session is flushed
-        window.location.reload();
-    };
-
-    /** Truncates a Polkadot address: "5GrwvaEF...keqoYy2T" */
-    const truncateAddress = (address: string) =>
-        `${address.slice(0, 8)}...${address.slice(-8)}`;
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-linear-to-b from-[#2d3548] to-[#030a30]">
