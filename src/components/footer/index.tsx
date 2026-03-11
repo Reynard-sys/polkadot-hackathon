@@ -3,11 +3,11 @@ import Link from "next/link";
 
 // for future purposes
 const features = [
-  { label: "Deck Builder", href: "/features/deck-builder" },
-  { label: "Gacha", href: "/features/gacha" },
-  { label: "Marketplace", href: "/features/marketplace" },
-  { label: "Tournaments", href: "/features/tournaments" },
-  { label: "Inventory", href: "/features/inventory" },
+  { label: "Deck Builder", href: "/deck-builder" },
+  { label: "Gacha", href: "/gacha" },
+  { label: "Marketplace", href: "/marketplace" },
+  { label: "Tournaments", href: "/tournaments" },
+  { label: "Inventory", href: "/inventory" },
 ];
 
 export default function Footer() {
@@ -22,7 +22,7 @@ export default function Footer() {
             alt="AniVerse Nexus Logo"
             width={177}
             height={65}
-            className="pointer-events-none w-full"
+            className="pointer-events-none w-auto"
             draggable={false}
           />
         </div>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import Footer from "@/components/footer";
 
 type Rarity = "common" | "rare" | "legendary" | "mythic";
 type ElementType = "fire" | "water" | "earth" | "air" | "multitype";
@@ -523,7 +524,7 @@ export default function Inventory() {
         </section>
       </div>
 
-      <DesktopInventoryFooter />
+      <Footer />
 
       {desktopSelectedCard && <DesktopCardModal card={desktopSelectedCard} onClose={() => setDesktopSelectedCard(null)} />}
       {desktopFilterOpen && (
