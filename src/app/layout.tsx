@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar";
+import MobileBottomNav from "@/components/mobile-bottom-nav";
 import { WalletProvider } from "@/context/wallet-context";
 
 const geistSans = Geist({
@@ -32,6 +33,7 @@ export default function RootLayout({
         <WalletProvider>
           <Navbar />
           {children}
+          <MobileBottomNav />
         </WalletProvider>
       </body>
     </html>
