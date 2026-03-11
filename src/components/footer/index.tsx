@@ -76,21 +76,21 @@ export default function Footer() {
 
         <div className="flex items-center gap-4">
           <a
-            href="https://linkedin.com"
+            href="https://www.instagram.com/rey_rbnx/"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn"
             className="opacity-70 hover:opacity-100 transition-opacity"
           >
             <Image
-              src="/assets/linkedin.svg"
+              src="/assets/logo-instagram.svg"
               alt="LinkedIn"
               width={24}
               height={24}
             />
           </a>
           <a
-            href="https://github.com"
+            href="https://github.com/Reynard-sys/polkadot-hackathon/tree/main"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"

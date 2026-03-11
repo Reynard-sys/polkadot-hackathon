@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function HowToGetStarted() {
   return (
-    <section className="w-full flex flex-col items-center lg:px-5 lg:py-10">
+    <section className="w-full flex flex-col items-center w-full max-w-7xl lg:max-w-5xl xl:max-w-7xl mx-auto lg:px-10 xl:px-4 lg:py-10">
       {/* Mobile */}
       <Image
         src="/assets/mobile-how-to-get-started.svg"
