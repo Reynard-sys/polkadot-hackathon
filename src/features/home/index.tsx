@@ -3,7 +3,7 @@ import Image from "next/image";
 import HeroSection from "./components/hero-section";
 import GameFeatures from "./components/game-features";
 import HowToGetStarted from "./components/how-to-get-started";
-import Footer from "./components/footer";
+import Footer from "@/components/footer";
 import PageBackground from "@/components/page-background";
 
 export default function Home() {
