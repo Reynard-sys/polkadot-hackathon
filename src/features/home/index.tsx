@@ -1,39 +1,23 @@
 "use client";
-import { motion } from "motion/react";
+import Image from "next/image";
+import HeroSection from "./components/hero-section";
+import GameFeatures from "./components/game-features";
+import PageBackground from "@/components/page-background";
 
 export default function Home() {
-    return (
-        <div className="relative min-h-screen w-full bg-[#0d0d12] overflow-hidden flex flex-col items-center justify-center">
-            {/* Top Center Blurred Triangle */}
-            <motion.div
-                className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-screen h-[60vw] max-w-[1150px] max-h-[900px] blur-[50px] lg:blur-[100px] opacity-80 pointer-events-none"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 1.2, ease: "easeOut" }}
-            >
-                <div className="w-full h-full bg-[#4D00FF] [clip-path:polygon(50%_0,100%_100%,0_100%)]" />
-            </motion.div>
-
-            {/* Right Blending Blob (Softens Triangle) */}
-            <motion.div
-                className="absolute top-[40%] right-[-15%] w-[110vw] h-[20vw] max-w-[1100px] max-h-[500px] bg-[#2E00FF] rounded-full blur-[200px] sm:blur-[250px] opacity-20 pointer-events-none"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
-            />
-
-            {/* Left Center Blob */}
-            <motion.div
-                className="absolute top-[-20%] left-[-15%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-[#6F74AC] rounded-full blur-[120px] sm:blur-[160px] opacity-40 pointer-events-none"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 }}
-            />
-
-            {/* Content Container */}
-            <div className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center text-white">
-                {/* Children content goes here */}
-            </div>
-        </div>
-    );
+  return (
+    <PageBackground>
+      {/* Home page content goes here */}
+      <HeroSection />
+      <Image
+        src="/assets/desktop-divider.svg"
+        alt="Divider"
+        width={1440}
+        height={80}
+        className="hidden lg:block h-auto w-[90%] mx-auto pointer-events-none"
+        draggable={false}
+      />
+      <GameFeatures />
+    </PageBackground>
+  );
 }
