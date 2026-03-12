@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# planning & analysis docs (local only)
+"anime-gacha-tcg-complete (1).md"
+codebase_analysis.md
+GACHA_INTEGRATION.md
+implementation_plan.md
+NFT_MINTING_TASKS.md
+
+# contracts temp/debug output
+contracts/err*.txt
+contracts/deploy_out.txt
+contracts/test_results.txt

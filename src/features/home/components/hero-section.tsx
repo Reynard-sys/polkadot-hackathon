@@ -53,7 +53,7 @@ function WalletButton({
   textSizeAddress?: string;
   px?: string;
 }) {
-  const { account, isConnecting, error, connectWallet, confirmDisconnect, truncateAddress } =
+  const { wallet, isConnecting, error, openPicker, disconnect, truncateAddress } =
     useWallet();
   const [showConfirm, setShowConfirm] = useState(false);
   const walletRef = useRef<HTMLDivElement>(null);
@@ -69,10 +69,9 @@ function WalletButton({
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [showConfirm]);
 
-  if (account) {
+  if (wallet) {
     return (
       <div ref={walletRef} className="relative flex-shrink-0">
-        {/* Button always stays exactly width × height */}
         <button
           onClick={() => setShowConfirm((p) => !p)}
           title="Click to manage wallet"
@@ -93,37 +92,33 @@ function WalletButton({
             <span
               className={`text-white/70 ${textSizeAccount} font-medium leading-tight truncate w-full text-center group-hover:text-white/90 transition-colors`}
             >
-              {account.meta.name ?? "Unnamed Account"}
+              {wallet.type === "metamask" ? "🦊 " : "🔵 "}{wallet.name}
             </span>
             <span
               className={`text-white font-mono ${textSizeAddress} leading-tight truncate w-full text-center group-hover:text-white/80 transition-colors`}
             >
-              {truncateAddress(account.address)}
+              {truncateAddress(wallet.address)}
             </span>
           </div>
         </button>
 
-        {/* Disconnect confirmation popover — only opens for THIS button */}
+        {/* Disconnect confirmation popover */}
         {showConfirm && (
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 rounded-xl border border-white/10 bg-[#0d1230] shadow-2xl shadow-black/60 overflow-hidden z-50">
             <div className="px-4 py-3 border-b border-white/10">
               <p className="text-white/50 text-[10px] font-medium uppercase tracking-wider mb-0.5">
-                Connected as
+                Connected via {wallet.type === "metamask" ? "MetaMask 🦊" : "Polkadot 🔵"}
               </p>
-              <p className="text-white text-sm font-semibold truncate">
-                {account.meta.name ?? "Unnamed Account"}
-              </p>
+              <p className="text-white text-sm font-semibold truncate">{wallet.name}</p>
               <p className="text-white/50 font-mono text-[10px] truncate">
-                {truncateAddress(account.address)}
+                {truncateAddress(wallet.address)}
               </p>
             </div>
             <div className="px-4 py-3">
-              <p className="text-white/70 text-xs mb-3">
-                Are you sure you want to disconnect?
-              </p>
+              <p className="text-white/70 text-xs mb-3">Disconnect your wallet?</p>
               <div className="flex gap-2">
                 <button
-                  onClick={confirmDisconnect}
+                  onClick={() => { disconnect(); setShowConfirm(false); }}
                   className="flex-1 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Disconnect
@@ -145,7 +140,7 @@ function WalletButton({
   return (
     <div className="flex flex-col items-center gap-1">
       <button
-        onClick={connectWallet}
+        onClick={openPicker}
         disabled={isConnecting}
         className="flex justify-center items-center cursor-pointer transition-transform hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed relative"
       >
@@ -162,6 +157,7 @@ function WalletButton({
     </div>
   );
 }
+
 
 export default function HeroSection() {
   const cardStack = (
