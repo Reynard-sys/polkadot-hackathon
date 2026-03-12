@@ -28,11 +28,19 @@ export default function Gacha() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.25 }}
+          className="flex flex-col gap-3"
         >
           <Pack
             imageSrc="/assets/packs/naruto-pack.svg"
             imageAlt="Naruto Pack"
             packName="Naruto Pack"
+            packInfo="[pack info]"
+            variant="mobile"
+          />
+          <Pack
+            imageSrc="/assets/packs/one-piece-pack.svg"
+            imageAlt="One Piece Pack"
+            packName="One Piece Pack"
             packInfo="[pack info]"
             variant="mobile"
           />
