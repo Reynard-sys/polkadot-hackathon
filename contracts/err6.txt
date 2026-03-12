@@ -1,0 +1,3 @@
+﻿Generating typings for: 26 artifacts in dir: typechain-types for target: ethers-v6
+Successfully generated 60 typings!
+Compiled 24 Solidity files successfully (evm target: cancun).
