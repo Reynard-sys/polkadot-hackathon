@@ -75,7 +75,7 @@ export default function Gacha() {
         </motion.div>
         {/* Desktop pack card */}
         <motion.div
-          className="w-full max-w-sm mt-20"
+          className="flex w-full max-w-sm mt-20 gap-6"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
@@ -84,6 +84,13 @@ export default function Gacha() {
             imageSrc="/assets/packs/naruto-pack.svg"
             imageAlt="Naruto Pack"
             packName="Naruto Pack"
+            packInfo="[pack info]"
+            variant="desktop"
+          />
+          <Pack
+            imageSrc="/assets/packs/one-piece-pack.svg"
+            imageAlt="One Piece Pack"
+            packName="One Piece Pack"
             packInfo="[pack info]"
             variant="desktop"
           />
