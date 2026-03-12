@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "motion/react";
 
 interface PackProps {
@@ -31,7 +32,7 @@ export default function Pack({
             alt={imageAlt}
             width={270}
             height={320}
-            className="w-full h-auto object-cover mb-4"
+            className="w-full h-auto object-cover mb-4 "
           />
           <span className="uppercase absolute -top-0.75 -right-0.75 text-white text-sm leading-5 bg-[#8855FF] font-bold px-2 py-0.5 rounded-full">
             NEW
@@ -50,26 +51,28 @@ export default function Pack({
             Lorem ipsum dolor sit amet consectetur consectetur.
           </p>
 
-          <motion.button
-            className="flex justify-center items-center mt-4 w-full cursor-pointer"
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.96 }}
-            animate={{
-              filter: ["brightness(1)", "brightness(1.25)", "brightness(1)"],
-            }}
-            transition={{
-              filter: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-              scale: { type: "spring", stiffness: 300, damping: 20 },
-            }}
-          >
-            <Image
-              src="/assets/desktop-open-pack-btn.svg"
-              alt="Open Pack"
-              width={278}
-              height={44}
-              className="h-auto w-full"
-            />
-          </motion.button>
+          <Link href="/open-packs">
+            <motion.button
+              className="flex justify-center items-center mt-4 w-full cursor-pointer"
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.96 }}
+              animate={{
+                filter: ["brightness(1)", "brightness(1.25)", "brightness(1)"],
+              }}
+              transition={{
+                filter: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                scale: { type: "spring", stiffness: 300, damping: 20 },
+              }}
+            >
+              <Image
+                src="/assets/desktop-open-pack-btn.svg"
+                alt="Open Pack"
+                width={278}
+                height={44}
+                className="h-auto w-full"
+              />
+            </motion.button>
+          </Link>
         </div>
       </div>
     );
@@ -105,15 +108,17 @@ export default function Pack({
           Lorem ipsum dolor sit amet consectetur. Lorem ipsum dolor sit amet
           consectetur consectetur.
         </p>
-        <button className="flex justify-center items-center pt-4">
-          <Image
-            src="/assets/open-pack-btn.svg"
-            alt="Open Pack"
-            width={160}
-            height={47}
-            className="h-auto w-full"
-          />
-        </button>
+        <Link href="/open-packs">
+          <button className="flex justify-center items-center pt-4">
+            <Image
+              src="/assets/open-pack-btn.svg"
+              alt="Open Pack"
+              width={160}
+              height={47}
+              className="h-auto w-full"
+            />
+          </button>
+        </Link>
       </div>
     </div>
   );
