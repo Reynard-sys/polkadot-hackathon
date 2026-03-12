@@ -1,0 +1,97 @@
+﻿node.exe : [31m[1mErr
+or[22m[39m [31m[1mH
+H8:[22m[39m There's 
+one or more errors in 
+your config file:
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([31m[1mErro   
+ r...ur config fil    
+e::String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+
+  * Invalid account: 
+#0 for network: 
+westend_assethub - 
+private key too short, 
+expected 32 bytes
+
+To learn more about 
+Hardhat's 
+configuration, please 
+go to https://hardhat.o
+rg/config/
+
+HardhatError: HH8: 
+There's one or more 
+errors in your config 
+file:
+
+  * Invalid account: 
+#0 for network: 
+westend_assethub - 
+private key too short, 
+expected 32 bytes
+
+To learn more about 
+Hardhat's 
+configuration, please 
+go to https://hardhat.o
+rg/config/
+    at validateConfig (
+C:\Users\reyna\gacha\co
+ntracts\node_modules\ha
+rdhat\src\internal\core
+\config\config-validati
+on.ts:374:9)
+    at 
+loadConfigAndTasks (C:\
+Users\reyna\gacha\contr
+acts\node_modules\hardh
+at\src\internal\core\co
+nfig\config-loading.ts:
+116:3)
+    at main (C:\Users\r
+eyna\gacha\contracts\no
+de_modules\hardhat\src\
+internal\cli\cli.ts:220
+:62)
+    at 
+Object.<anonymous> (C:\
+Users\reyna\gacha\contr
+acts\node_modules\hardh
+at\src\internal\cli\cli
+.ts:477:1)
+    at Module._compile 
+(node:internal/modules/
+cjs/loader:1688:14)
+    at 
+Object.<anonymous> (nod
+e:internal/modules/cjs/
+loader:1820:10)
+    at Module.load (nod
+e:internal/modules/cjs/
+loader:1423:32)
+    at Function._load (
+node:internal/modules/c
+js/loader:1246:12)
+    at TracingChannel.t
+raceSync (node:diagnost
+ics_channel:322:14)
+    at wrapModuleLoad (
+node:internal/modules/c
+js/loader:235:24)

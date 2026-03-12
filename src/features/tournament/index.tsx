@@ -1,13 +1,12 @@
+"use client";
+import TournamentFeature from "./components/tournament-section";
 import PageBackground from "@/components/page-background";
-import Tournament from "@/features/tournament";
 
-
-export default function TournamentPage() {
+export default function Tournament() {
     return (
         <PageBackground>
             {/* Tournament page content goes here */}
-            <Tournament/>
+            <TournamentFeature/>
         </PageBackground>
-        
     );
 }
