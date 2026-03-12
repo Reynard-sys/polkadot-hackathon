@@ -131,10 +131,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     const getEthersProvider = useCallback(async () => {
         if (typeof window === "undefined") return null;
-        const win = window as typeof window & { ethereum?: unknown };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const win = window as any;
         if (!win.ethereum) return null;
         const { BrowserProvider } = await import("ethers");
-        return new BrowserProvider(win.ethereum as Parameters<typeof BrowserProvider>[0]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        return new BrowserProvider(win.ethereum);
     }, []);
 
     return (
