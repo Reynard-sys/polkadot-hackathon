@@ -14,6 +14,12 @@ const PACK_BUTTONS: { type: PackType; src: string; alt: string; price: string; c
   { type: "ultra",    src: "/assets/open-30-btn.svg", alt: "Open x30", price: "0.0025 WND", cards: 30 },
 ];
 
+const DESKTOP_BUTTONS: { type: PackType; src: string; alt: string; href?: string }[] = [
+  { type: "standard", src: "/assets/desktop-x10-btn.svg", alt: "Open x10", href: undefined },
+  { type: "premium",  src: "/assets/desktop-x20-btn.svg", alt: "Open x20" },
+  { type: "ultra",    src: "/assets/desktop-x30-btn.svg", alt: "Open x30" },
+];
+
 const SERIES_META: Record<PackSeries, { name: string; imageSrc: string; imageAlt: string; accent: string }> = {
   naruto:   { name: "Naruto Pack",    imageSrc: "/assets/packs/naruto-pack.svg",    imageAlt: "Naruto Pack",    accent: "text-orange-400" },
   onepiece: { name: "One Piece Pack", imageSrc: "/assets/packs/one-piece-pack.svg", imageAlt: "One Piece Pack", accent: "text-blue-400"   },
@@ -40,7 +46,6 @@ export default function OpenPacks() {
   }, [result, router]);
 
   const handleOpen = useCallback((type: PackType) => {
-    // On-chain: require MetaMask
     if (!simMode && !wallet) { openPicker(); return; }
     openPack(type, series);
   }, [simMode, wallet, openPicker, openPack, series]);
@@ -50,6 +55,7 @@ export default function OpenPacks() {
 
   return (
     <PageBackground>
+      {/* Mobile */}
       <div className="flex flex-col lg:hidden max-w-sm mx-auto pt-20 px-4 gap-5 pb-28">
 
         {/* Pack image */}
@@ -99,7 +105,7 @@ export default function OpenPacks() {
           </motion.div>
         )}
 
-        {/* Loading — show different text based on whether we are signing or just rolling */}
+        {/* Loading indicator */}
         {isOpening && (
           <motion.p className="text-white/60 text-sm text-center animate-pulse" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {simMode && isMetaMask ? "Sign in MetaMask to reveal your cards… ✍️" : "Rolling your cards… ✨"}
@@ -125,6 +131,93 @@ export default function OpenPacks() {
         </motion.div>
 
         <Link href="/gacha" className="text-white/30 text-xs text-center">← Back to Packs</Link>
+      </div>
+
+      {/* Desktop */}
+      <div className="hidden lg:flex flex-col items-center w-full max-w-2xl mx-auto px-8 pt-24 pb-20 gap-5">
+        {/* Image panel */}
+        <motion.div
+          className="bg-linear-to-b from-[#2D3548] to-[#030A30] border border-white/10 rounded-2xl p-6 flex justify-center w-full"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <Image
+            src={meta.imageSrc}
+            alt={meta.imageAlt}
+            width={375}
+            height={450}
+            className="w-xs h-auto rounded-xl object-cover"
+            draggable={false}
+          />
+        </motion.div>
+
+        {/* Info + buttons card */}
+        <motion.div
+          className="bg-linear-to-b from-[#2D3548] to-[#030A30] border border-white/10 rounded-2xl p-5 flex flex-col gap-4 w-full"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.15 }}
+        >
+          {/* Pack name + NEW badge */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className={`font-bold text-lg leading-tight ${meta.accent}`}>
+                {meta.name}
+              </h1>
+              <p className="text-white/60 text-sm">Season 1 • Limited Edition</p>
+            </div>
+            <span className="uppercase text-white text-xs leading-4 bg-[#8855FF] font-bold px-2 py-0.5 rounded-full">
+              NEW
+            </span>
+          </div>
+
+          {/* Error banner */}
+          {error && (
+            <div className="bg-red-900/40 border border-red-500/40 rounded-lg px-4 py-2 text-red-300 text-sm flex items-center justify-between">
+              {error}
+              <button onClick={reset} className="text-xs underline opacity-70 ml-2">Dismiss</button>
+            </div>
+          )}
+
+          {/* Loading indicator */}
+          {isOpening && (
+            <p className="text-white/60 text-sm text-center animate-pulse">
+              {simMode && isMetaMask ? "Sign in MetaMask… ✍️" : "Rolling your cards… ✨"}
+            </p>
+          )}
+
+          {/* Open buttons */}
+          <div className="flex flex-col gap-2">
+            {DESKTOP_BUTTONS.map((btn, i) => (
+              <motion.button
+                key={btn.type}
+                className="w-full cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled={isOpening}
+                onClick={() => handleOpen(btn.type)}
+                whileHover={isOpening ? {} : { scale: 1.02 }}
+                whileTap={isOpening ? {} : { scale: 0.98 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  ease: "easeOut",
+                  delay: 0.25 + i * 0.1,
+                  scale: { type: "spring", stiffness: 300, damping: 20 },
+                }}
+              >
+                <Image
+                  src={btn.src}
+                  alt={btn.alt}
+                  width={962}
+                  height={74}
+                  className="w-full h-auto"
+                  draggable={false}
+                />
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </PageBackground>
   );
