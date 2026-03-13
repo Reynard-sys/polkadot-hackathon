@@ -8,7 +8,9 @@ interface PackProps {
   imageAlt?: string;
   packName: string;
   packInfo: string;
+  packDesc?: string;
   variant?: "mobile" | "desktop";
+  href?: string;
 }
 
 export default function Pack({
@@ -16,7 +18,9 @@ export default function Pack({
   imageAlt = "Pack",
   packName,
   packInfo,
+  packDesc,
   variant = "mobile",
+  href = "/open-packs",
 }: PackProps) {
   /* ── Desktop: image fills card top, text section below ── */
   if (variant === "desktop") {
@@ -46,12 +50,11 @@ export default function Pack({
           </h2>
           <p className="text-white/60 text-sm">{packInfo}</p>
           <p className="text-white/50 text-sm leading-relaxed mt-1">
-            Lorem ipsum dolor sit amet consectetur. Lorem ipsum dolor sit amet
-            consectetur consectetur. Lorem ipsum dolor sit amet consectetur.
-            Lorem ipsum dolor sit amet consectetur consectetur.
+            {packDesc ??
+              "Open packs to collect unique anime NFT cards on Westend AssetHub."}
           </p>
 
-          <Link href="/open-packs">
+          <Link href={href}>
             <motion.button
               className="flex justify-center items-center mt-4 w-full cursor-pointer"
               whileHover={{ scale: 1.06 }}
@@ -105,10 +108,10 @@ export default function Pack({
         </h2>
         <p className="text-white/60 text-sm mt-1">{packInfo}</p>
         <p className="text-white/50 text-sm mt-3 leading-relaxed">
-          Lorem ipsum dolor sit amet consectetur. Lorem ipsum dolor sit amet
-          consectetur consectetur.
+          {packDesc ??
+            "Open packs to collect unique anime NFT cards on Westend AssetHub."}
         </p>
-        <Link href="/open-packs">
+        <Link href={href}>
           <button className="flex justify-center items-center pt-4">
             <Image
               src="/assets/open-pack-btn.svg"

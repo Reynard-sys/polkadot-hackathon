@@ -2,75 +2,88 @@ import { ethers } from "hardhat";
 import { CardRegistry } from "../typechain-types";
 import cardsJson from "../../src/data/cards.json";
 
-/**
- * seedCards.ts
- * Reads all 48 cards from cards.json and registers them on-chain
- * in the CardRegistry contract.
- *
- * Usage:
- *   npx hardhat run scripts/seedCards.ts --network <network>
- */
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-// Map JSON rarity strings to CardRegistry enum values
 const RARITY_MAP: Record<string, number> = {
-  Common:    0,
-  Rare:      1,
-  Legendary: 2,
-  Mythic:    3,
+  Common: 0, Rare: 1, Legendary: 2, Mythic: 3,
+};
+const ANIME_MAP: Record<string, number> = {
+  Naruto: 0, OnePiece: 1, Pokemon: 2,
 };
 
-// Map JSON anime strings to CardRegistry enum values
-const ANIME_MAP: Record<string, number> = {
-  Naruto:   0,
-  OnePiece: 1,
-  Pokemon:  2,
-};
+/** Westend Frontier EVM requires explicit gas — cannot estimate. */
+const GAS = { gasLimit: 8_000_000n, gasPrice: 1_000_000_000n };
+
+/** Cards per registerCards() call — keep ≤12 to avoid gas overflow. */
+const BATCH_SIZE = 12;
 
 async function main() {
   const registryAddress = process.env.CARD_REGISTRY_ADDRESS;
-  if (!registryAddress) {
-    throw new Error("Set CARD_REGISTRY_ADDRESS in your environment");
-  }
+  if (!registryAddress) throw new Error("Set CARD_REGISTRY_ADDRESS in contracts/.env");
 
-  const registry = await ethers.getContractAt("CardRegistry", registryAddress) as unknown as CardRegistry;
+  const network  = await ethers.provider.getNetwork();
+  const isLocal  = network.chainId === 31337n;
+  const CONFIRMS = isLocal ? 1 : 2;
+  const PAUSE    = isLocal ? 0 : 5000;
+
+  const registry = await ethers.getContractAt(
+    "CardRegistry", registryAddress
+  ) as unknown as CardRegistry;
   const [signer] = await ethers.getSigners();
 
   console.log("Seeding cards with account:", signer.address);
-  console.log("CardRegistry:", registryAddress);
-  console.log("Total cards to register:", cardsJson.length);
+  console.log("CardRegistry:              ", registryAddress);
+  console.log("Total cards:               ", cardsJson.length);
+  console.log("Batch size:                ", BATCH_SIZE);
+  console.log("Confirmations:             ", CONFIRMS);
+  console.log("");
 
-  // Build arrays
-  const tokenIds:   bigint[] = [];
-  const rarities:   number[] = [];
-  const animes:     number[] = [];
-  const maxSupplies: bigint[] = [];
+  // Build full arrays
+  const allIds:      bigint[] = [];
+  const allRarities: number[] = [];
+  const allAnimes:   number[] = [];
+  const allSupplies: bigint[] = [];
 
   for (const card of cardsJson) {
-    const tokenId = parseInt(card.nftTokenId, 10);
-    const rarity  = RARITY_MAP[card.rarity];
-    const anime   = ANIME_MAP[card.anime];
-    const supply  = card.maxSupply;
-
-    if (rarity === undefined) throw new Error(`Unknown rarity: ${card.rarity} for ${card.id}`);
-    if (anime  === undefined) throw new Error(`Unknown anime: ${card.anime} for ${card.id}`);
-
-    tokenIds.push(BigInt(tokenId));
-    rarities.push(rarity);
-    animes.push(anime);
-    maxSupplies.push(BigInt(supply));
+    const rarity = RARITY_MAP[card.rarity];
+    const anime  = ANIME_MAP[card.anime];
+    if (rarity === undefined) throw new Error(`Unknown rarity: ${card.rarity}`);
+    if (anime  === undefined) throw new Error(`Unknown anime:  ${card.anime}`);
+    allIds.push(BigInt(card.nftTokenId));
+    allRarities.push(rarity);
+    allAnimes.push(anime);
+    allSupplies.push(BigInt(card.maxSupply));
   }
 
-  // Register all cards in one transaction
-  console.log("\nRegistering all cards in a single tx...");
-  const tx = await (registry as any).registerCards(tokenIds, rarities, animes, maxSupplies);
-  console.log("Tx submitted:", tx.hash);
-  await tx.wait();
-  console.log("✅ All 48 cards registered successfully!\n");
+  // Register in batches
+  const totalBatches = Math.ceil(allIds.length / BATCH_SIZE);
 
-  // Verify a few
-  for (const rarity of ["Common", "Rare", "Legendary", "Mythic"] as const) {
-    const pool = await (registry as any).getCardsByRarity(RARITY_MAP[rarity]);
-    console.log(`  ${rarity} pool size: ${pool.length}`);
+  for (let i = 0; i < allIds.length; i += BATCH_SIZE) {
+    const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+    const ids      = allIds.slice(i, i + BATCH_SIZE);
+    const rarities = allRarities.slice(i, i + BATCH_SIZE);
+    const animes   = allAnimes.slice(i, i + BATCH_SIZE);
+    const supplies = allSupplies.slice(i, i + BATCH_SIZE);
+
+    console.log(`Batch ${batchNum}/${totalBatches}: cards ${ids[0]}–${ids[ids.length - 1]}...`);
+
+    const tx = await (registry as any).registerCards(ids, rarities, animes, supplies, GAS);
+    console.log(`  Tx: ${tx.hash}`);
+    await tx.wait(CONFIRMS);
+    console.log(`  ✅ Batch ${batchNum} confirmed`);
+
+    if (PAUSE && i + BATCH_SIZE < allIds.length) {
+      console.log(`  ⏳ Waiting ${PAUSE / 1000}s...`);
+      await sleep(PAUSE);
+    }
+  }
+
+  console.log("\n✅ All cards registered!\n");
+
+  // Verify pool sizes
+  for (const [label, value] of Object.entries(RARITY_MAP)) {
+    const pool = await (registry as any).getCardsByRarity(value);
+    console.log(`  ${label}: ${pool.length} cards`);
   }
 }
 

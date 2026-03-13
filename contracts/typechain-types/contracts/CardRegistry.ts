@@ -40,7 +40,7 @@ export interface CardRegistryInterface extends Interface {
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic: "CardRegistered" | "OwnershipTransferred"
+    nameOrSignatureOrTopic: "CardsBatchRegistered" | "OwnershipTransferred"
   ): EventFragment;
 
   encodeFunctionData(functionFragment: "cards", values: [BigNumberish]): string;
@@ -116,24 +116,11 @@ export interface CardRegistryInterface extends Interface {
   ): Result;
 }
 
-export namespace CardRegisteredEvent {
-  export type InputTuple = [
-    tokenId: BigNumberish,
-    rarity: BigNumberish,
-    anime: BigNumberish,
-    maxSupply: BigNumberish
-  ];
-  export type OutputTuple = [
-    tokenId: bigint,
-    rarity: bigint,
-    anime: bigint,
-    maxSupply: bigint
-  ];
+export namespace CardsBatchRegisteredEvent {
+  export type InputTuple = [count: BigNumberish];
+  export type OutputTuple = [count: bigint];
   export interface OutputObject {
-    tokenId: bigint;
-    rarity: bigint;
-    anime: bigint;
-    maxSupply: bigint;
+    count: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -314,11 +301,11 @@ export interface CardRegistry extends BaseContract {
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
 
   getEvent(
-    key: "CardRegistered"
+    key: "CardsBatchRegistered"
   ): TypedContractEvent<
-    CardRegisteredEvent.InputTuple,
-    CardRegisteredEvent.OutputTuple,
-    CardRegisteredEvent.OutputObject
+    CardsBatchRegisteredEvent.InputTuple,
+    CardsBatchRegisteredEvent.OutputTuple,
+    CardsBatchRegisteredEvent.OutputObject
   >;
   getEvent(
     key: "OwnershipTransferred"
@@ -329,15 +316,15 @@ export interface CardRegistry extends BaseContract {
   >;
 
   filters: {
-    "CardRegistered(uint256,uint8,uint8,uint256)": TypedContractEvent<
-      CardRegisteredEvent.InputTuple,
-      CardRegisteredEvent.OutputTuple,
-      CardRegisteredEvent.OutputObject
+    "CardsBatchRegistered(uint256)": TypedContractEvent<
+      CardsBatchRegisteredEvent.InputTuple,
+      CardsBatchRegisteredEvent.OutputTuple,
+      CardsBatchRegisteredEvent.OutputObject
     >;
-    CardRegistered: TypedContractEvent<
-      CardRegisteredEvent.InputTuple,
-      CardRegisteredEvent.OutputTuple,
-      CardRegisteredEvent.OutputObject
+    CardsBatchRegistered: TypedContractEvent<
+      CardsBatchRegisteredEvent.InputTuple,
+      CardsBatchRegisteredEvent.OutputTuple,
+      CardsBatchRegisteredEvent.OutputObject
     >;
 
     "OwnershipTransferred(address,address)": TypedContractEvent<

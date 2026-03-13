@@ -46,7 +46,8 @@ contract CardRegistry is Ownable {
     // Events
     // ---------------------------------------------------------------
 
-    event CardRegistered(uint256 indexed tokenId, Rarity rarity, Anime anime, uint256 maxSupply);
+    /// @notice Emitted once per registerCards call with the count of newly registered cards.
+    event CardsBatchRegistered(uint256 count);
 
     // ---------------------------------------------------------------
     // Constructor
@@ -91,9 +92,10 @@ contract CardRegistry is Ownable {
 
             _cardsByRarity[uint256(rarities[i])].push(id);
             totalCards++;
-
-            emit CardRegistered(id, rarities[i], animes[i], maxSupplies[i]);
         }
+
+        // Single event per batch — O(1) gas cost instead of O(n)
+        emit CardsBatchRegistered(tokenIds.length);
     }
 
     // ---------------------------------------------------------------
