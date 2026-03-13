@@ -29,14 +29,6 @@ interface RevealCard {
   imageUrl: string;
 }
 
-// Rarity badge colours
-const RARITY_COLOR: Record<string, string> = {
-  Common: "bg-gray-500/80",
-  Rare: "bg-blue-600/80",
-  Legendary: "bg-purple-600/80",
-  Mythic: "bg-yellow-500/80",
-};
-
 // Rarity glow for the reveal animation
 const RARITY_GLOW: Record<string, string> = {
   Common: "",
@@ -211,6 +203,7 @@ export default function CardReveal() {
           />
         ) : null,
       )}
+      {/* Mobile */}
       <div className="flex flex-col lg:hidden max-w-sm mx-auto pt-20 px-4 gap-5 pb-28">
         {/* Heading with series label */}
         <motion.div
@@ -232,7 +225,6 @@ export default function CardReveal() {
           </p>
         )}
 
-        {/* Card area */}
         {!showGrid ? (
           <div
             className="relative w-full aspect-3/4 cursor-pointer"
@@ -262,7 +254,6 @@ export default function CardReveal() {
                 )}
               </motion.div>
             ) : (
-              /* Card back */
               <Image
                 src={cardBackSrc}
                 alt="Card Back"
@@ -275,7 +266,6 @@ export default function CardReveal() {
             )}
           </div>
         ) : (
-          /* Grid — all cards revealed */
           <motion.div
             className="grid grid-cols-3 gap-2"
             initial={{ opacity: 0 }}
@@ -312,7 +302,6 @@ export default function CardReveal() {
           </motion.div>
         )}
 
-        {/* Buttons — during reveal */}
         {!showGrid && (
           <div className="flex flex-col gap-1">
             <motion.button
@@ -325,7 +314,7 @@ export default function CardReveal() {
                 src="/assets/next-btn.svg"
                 alt="Next"
                 width={375}
-                height={74}
+                height={64}
                 className="w-full h-auto"
                 draggable={false}
               />
@@ -341,7 +330,7 @@ export default function CardReveal() {
                 src="/assets/reveal-all-btn.svg"
                 alt="Reveal All"
                 width={375}
-                height={74}
+                height={64}
                 className="w-full h-auto"
                 draggable={false}
               />
@@ -349,7 +338,6 @@ export default function CardReveal() {
           </div>
         )}
 
-        {/* View Collection button — after all revealed */}
         {showGrid && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -366,13 +354,165 @@ export default function CardReveal() {
                   src="/assets/view-collection-btn.svg"
                   alt="View Collection"
                   width={375}
-                  height={74}
+                  height={64}
                   className="w-full h-auto"
                   draggable={false}
                 />
               </motion.button>
             </Link>
           </motion.div>
+        )}
+      </div>
+
+      {/* Desktop */}
+      <div className="hidden lg:flex flex-col items-center w-full max-w-4xl mx-auto px-8 pt-24 pb-20 gap-8">
+        <motion.h1
+          className="text-white font-bold text-4xl text-center"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          You Got:
+        </motion.h1>
+
+        {!showGrid ? (
+          <>
+            {/* Glass panel with card */}
+            <motion.div
+              className=" border border-white/10 bg-linear-to-b from-[#2D3548] to-[#030A30] rounded-2xl p-8 flex flex-col items-center w-full"
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              <div
+                className="w-64 cursor-pointer"
+                onClick={showingCard ? advanceToNext : revealNext}
+              >
+                {showingCard && currentCard ? (
+                  currentCard.imageUrl && !imgError ? (
+                    <Image
+                      src={currentCard.imageUrl}
+                      alt={currentCard.name}
+                      width={736}
+                      height={1030}
+                      className={`w-full h-auto rounded-xl ${RARITY_GLOW[currentCard.rarity] ?? ""}`}
+                      draggable={false}
+                      priority
+                      onError={() => setImgError(true)}
+                    />
+                  ) : (
+                    <CardBackFallback />
+                  )
+                ) : (
+                  <Image
+                    src={cardBackSrc}
+                    alt="Card Back"
+                    width={736}
+                    height={1030}
+                    className="w-full h-auto rounded-xl"
+                    draggable={false}
+                    priority
+                  />
+                )}
+              </div>
+            </motion.div>
+
+            {/* Desktop action buttons */}
+            <div className="flex flex-col gap-2 w-full">
+              <motion.button
+                className="w-full cursor-pointer"
+                onClick={showingCard ? advanceToNext : revealNext}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Image
+                  src="/assets/desktop-next-btn.svg"
+                  alt="Next"
+                  width={962}
+                  height={74}
+                  className="w-full h-auto"
+                  draggable={false}
+                />
+              </motion.button>
+
+              <motion.button
+                className="w-full cursor-pointer"
+                onClick={handleRevealAll}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Image
+                  src="/assets/desktop-reveal-all-btn.svg"
+                  alt="Reveal All"
+                  width={962}
+                  height={74}
+                  className="w-full h-auto"
+                  draggable={false}
+                />
+              </motion.button>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* 5-column reveal grid */}
+            <motion.div
+              className="grid grid-cols-5 gap-4 w-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              {cards.map((card, i) => (
+                <motion.div
+                  key={`${card.tokenId}-${i}`}
+                  className="relative"
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: "easeOut", delay: i * 0.1 }}
+                >
+                  {card.imageUrl ? (
+                    <Image
+                      src={card.imageUrl}
+                      alt={card.name}
+                      width={736}
+                      height={1030}
+                      className={`w-full h-auto rounded-lg ${RARITY_GLOW[card.rarity] ?? ""}`}
+                      draggable={false}
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-full aspect-3/4 rounded-lg bg-[#2d3548] flex items-center justify-center">
+                      <span className="text-white/30 text-xs text-center px-1">#{card.tokenId}</span>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* View Collection */}
+            <motion.div
+              className="w-full"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: 0.5 }}
+            >
+              <Link href="/inventory">
+                <motion.button
+                  className="w-full cursor-pointer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Image
+                    src="/assets/desktop-view-collection-btn.svg"
+                    alt="View Collection"
+                    width={977}
+                    height={64}
+                    className="w-full h-auto"
+                    draggable={false}
+                  />
+                </motion.button>
+              </Link>
+            </motion.div>
+          </>
         )}
       </div>
     </PageBackground>
