@@ -50,26 +50,58 @@ export function usePackOpening() {
         if (!provider) throw new Error("Could not get provider.");
         const signer   = await provider.getSigner();
         const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
-        const gasPrice = ethers.parseUnits("1", "gwei");
         const cfg      = PACK_CONFIG[packType];
 
-        const tx = await contract[cfg.method]({
+        // Westend AssetHub (Frontier EVM): explicit gas required, same as deploy.ts.
+        // gasPrice 10 gwei + gasLimit 10B worked for the original contract.
+        const FRONTIER_GAS = {
+          gasPrice: BigInt("10000000000"),  // 10 gwei
+          gasLimit: BigInt("10000000000"),  // 10B
+        };
+        // series: 0 = Naruto (IDs 1-16), 1 = OnePiece (IDs 17-32)
+        const seriesIndex = series === "onepiece" ? 1 : 0;
+        const tx = await contract[cfg.method](seriesIndex, {
           value: ethers.parseEther(cfg.price),
-          gasPrice,
+          ...FRONTIER_GAS,
         });
         const receipt = await tx.wait();
 
-        const iface = new ethers.Interface([
-          "event PackOpened(address indexed player, uint8 packType, uint256[] tokenIds)",
-        ]);
+        // Frontier EVM doesn't support ethers parseLog reliably.
+        // Instead: match the known TransferBatch topic hash manually, then
+        // ABI-decode the data field (non-indexed params: ids[], values[]).
+        //
+        // TransferBatch(address operator, address from, address to, uint256[] ids, uint256[] values)
+        // topic[0] = keccak256 of the event signature (constant below)
+        // topic[2] = from (indexed) — 0x0 for mints
+        // data     = abi.encode(ids, values)
+        const TRANSFER_BATCH_TOPIC =
+          "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb";
+        const ZERO_TOPIC =
+          "0x0000000000000000000000000000000000000000000000000000000000000000";
+
         const tokenIds: number[] = [];
-        for (const log of receipt.logs ?? []) {
+        for (const log of receipt?.logs ?? []) {
           try {
-            const parsed = iface.parseLog(log);
-            if (parsed?.name === "PackOpened") {
-              tokenIds.push(...parsed.args.tokenIds.map((id: bigint) => Number(id)));
+            const topics = (log as { topics?: string[] }).topics ?? [];
+            if (
+              topics[0]?.toLowerCase() === TRANSFER_BATCH_TOPIC &&
+              topics[2] === ZERO_TOPIC   // from == address(0) → this is a mint
+            ) {
+              const [ids] = ethers.AbiCoder.defaultAbiCoder().decode(
+                ["uint256[]", "uint256[]"],
+                (log as { data?: string }).data ?? "0x"
+              );
+              tokenIds.push(...(ids as bigint[]).map(Number));
             }
-          } catch { /* skip */ }
+          } catch (e) {
+            console.warn("[GachaPack] log decode error:", e);
+          }
+        }
+
+        if (tokenIds.length === 0) {
+          console.warn("[GachaPack] No TransferBatch mint log found. Logs:", receipt?.logs);
+          setError("Transaction confirmed but could not read card IDs. Check your inventory.");
+          return;
         }
         setResult({ tokenIds, packType, series });
         return;
@@ -102,13 +134,30 @@ export function usePackOpening() {
         series,
       });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      // Log the full raw error so it's visible in browser console for debugging
+      console.error("[GachaPack] raw error:", err);
+      // Ethers v6 throws structured EthersError objects — not plain Error instances.
+      // Drill through the known fields to get a readable message.
+      const extractMsg = (e: unknown): string => {
+        if (!e || typeof e !== "object") return String(e);
+        const o = e as Record<string, unknown>;
+        if (typeof o.shortMessage === "string") return o.shortMessage;
+        if (typeof o.reason      === "string") return o.reason;
+        if (typeof o.message     === "string") return o.message;
+        if (o.info && typeof o.info === "object") {
+          const ie = (o.info as Record<string, unknown>).error;
+          if (ie && typeof ie === "object" && typeof (ie as Record<string,unknown>).message === "string")
+            return (ie as Record<string,unknown>).message as string;
+        }
+        try { return JSON.stringify(e); } catch { return "[unknown error]"; }
+      };
+      const msg = extractMsg(err);
       if (msg.includes("user rejected") || msg.includes("User denied") || msg.includes("ACTION_REJECTED"))
-        setError("Signature cancelled.");
+        setError("Transaction cancelled.");
       else if (msg.includes("insufficient funds"))
         setError("Insufficient WND balance.");
       else
-        setError(`Failed: ${msg.slice(0, 140)}`);
+        setError(`Failed: ${msg.slice(0, 200)}`);
     } finally {
       setIsOpening(false);
     }

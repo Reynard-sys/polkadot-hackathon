@@ -26,7 +26,6 @@ import type {
 export interface GachaPackInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "effectiveMythicThreshold"
       | "getPityCount"
       | "nft"
       | "openPremiumPack"
@@ -51,25 +50,21 @@ export interface GachaPackInterface extends Interface {
   ): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "effectiveMythicThreshold",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getPityCount",
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "nft", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "openPremiumPack",
-    values?: undefined
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "openStandardPack",
-    values?: undefined
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "openUltraPack",
-    values?: undefined
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -95,10 +90,6 @@ export interface GachaPackInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
-  decodeFunctionResult(
-    functionFragment: "effectiveMythicThreshold",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "getPityCount",
     data: BytesLike
@@ -176,16 +167,19 @@ export namespace PackOpenedEvent {
   export type InputTuple = [
     player: AddressLike,
     packType: BigNumberish,
+    series: BigNumberish,
     tokenIds: BigNumberish[]
   ];
   export type OutputTuple = [
     player: string,
     packType: bigint,
+    series: bigint,
     tokenIds: bigint[]
   ];
   export interface OutputObject {
     player: string;
     packType: bigint;
+    series: bigint;
     tokenIds: bigint[];
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -250,21 +244,23 @@ export interface GachaPack extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  effectiveMythicThreshold: TypedContractMethod<
-    [player: AddressLike],
-    [bigint],
-    "view"
-  >;
-
   getPityCount: TypedContractMethod<[player: AddressLike], [bigint], "view">;
 
   nft: TypedContractMethod<[], [string], "view">;
 
-  openPremiumPack: TypedContractMethod<[], [void], "payable">;
+  openPremiumPack: TypedContractMethod<
+    [series: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-  openStandardPack: TypedContractMethod<[], [void], "payable">;
+  openStandardPack: TypedContractMethod<
+    [series: BigNumberish],
+    [void],
+    "payable"
+  >;
 
-  openUltraPack: TypedContractMethod<[], [void], "payable">;
+  openUltraPack: TypedContractMethod<[series: BigNumberish], [void], "payable">;
 
   owner: TypedContractMethod<[], [string], "view">;
 
@@ -310,9 +306,6 @@ export interface GachaPack extends BaseContract {
   ): T;
 
   getFunction(
-    nameOrSignature: "effectiveMythicThreshold"
-  ): TypedContractMethod<[player: AddressLike], [bigint], "view">;
-  getFunction(
     nameOrSignature: "getPityCount"
   ): TypedContractMethod<[player: AddressLike], [bigint], "view">;
   getFunction(
@@ -320,13 +313,13 @@ export interface GachaPack extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "openPremiumPack"
-  ): TypedContractMethod<[], [void], "payable">;
+  ): TypedContractMethod<[series: BigNumberish], [void], "payable">;
   getFunction(
     nameOrSignature: "openStandardPack"
-  ): TypedContractMethod<[], [void], "payable">;
+  ): TypedContractMethod<[series: BigNumberish], [void], "payable">;
   getFunction(
     nameOrSignature: "openUltraPack"
-  ): TypedContractMethod<[], [void], "payable">;
+  ): TypedContractMethod<[series: BigNumberish], [void], "payable">;
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
@@ -419,7 +412,7 @@ export interface GachaPack extends BaseContract {
       OwnershipTransferredEvent.OutputObject
     >;
 
-    "PackOpened(address,uint8,uint256[])": TypedContractEvent<
+    "PackOpened(address,uint8,uint8,uint256[])": TypedContractEvent<
       PackOpenedEvent.InputTuple,
       PackOpenedEvent.OutputTuple,
       PackOpenedEvent.OutputObject

@@ -9,9 +9,9 @@ import { usePackOpening, PackType, PackSeries } from "@/hooks/usePackOpening";
 import { useWallet } from "@/context/wallet-context";
 
 const PACK_BUTTONS: { type: PackType; src: string; alt: string; price: string; cards: number }[] = [
-  { type: "standard", src: "/assets/open-10-btn.svg", alt: "Open x10", price: "0.001 WND",  cards: 10 },
-  { type: "premium",  src: "/assets/open-20-btn.svg", alt: "Open x20", price: "0.0018 WND", cards: 20 },
-  { type: "ultra",    src: "/assets/open-30-btn.svg", alt: "Open x30", price: "0.0025 WND", cards: 30 },
+  { type: "standard", src: "/assets/open-10-btn.svg", alt: "Open x10", price: "0.1 WND",  cards: 10 },
+  { type: "premium",  src: "/assets/open-20-btn.svg", alt: "Open x20", price: "0.25 WND", cards: 20 },
+  { type: "ultra",    src: "/assets/open-30-btn.svg", alt: "Open x30", price: "0.5 WND",  cards: 30 },
 ];
 
 const DESKTOP_BUTTONS: { type: PackType; src: string; alt: string; href?: string }[] = [
@@ -108,7 +108,11 @@ export default function OpenPacks() {
         {/* Loading indicator */}
         {isOpening && (
           <motion.p className="text-white/60 text-sm text-center animate-pulse" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            {simMode && isMetaMask ? "Sign in MetaMask to reveal your cards… ✍️" : "Rolling your cards… ✨"}
+            {!simMode
+              ? "Confirm in MetaMask, then waiting for on-chain confirmation… ⛓️"
+              : simMode && isMetaMask
+                ? "Sign in MetaMask to seed your roll… ✍️"
+                : "Rolling your cards… ✨"}
           </motion.p>
         )}
 
@@ -183,7 +187,11 @@ export default function OpenPacks() {
           {/* Loading indicator */}
           {isOpening && (
             <p className="text-white/60 text-sm text-center animate-pulse">
-              {simMode && isMetaMask ? "Sign in MetaMask… ✍️" : "Rolling your cards… ✨"}
+              {!simMode
+                ? "Confirm in MetaMask, waiting for Westend confirmation… ⛓️"
+                : simMode && isMetaMask
+                  ? "Sign in MetaMask… ✍️"
+                  : "Rolling your cards… ✨"}
             </p>
           )}
 

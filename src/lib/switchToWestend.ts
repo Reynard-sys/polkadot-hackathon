@@ -1,6 +1,6 @@
 // src/lib/switchToWestend.ts
 // Switches MetaMask to Westend AssetHub, or adds it if not present.
-// Chain ID: 420420421 (0x190fc65)
+// Chain ID: 420420421 (0x190f1b45)
 
 type EthereumProvider = {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-const WESTEND_CHAIN_ID = "0x190fc65"; // 420420421
+const WESTEND_CHAIN_ID = "0x190f1b45"; // 420420421 — verified correct hex
 
 export async function switchToWestend(): Promise<void> {
   if (typeof window === "undefined" || !window.ethereum) return;

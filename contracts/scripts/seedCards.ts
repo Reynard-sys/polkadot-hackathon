@@ -12,7 +12,7 @@ const ANIME_MAP: Record<string, number> = {
 };
 
 /** Westend Frontier EVM requires explicit gas — cannot estimate. */
-const GAS = { gasLimit: 8_000_000n, gasPrice: 1_000_000_000n };
+const GAS = { gasLimit: 10_000_000_000n, gasPrice: 10_000_000_000n };
 
 /** Cards per registerCards() call — keep ≤12 to avoid gas overflow. */
 const BATCH_SIZE = 12;
@@ -80,10 +80,14 @@ async function main() {
 
   console.log("\n✅ All cards registered!\n");
 
-  // Verify pool sizes
-  for (const [label, value] of Object.entries(RARITY_MAP)) {
-    const pool = await (registry as any).getCardsByRarity(value);
-    console.log(`  ${label}: ${pool.length} cards`);
+  // Verify pool sizes — view calls may fail on Frontier EVM ("Metadata error"), that's ok.
+  try {
+    for (const [label, value] of Object.entries(RARITY_MAP)) {
+      const pool = await (registry as any).getCardsByRarity(value);
+      console.log(`  ${label}: ${pool.length} cards`);
+    }
+  } catch {
+    console.log("  (Pool size read skipped — Frontier view call limitation)");
   }
 }
 
