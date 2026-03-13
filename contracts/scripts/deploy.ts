@@ -18,8 +18,8 @@ const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
  * These values are safe on localhost too.
  */
 const GAS = {
-  gasPrice: 1_000_000_000n,
-  gasLimit: 12_000_000n,
+  gasPrice: 10_000_000_000n,
+  gasLimit: 10_000_000_000n,
 };
 
 async function main() {
