@@ -31,30 +31,30 @@ interface RevealCard {
 
 // Rarity badge colours
 const RARITY_COLOR: Record<string, string> = {
-  Common:    "bg-gray-500/80",
-  Rare:      "bg-blue-600/80",
+  Common: "bg-gray-500/80",
+  Rare: "bg-blue-600/80",
   Legendary: "bg-purple-600/80",
-  Mythic:    "bg-yellow-500/80",
+  Mythic: "bg-yellow-500/80",
 };
 
 // Rarity glow for the reveal animation
 const RARITY_GLOW: Record<string, string> = {
-  Common:    "",
-  Rare:      "drop-shadow-[0_0_12px_rgba(59,130,246,0.8)]",
+  Common: "",
+  Rare: "drop-shadow-[0_0_12px_rgba(59,130,246,0.8)]",
   Legendary: "drop-shadow-[0_0_16px_rgba(168,85,247,0.9)]",
-  Mythic:    "drop-shadow-[0_0_24px_rgba(234,179,8,1)]",
+  Mythic: "drop-shadow-[0_0_24px_rgba(234,179,8,1)]",
 };
 
 // Series theme
 const SERIES_THEME: Record<PackSeries, { label: string; accent: string }> = {
-  naruto:   { label: "Naruto Pack",    accent: "text-orange-400" },
+  naruto: { label: "Naruto Pack", accent: "text-orange-400" },
   onepiece: { label: "One Piece Pack", accent: "text-blue-400" },
 };
 
 // Shimmer skeleton while IPFS image loads
 function CardBackFallback() {
   return (
-    <div className="w-full h-full rounded-xl bg-linear-to-b from-[#2d3548] to-[#030a30] flex flex-col items-center justify-center overflow-hidden relative">
+    <div className="w-full h-full bg-linear-to-b from-[#2d3548] to-[#030a30] flex flex-col items-center justify-center overflow-hidden relative">
       {/* Shimmer sweep */}
       <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_infinite] bg-linear-to-r from-transparent via-white/5 to-transparent" />
       <div className="w-16 h-16 rounded-full bg-white/5 animate-pulse" />
@@ -64,52 +64,58 @@ function CardBackFallback() {
 }
 
 export default function CardReveal() {
-  const [cards, setCards]             = useState<RevealCard[]>([]);
-  const [series, setSeries]           = useState<PackSeries>("naruto");
+  const [cards, setCards] = useState<RevealCard[]>([]);
+  const [series, setSeries] = useState<PackSeries>("naruto");
   const [revealedCount, setRevealedCount] = useState(0);
   const [revealedAll, setRevealedAll] = useState(false);
   const [showingCard, setShowingCard] = useState(false);
-  const [imgError, setImgError]       = useState(false);
-  const [noData, setNoData]           = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [noData, setNoData] = useState(false);
 
-  const { wallet }                    = useWallet();
-  const { addPulledCards }            = useInventory(wallet?.address ?? null);
+  const { wallet } = useWallet();
+  const { addPulledCards } = useInventory(wallet?.address ?? null);
 
   // Load token IDs from sessionStorage on mount
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem("packResult");
-      if (!raw) { setNoData(true); return; }
+      if (!raw) {
+        setNoData(true);
+        return;
+      }
       const { tokenIds, series: storedSeries } = JSON.parse(raw) as {
         tokenIds: number[];
         series?: PackSeries;
       };
-      if (!tokenIds || tokenIds.length === 0) { setNoData(true); return; }
+      if (!tokenIds || tokenIds.length === 0) {
+        setNoData(true);
+        return;
+      }
 
       if (storedSeries) setSeries(storedSeries);
 
       const lookup = new Map<string, CardEntry>(
-        (cardsData as CardEntry[]).map((c) => [c.nftTokenId, c])
+        (cardsData as CardEntry[]).map((c) => [c.nftTokenId, c]),
       );
 
       const resolved: RevealCard[] = tokenIds.map((id) => {
         const entry = lookup.get(String(id));
         if (entry) {
           return {
-            tokenId:  id,
-            name:     entry.name,
+            tokenId: id,
+            name: entry.name,
             subtitle: entry.subtitle,
-            rarity:   entry.rarity,
-            anime:    entry.anime,
+            rarity: entry.rarity,
+            anime: entry.anime,
             imageUrl: entry.imageUrl,
           };
         }
         return {
-          tokenId:  id,
-          name:     `Card #${id}`,
+          tokenId: id,
+          name: `Card #${id}`,
           subtitle: "",
-          rarity:   "Common",
-          anime:    "Unknown",
+          rarity: "Common",
+          anime: "Unknown",
           imageUrl: "",
         };
       });
@@ -123,9 +129,10 @@ export default function CardReveal() {
     }
   }, []);
 
-  const allDone    = revealedCount >= cards.length && cards.length > 0;
+  const allDone = revealedCount >= cards.length && cards.length > 0;
   const isLastCard = cards.length > 0 && revealedCount === cards.length - 1;
-  const cardBackSrc = isLastCard && !allDone ? "/assets/card-back.svg" : "/assets/back-cards.svg";
+  const cardBackSrc =
+    isLastCard && !allDone ? "/assets/card-back.svg" : "/assets/back-cards.svg";
 
   const revealNext = useCallback(() => {
     if (allDone || revealedAll || showingCard) return;
@@ -145,14 +152,14 @@ export default function CardReveal() {
     setShowingCard(false);
   }, [cards.length]);
 
-  const showGrid    = revealedAll || allDone;
+  const showGrid = revealedAll || allDone;
   const currentCard = cards[revealedCount];
-  const theme       = SERIES_THEME[series];
+  const theme = SERIES_THEME[series];
 
   // Cards to preload (next 2 in queue)
   const preloadCards = cards.slice(
     Math.min(revealedCount + 1, cards.length),
-    Math.min(revealedCount + 3, cards.length)
+    Math.min(revealedCount + 3, cards.length),
   );
 
   // ── Empty / Error state ──────────────────────────────────────────────────
@@ -160,7 +167,9 @@ export default function CardReveal() {
     return (
       <PageBackground>
         <div className="flex flex-col lg:hidden max-w-sm mx-auto pt-20 px-4 gap-5 pb-28 items-center">
-          <h1 className="text-white font-bold text-2xl text-center">No Cards to Reveal</h1>
+          <h1 className="text-white font-bold text-2xl text-center">
+            No Cards to Reveal
+          </h1>
           <p className="text-white/50 text-sm text-center">
             Open a pack first to see your cards here.
           </p>
@@ -200,7 +209,7 @@ export default function CardReveal() {
             priority
             aria-hidden
           />
-        ) : null
+        ) : null,
       )}
       <div className="flex flex-col lg:hidden max-w-sm mx-auto pt-20 px-4 gap-5 pb-28">
         {/* Heading with series label */}
@@ -243,7 +252,7 @@ export default function CardReveal() {
                     alt={currentCard.name}
                     width={736}
                     height={1030}
-                    className={`w-full h-full object-contain rounded-xl ${RARITY_GLOW[currentCard.rarity] ?? ""}`}
+                    className={`w-full h-full object-contain ${RARITY_GLOW[currentCard.rarity] ?? ""}`}
                     draggable={false}
                     priority
                     onError={() => setImgError(true)}
@@ -251,25 +260,6 @@ export default function CardReveal() {
                 ) : (
                   <CardBackFallback />
                 )}
-                {/* Rarity badge */}
-                <span
-                  className={`absolute bottom-3 left-1/2 -translate-x-1/2 text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm ${
-                    RARITY_COLOR[currentCard.rarity] ?? "bg-gray-600/80"
-                  }`}
-                >
-                  {currentCard.rarity}
-                </span>
-                {/* Card name overlay */}
-                <div className="absolute bottom-10 left-0 right-0 text-center px-2">
-                  <p className="text-white font-bold text-sm drop-shadow-lg">
-                    {currentCard.name}
-                  </p>
-                  {currentCard.subtitle && (
-                    <p className="text-white/70 text-xs drop-shadow-md">
-                      {currentCard.subtitle}
-                    </p>
-                  )}
-                </div>
               </motion.div>
             ) : (
               /* Card back */
@@ -278,7 +268,7 @@ export default function CardReveal() {
                 alt="Card Back"
                 width={736}
                 height={1030}
-                className="w-full h-full object-contain rounded-xl"
+                className="w-full h-full object-contain"
                 draggable={false}
                 priority
               />
@@ -317,12 +307,6 @@ export default function CardReveal() {
                     </span>
                   </div>
                 )}
-                {/* Rarity dot */}
-                <span
-                  className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
-                    RARITY_COLOR[card.rarity]?.replace("/80", "") ?? "bg-gray-500"
-                  }`}
-                />
               </motion.div>
             ))}
           </motion.div>
