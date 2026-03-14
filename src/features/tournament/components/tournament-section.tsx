@@ -62,7 +62,7 @@ export default function TournamentFeature() {
       {/* Mobile Banner */}
       <div className="lg:hidden relative w-full p-4 pt-18">
         <Image
-          src="/assets/tournament-page/tournament.svg"
+          src="/assets/mobile-game-features/mobile-tournaments.svg"
           alt="Tournament"
           width={350}
           height={78}
