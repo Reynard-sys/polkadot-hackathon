@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { DesktopHamburgerMenu, MobileHamburgerMenu } from "@/components/hamburger-menu";
 import { useWallet } from "@/context/wallet-context";
 
 export default function Navbar() {
@@ -32,8 +33,10 @@ export default function Navbar() {
     } = useWallet();
 
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
     const walletRef = useRef<HTMLDivElement>(null);
     const pickerRef = useRef<HTMLDivElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     // Close disconnect popover on outside click
     useEffect(() => {
@@ -58,6 +61,36 @@ export default function Navbar() {
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, [showPicker, closePicker]);
+
+    useEffect(() => {
+        if (!showMenu) return;
+        const handler = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setShowMenu(false);
+            }
+        };
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setShowMenu(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("mousedown", handler);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [showMenu]);
+
+    useEffect(() => {
+        if (!showMenu) return;
+        if (!window.matchMedia("(max-width: 1023px)").matches) return;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = previousOverflow;
+        };
+    }, [showMenu]);
 
     return (
         <>
@@ -180,15 +213,31 @@ export default function Navbar() {
                             </div>
                         )}
 
-                        <button className="cursor-pointer text-white shrink-0">
-                            <Image
-                                src="/assets/hamburger-btn.svg"
-                                alt="Menu"
-                                width={37}
-                                height={37}
-                                className="w-full h-full"
-                            />
-                        </button>
+                        <div ref={menuRef} className="relative shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setShowMenu((prev) => !prev)}
+                                className="cursor-pointer text-white shrink-0"
+                                aria-label={showMenu ? "Close menu" : "Open menu"}
+                                aria-expanded={showMenu}
+                            >
+                                <Image
+                                    src="/assets/hamburger-btn.svg"
+                                    alt="Menu"
+                                    width={37}
+                                    height={37}
+                                    className="w-full h-full"
+                                />
+                            </button>
+                            {showMenu && (
+                                <>
+                                    <div className="hidden lg:block">
+                                        <DesktopHamburgerMenu onClose={() => setShowMenu(false)} />
+                                    </div>
+                                    <MobileHamburgerMenu onClose={() => setShowMenu(false)} />
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </nav>

@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Footer from "@/components/footer";
+import { MobileHamburgerMenu } from "@/components/hamburger-menu";
 
 type Rarity = "common" | "rare" | "legendary" | "mythic";
 type ElementType = "fire" | "water" | "earth" | "air" | "multitype";
@@ -111,12 +112,12 @@ function InventoryTopCard() {
   );
 }
 
-function InventoryMainMobileHeader() {
+function InventoryMainMobileHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
     <div className="fixed inset-x-0 top-0 z-50 h-[74px] border-b border-[rgba(151,151,151,0.2)] bg-[#272727] md:hidden">
       <div className="mx-auto flex h-full w-full max-w-[412px] items-center justify-between px-[16px]">
         <div className="h-[28px] w-[98px]" />
-        <button type="button" className="flex h-[40px] w-[40px] items-center justify-center" aria-label="Open menu">
+        <button type="button" onClick={onOpenMenu} className="flex h-[40px] w-[40px] items-center justify-center" aria-label="Open menu">
           <IconLine />
         </button>
       </div>
@@ -124,7 +125,7 @@ function InventoryMainMobileHeader() {
   );
 }
 
-function InventoryDetailMobileHeader({ onBack }: { onBack: () => void }) {
+function InventoryDetailMobileHeader({ onBack, onOpenMenu }: { onBack: () => void; onOpenMenu: () => void }) {
   return (
     <div className="fixed inset-x-0 top-0 z-50 h-[74px] border-b border-[rgba(151,151,151,0.2)] bg-[#272727] md:hidden">
       <div className="mx-auto grid h-full w-full max-w-[412px] grid-cols-[40px_1fr_40px] items-center px-[16px]">
@@ -132,7 +133,7 @@ function InventoryDetailMobileHeader({ onBack }: { onBack: () => void }) {
           <BackIcon />
         </button>
         <p className="text-center text-[20px] leading-[16px] font-normal text-white">View</p>
-        <button type="button" className="flex h-[40px] w-[40px] items-center justify-center" aria-label="Open menu">
+        <button type="button" onClick={onOpenMenu} className="flex h-[40px] w-[40px] items-center justify-center" aria-label="Open menu">
           <IconLine />
         </button>
       </div>
@@ -444,6 +445,7 @@ function DesktopFilterModal({
 export default function Inventory() {
   const [activeFilter, setActiveFilter] = useState<"all" | Rarity>("all");
   const [selectedCard, setSelectedCard] = useState<InventoryCard | null>(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [desktopSearch, setDesktopSearch] = useState("");
   const [desktopRarity, setDesktopRarity] = useState<"all" | Rarity>("all");
   const [desktopElement, setDesktopElement] = useState<"all" | ElementType>("all");
@@ -451,6 +453,15 @@ export default function Inventory() {
   const [draftElement, setDraftElement] = useState<"all" | ElementType>("all");
   const [desktopFilterOpen, setDesktopFilterOpen] = useState(false);
   const [desktopSelectedCard, setDesktopSelectedCard] = useState<InventoryCard | null>(null);
+
+  useEffect(() => {
+    if (!showMobileMenu) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showMobileMenu]);
 
   const mobileVisibleCards = useMemo(() => (activeFilter === "all" ? INVENTORY_CARDS : INVENTORY_CARDS.filter((c) => c.rarity === activeFilter)), [activeFilter]);
   const desktopVisibleCards = useMemo(() => {
@@ -477,7 +488,11 @@ export default function Inventory() {
         <div className="absolute right-[-258px] top-[880px] h-[924px] w-[436px] rounded-full bg-[#001fe8]/24 blur-[170px]" />
       </div>
 
-      {!selectedCard ? <InventoryMainMobileHeader /> : <InventoryDetailMobileHeader onBack={() => setSelectedCard(null)} />}
+      {!selectedCard ? (
+        <InventoryMainMobileHeader onOpenMenu={() => setShowMobileMenu(true)} />
+      ) : (
+        <InventoryDetailMobileHeader onBack={() => setSelectedCard(null)} onOpenMenu={() => setShowMobileMenu(true)} />
+      )}
 
       <div className="relative z-10 mx-auto w-full max-w-[412px] px-[18px] pt-[101px] md:hidden">
         {!selectedCard ? (
@@ -526,6 +541,7 @@ export default function Inventory() {
 
       <Footer />
 
+      {showMobileMenu && <MobileHamburgerMenu onClose={() => setShowMobileMenu(false)} />}
       {desktopSelectedCard && <DesktopCardModal card={desktopSelectedCard} onClose={() => setDesktopSelectedCard(null)} />}
       {desktopFilterOpen && (
         <DesktopFilterModal
