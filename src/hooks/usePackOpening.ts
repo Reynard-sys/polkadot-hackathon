@@ -131,6 +131,45 @@ async function findPackOpenedTokenIds(
   return [];
 }
 
+async function findPackOpenedTokenIdsByTx(
+  provider: ethers.JsonRpcProvider,
+  txHash: string,
+  startBlock: number,
+  playerAddress: string,
+  packInterface: ethers.Interface,
+): Promise<number[]> {
+  const paddedPlayer = ethers.zeroPadValue(playerAddress, 32);
+  const fromBlock = Math.max(startBlock - 2, 0);
+
+  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt++) {
+    if (attempt > 0) await sleep(2000);
+
+    try {
+      const latestBlock = await provider.getBlockNumber();
+      const logs = await provider.getLogs({
+        address: GACHA_PACK_ADDRESS,
+        fromBlock,
+        toBlock: latestBlock,
+        topics: [PACK_OPENED_TOPIC, paddedPlayer],
+      });
+
+      const matchingLogs = logs.filter(
+        (log) => log.transactionHash.toLowerCase() === txHash.toLowerCase(),
+      );
+      const tokenIds = extractTokenIdsFromLogs(
+        matchingLogs,
+        packInterface,
+        playerAddress,
+      );
+      if (tokenIds.length > 0) return tokenIds;
+    } catch (error) {
+      console.warn("[GachaPack] tx-hash PackOpened lookup failed:", error);
+    }
+  }
+
+  return [];
+}
+
 export function usePackOpening() {
   const { wallet, getEthersProvider } = useWallet();
   const [isOpening, setIsOpening] = useState(false);
@@ -163,6 +202,7 @@ export function usePackOpening() {
         const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
         const packInterface = new ethers.Interface(GACHA_PACK_ABI);
         const cfg = PACK_CONFIG[packType];
+        const startBlock = await readProvider.getBlockNumber();
 
         const FRONTIER_GAS = {
           maxFeePerGas: BigInt("200000000"),
@@ -191,6 +231,16 @@ export function usePackOpening() {
           packInterface,
           signerAddress,
         );
+
+        if (tokenIds.length === 0) {
+          tokenIds = await findPackOpenedTokenIdsByTx(
+            readProvider,
+            tx.hash,
+            startBlock,
+            signerAddress,
+            packInterface,
+          );
+        }
 
         if (tokenIds.length === 0) {
           const blockNumber = indexedReceipt?.blockNumber ?? minedReceipt?.blockNumber;
