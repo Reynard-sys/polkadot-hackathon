@@ -10,9 +10,9 @@ export type PackType = "standard" | "premium" | "ultra";
 export type { PackSeries };
 
 const PACK_CONFIG: Record<PackType, { method: string; price: string }> = {
-  standard: { method: "openStandardPack", price: "0.001"  },
-  premium:  { method: "openPremiumPack",  price: "0.0018" },
-  ultra:    { method: "openUltraPack",    price: "0.0025" },
+  standard: { method: "openStandardPack", price: "0.001" },
+  premium: { method: "openPremiumPack", price: "0.0018" },
+  ultra: { method: "openUltraPack", price: "0.0025" },
 };
 
 function isSimulationMode(): boolean {
@@ -29,9 +29,9 @@ export interface PackResult {
 export function usePackOpening() {
   const { wallet, getEthersProvider } = useWallet();
   const [isOpening, setIsOpening] = useState(false);
-  const [result, setResult]       = useState<PackResult | null>(null);
-  const [error, setError]         = useState<string | null>(null);
-  const [simMode]                 = useState(isSimulationMode);
+  const [result, setResult] = useState<PackResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [simMode] = useState(isSimulationMode);
 
   const openPack = async (packType: PackType, series: PackSeries) => {
     setIsOpening(true);
@@ -48,9 +48,9 @@ export function usePackOpening() {
         await switchToWestend();
         const provider = await getEthersProvider();
         if (!provider) throw new Error("Could not get provider.");
-        const signer   = await provider.getSigner();
+        const signer = await provider.getSigner();
         const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
-        const cfg      = PACK_CONFIG[packType];
+        const cfg = PACK_CONFIG[packType];
 
         // Westend AssetHub (Frontier EVM) gas settings.
         // These map to the MetaMask "Advanced gas controls" fields:
@@ -58,12 +58,12 @@ export function usePackOpening() {
         //   Priority fee    = 0.1 gwei   ├─ maxFeePerGas = base + priority = 0.2 gwei
         //   Gas limit       = 10 000 000 000
         const FRONTIER_GAS = {
-          maxFeePerGas:         BigInt("200000000"),   // 0.2 gwei  (base 0.1 + priority 0.1)
+          maxFeePerGas: BigInt("200000000"),   // 0.2 gwei  (base 0.1 + priority 0.1)
           maxPriorityFeePerGas: BigInt("100000000"),   // 0.1 gwei  priority fee
-          gasLimit:             BigInt("10000000000"), // 10 B
+          gasLimit: BigInt("10000000000"), // 10 B
         };
-        // series: 0 = Naruto (IDs 1-16), 1 = OnePiece (IDs 17-32)
-        const seriesIndex = series === "onepiece" ? 1 : 0;
+        // series: 0 = Naruto (IDs 1-16), 1 = OnePiece (IDs 17-32), 2 = Pokemon (IDs 33-48)
+        const seriesIndex = series === "onepiece" ? 1 : series === "pokemon" ? 2 : 0;
         const tx = await contract[cfg.method](seriesIndex, {
           value: ethers.parseEther(cfg.price),
           ...FRONTIER_GAS,
@@ -120,8 +120,8 @@ export function usePackOpening() {
         const provider = await getEthersProvider();
         if (provider) {
           const signer = await provider.getSigner();
-          const addr   = await signer.getAddress();
-          const msg    = `Anime Gacha TCG — open ${packType} ${series} pack\nNonce: ${Date.now()}`;
+          const addr = await signer.getAddress();
+          const msg = `Anime Gacha TCG — open ${packType} ${series} pack\nNonce: ${Date.now()}`;
           walletSignature = await signer.signMessage(msg);
           // Sign only to prove identity and seed randomness — no gas, no tx.
           void addr;
@@ -146,12 +146,12 @@ export function usePackOpening() {
         if (!e || typeof e !== "object") return String(e);
         const o = e as Record<string, unknown>;
         if (typeof o.shortMessage === "string") return o.shortMessage;
-        if (typeof o.reason      === "string") return o.reason;
-        if (typeof o.message     === "string") return o.message;
+        if (typeof o.reason === "string") return o.reason;
+        if (typeof o.message === "string") return o.message;
         if (o.info && typeof o.info === "object") {
           const ie = (o.info as Record<string, unknown>).error;
-          if (ie && typeof ie === "object" && typeof (ie as Record<string,unknown>).message === "string")
-            return (ie as Record<string,unknown>).message as string;
+          if (ie && typeof ie === "object" && typeof (ie as Record<string, unknown>).message === "string")
+            return (ie as Record<string, unknown>).message as string;
         }
         try { return JSON.stringify(e); } catch { return "[unknown error]"; }
       };

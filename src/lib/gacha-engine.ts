@@ -29,9 +29,9 @@ import cardsData from "@/data/cards.json";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type PackSeries = "naruto" | "onepiece";
-export type PackType   = "standard" | "premium" | "ultra";
-export type Rarity     = "Common" | "Rare" | "Legendary" | "Mythic";
+export type PackSeries = "naruto" | "onepiece" | "pokemon";
+export type PackType = "standard" | "premium" | "ultra";
+export type Rarity = "Common" | "Rare" | "Legendary" | "Mythic";
 
 export interface SimCard {
   tokenId: number;
@@ -50,13 +50,13 @@ export interface SimPackResult {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const WEIGHT_COMMON    = 8200;
-const WEIGHT_RARE      = 9600;
+const WEIGHT_COMMON = 8200;
+const WEIGHT_RARE = 9600;
 const WEIGHT_LEGENDARY = 9980;
 // Mythic: 9980–9999
 
 const PITY_THRESHOLD = 50;
-const PITY_STEP      = 20; // basis points per pack above threshold
+const PITY_STEP = 20; // basis points per pack above threshold
 
 const PITY_KEY = "gacha_pity_counter";
 
@@ -65,8 +65,8 @@ const PITY_KEY = "gacha_pity_counter";
 //   x10 → 1 (no duplicates), x20 → 2 (max 1 dupe), x30 → 3 (max 2 dupes)
 const PACK_CONFIG: Record<PackType, { size: number; minRare: number; minLegendary: boolean; maxCopies: number }> = {
   standard: { size: 10, minRare: 1, minLegendary: false, maxCopies: 1 },
-  premium:  { size: 20, minRare: 2, minLegendary: false, maxCopies: 2 },
-  ultra:    { size: 30, minRare: 3, minLegendary: true,  maxCopies: 3 },
+  premium: { size: 20, minRare: 2, minLegendary: false, maxCopies: 2 },
+  ultra: { size: 30, minRare: 3, minLegendary: true, maxCopies: 3 },
 };
 
 // ── Card pool (derived from cards.json) ──────────────────────────────────────
@@ -82,22 +82,26 @@ interface RawCard {
 
 const ALL_CARDS = cardsData as RawCard[];
 
-const NARUTO_IDS   = { min: 1,  max: 16 };
+const NARUTO_IDS = { min: 1, max: 16 };
 const ONEPIECE_IDS = { min: 17, max: 32 };
+const POKEMON_IDS = { min: 33, max: 48 };
 
 function getPool(series: PackSeries): SimCard[] {
-  const range = series === "naruto" ? NARUTO_IDS : ONEPIECE_IDS;
+  const range =
+    series === "naruto" ? NARUTO_IDS :
+      series === "onepiece" ? ONEPIECE_IDS :
+        POKEMON_IDS;
   return ALL_CARDS
     .filter(c => {
       const id = parseInt(c.nftTokenId, 10);
       return id >= range.min && id <= range.max;
     })
     .map(c => ({
-      tokenId:  parseInt(c.nftTokenId, 10),
-      name:     c.name,
+      tokenId: parseInt(c.nftTokenId, 10),
+      name: c.name,
       subtitle: c.subtitle,
-      rarity:   c.rarity as Rarity,
-      anime:    c.anime,
+      rarity: c.rarity as Rarity,
+      anime: c.anime,
       imageUrl: c.imageUrl,
     }));
 }
@@ -170,8 +174,8 @@ function rollRarity(pityBonus: number): Rarity {
     ? WEIGHT_LEGENDARY
     : WEIGHT_LEGENDARY + (10000 - WEIGHT_LEGENDARY) - pityBonus;
 
-  if (roll < WEIGHT_COMMON)   return "Common";
-  if (roll < WEIGHT_RARE)     return "Rare";
+  if (roll < WEIGHT_COMMON) return "Common";
+  if (roll < WEIGHT_RARE) return "Rare";
   if (roll < effectiveMythic) return "Legendary";
   return "Mythic";
 }
@@ -181,7 +185,7 @@ function rollGuaranteedRarity(minRarity: Rarity): Rarity {
   const roll = secureRandInt(10000);
   if (minRarity === "Rare") {
     if (roll >= WEIGHT_LEGENDARY) return "Mythic";
-    if (roll >= WEIGHT_RARE)      return "Legendary";
+    if (roll >= WEIGHT_RARE) return "Legendary";
     return "Rare";
   }
   if (minRarity === "Legendary") {
@@ -260,7 +264,7 @@ export function simulatePack(
     _seedState = 0;
   }
 
-  const cfg  = PACK_CONFIG[packType];
+  const cfg = PACK_CONFIG[packType];
   const pool = getPool(series);
   // `usedCounts` tracks how many times each tokenId has been picked in this pack.
   // Combined with cfg.maxCopies this enforces the per-pack duplicate caps.

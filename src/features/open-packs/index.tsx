@@ -9,30 +9,34 @@ import { usePackOpening, PackType, PackSeries } from "@/hooks/usePackOpening";
 import { useWallet } from "@/context/wallet-context";
 
 const PACK_BUTTONS: { type: PackType; src: string; alt: string; price: string; cards: number }[] = [
-  { type: "standard", src: "/assets/open-10-btn.svg", alt: "Open x10", price: "0.1 WND",  cards: 10 },
-  { type: "premium",  src: "/assets/open-20-btn.svg", alt: "Open x20", price: "0.25 WND", cards: 20 },
-  { type: "ultra",    src: "/assets/open-30-btn.svg", alt: "Open x30", price: "0.5 WND",  cards: 30 },
+  { type: "standard", src: "/assets/open-10-btn.svg", alt: "Open x10", price: "0.1 WND", cards: 10 },
+  { type: "premium", src: "/assets/open-20-btn.svg", alt: "Open x20", price: "0.25 WND", cards: 20 },
+  { type: "ultra", src: "/assets/open-30-btn.svg", alt: "Open x30", price: "0.5 WND", cards: 30 },
 ];
 
 const DESKTOP_BUTTONS: { type: PackType; src: string; alt: string; href?: string }[] = [
   { type: "standard", src: "/assets/desktop-x10-btn.svg", alt: "Open x10", href: undefined },
-  { type: "premium",  src: "/assets/desktop-x20-btn.svg", alt: "Open x20" },
-  { type: "ultra",    src: "/assets/desktop-x30-btn.svg", alt: "Open x30" },
+  { type: "premium", src: "/assets/desktop-x20-btn.svg", alt: "Open x20" },
+  { type: "ultra", src: "/assets/desktop-x30-btn.svg", alt: "Open x30" },
 ];
 
 const SERIES_META: Record<PackSeries, { name: string; imageSrc: string; imageAlt: string; accent: string }> = {
-  naruto:   { name: "Naruto Pack",    imageSrc: "/assets/packs/naruto-pack.svg",    imageAlt: "Naruto Pack",    accent: "text-orange-400" },
-  onepiece: { name: "One Piece Pack", imageSrc: "/assets/packs/one-piece-pack.svg", imageAlt: "One Piece Pack", accent: "text-blue-400"   },
+  naruto: { name: "Naruto Pack", imageSrc: "/assets/packs/naruto-pack.svg", imageAlt: "Naruto Pack", accent: "text-orange-400" },
+  onepiece: { name: "One Piece Pack", imageSrc: "/assets/packs/one-piece-pack.svg", imageAlt: "One Piece Pack", accent: "text-blue-400" },
+  pokemon: { name: "Pokemon Pack", imageSrc: "/assets/packs/pokemon-pack.svg", imageAlt: "Pokemon Pack", accent: "text-yellow-400" },
 };
 
 export default function OpenPacks() {
-  const router       = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const rawSeries    = searchParams.get("series");
-  const series: PackSeries = rawSeries === "onepiece" ? "onepiece" : "naruto";
+  const rawSeries = searchParams.get("series");
+  const series: PackSeries =
+    rawSeries === "onepiece" ? "onepiece" :
+      rawSeries === "pokemon" ? "pokemon" :
+        "naruto";
   const meta = SERIES_META[series];
 
-  const { wallet, openPicker }                                 = useWallet();
+  const { wallet, openPicker } = useWallet();
   const { openPack, isOpening, result, error, reset, simMode } = usePackOpening();
 
   useEffect(() => {
@@ -40,7 +44,7 @@ export default function OpenPacks() {
     sessionStorage.setItem("packResult", JSON.stringify({
       tokenIds: result.tokenIds,
       packType: result.packType,
-      series:   result.series,
+      series: result.series,
     }));
     router.push("/card-reveal");
   }, [result, router]);
@@ -51,7 +55,7 @@ export default function OpenPacks() {
   }, [simMode, wallet, openPicker, openPack, series]);
 
   const walletConnected = !!wallet;
-  const isMetaMask      = wallet?.type === "metamask";
+  const isMetaMask = wallet?.type === "metamask";
 
   return (
     <PageBackground>

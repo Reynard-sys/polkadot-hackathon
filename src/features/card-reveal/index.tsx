@@ -41,6 +41,7 @@ const RARITY_GLOW: Record<string, string> = {
 const SERIES_THEME: Record<PackSeries, { label: string; accent: string }> = {
   naruto: { label: "Naruto Pack", accent: "text-orange-400" },
   onepiece: { label: "One Piece Pack", accent: "text-blue-400" },
+  pokemon: { label: "Pokemon Pack", accent: "text-yellow-400" },
 };
 
 // Shimmer skeleton while IPFS image loads
