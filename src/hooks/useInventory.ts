@@ -8,13 +8,17 @@ export type CardRarity = "Common" | "Rare" | "Legendary" | "Mythic";
 export type CardAnime  = "Naruto" | "OnePiece";
 
 export interface OwnedCard {
-  tokenId:  number;
-  name:     string;
-  subtitle: string;
-  rarity:   CardRarity;
-  anime:    CardAnime;
-  imageUrl: string;
-  count:    number; // how many copies owned
+  tokenId:             number;
+  name:                string;
+  subtitle:            string;
+  rarity:              CardRarity;
+  anime:               CardAnime;
+  imageUrl:            string;
+  count:               number; // how many copies owned
+  traits:              string[];
+  abilityDescription:  string;
+  leaderEligible:      boolean;
+  leaderDescription:   string | null;
 }
 
 // ── localStorage key ──────────────────────────────────────────────────────────
@@ -25,13 +29,19 @@ function storageKey(address: string) {
 
 // ── Lookup table: tokenId → card metadata ─────────────────────────────────────
 
+interface RawAbility { description?: string }
+
 interface RawCard {
-  nftTokenId: string;
-  name:       string;
-  subtitle:   string;
-  rarity:     string;
-  anime:      string;
-  imageUrl:   string;
+  nftTokenId:      string;
+  name:            string;
+  subtitle:        string;
+  rarity:          string;
+  anime:           string;
+  imageUrl:        string;
+  traits?:         string[];
+  ability?:        RawAbility | null;
+  leaderAbility?:  RawAbility | null;
+  leaderEligible?: boolean;
 }
 
 const CARD_LOOKUP = new Map<number, RawCard>(
@@ -73,7 +83,14 @@ export function useInventory(walletAddress: string | null) {
    */
   const addPulledCards = useCallback(
     (tokenIds: number[], address: string) => {
-      const current = ownedCards;
+      // Always read fresh from localStorage to avoid stale-closure bug.
+      // (The useEffect in card-reveal mounts once with empty ownedCards state,
+      // so relying on the closure would wipe prior inventory on every pack open.)
+      let current: OwnedCard[] = [];
+      try {
+        const raw = localStorage.getItem(storageKey(address));
+        current = raw ? JSON.parse(raw) : [];
+      } catch { current = []; }
       const next = [...current];
 
       for (const id of tokenIds) {
@@ -85,20 +102,24 @@ export function useInventory(walletAddress: string | null) {
           existing.count += 1;
         } else {
           next.push({
-            tokenId:  id,
-            name:     meta.name,
-            subtitle: meta.subtitle,
-            rarity:   meta.rarity  as CardRarity,
-            anime:    meta.anime   as CardAnime,
-            imageUrl: meta.imageUrl,
-            count:    1,
+            tokenId:            id,
+            name:               meta.name,
+            subtitle:           meta.subtitle,
+            rarity:             meta.rarity  as CardRarity,
+            anime:              meta.anime   as CardAnime,
+            imageUrl:           meta.imageUrl,
+            count:              1,
+            traits:             meta.traits ?? [],
+            abilityDescription: meta.ability?.description ?? "",
+            leaderEligible:     meta.leaderEligible ?? false,
+            leaderDescription:  meta.leaderAbility?.description ?? null,
           });
         }
       }
 
       persist(next, address);
     },
-    [ownedCards, persist]
+    [persist]
   );
 
   return { ownedCards, addPulledCards };

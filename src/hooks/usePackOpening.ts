@@ -52,11 +52,15 @@ export function usePackOpening() {
         const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
         const cfg      = PACK_CONFIG[packType];
 
-        // Westend AssetHub (Frontier EVM): explicit gas required, same as deploy.ts.
-        // gasPrice 10 gwei + gasLimit 10B worked for the original contract.
+        // Westend AssetHub (Frontier EVM) gas settings.
+        // These map to the MetaMask "Advanced gas controls" fields:
+        //   Max base fee    = 0.1 gwei  ─┐
+        //   Priority fee    = 0.1 gwei   ├─ maxFeePerGas = base + priority = 0.2 gwei
+        //   Gas limit       = 10 000 000 000
         const FRONTIER_GAS = {
-          gasPrice: BigInt("10000000000"),  // 10 gwei
-          gasLimit: BigInt("10000000000"),  // 10B
+          maxFeePerGas:         BigInt("200000000"),   // 0.2 gwei  (base 0.1 + priority 0.1)
+          maxPriorityFeePerGas: BigInt("100000000"),   // 0.1 gwei  priority fee
+          gasLimit:             BigInt("10000000000"), // 10 B
         };
         // series: 0 = Naruto (IDs 1-16), 1 = OnePiece (IDs 17-32)
         const seriesIndex = series === "onepiece" ? 1 : 0;

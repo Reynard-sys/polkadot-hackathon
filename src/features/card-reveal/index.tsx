@@ -227,7 +227,7 @@ export default function CardReveal() {
 
         {!showGrid ? (
           <div
-            className="relative w-full aspect-3/4 cursor-pointer"
+            className="relative w-full aspect-[1440/2028] cursor-pointer"
             onClick={showingCard ? advanceToNext : revealNext}
           >
             {showingCard && currentCard ? (
@@ -242,8 +242,8 @@ export default function CardReveal() {
                   <Image
                     src={currentCard.imageUrl}
                     alt={currentCard.name}
-                    width={736}
-                    height={1030}
+                    width={1440}
+                    height={2028}
                     className={`w-full h-full object-contain ${RARITY_GLOW[currentCard.rarity] ?? ""}`}
                     draggable={false}
                     priority
@@ -257,8 +257,8 @@ export default function CardReveal() {
               <Image
                 src={cardBackSrc}
                 alt="Card Back"
-                width={736}
-                height={1030}
+                width={1440}
+                height={2028}
                 className="w-full h-full object-contain"
                 draggable={false}
                 priority
@@ -385,7 +385,7 @@ export default function CardReveal() {
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
               <div
-                className="w-64 cursor-pointer"
+                className="w-full max-w-sm aspect-[1440/2028] cursor-pointer"
                 onClick={showingCard ? advanceToNext : revealNext}
               >
                 {showingCard && currentCard ? (
@@ -393,9 +393,9 @@ export default function CardReveal() {
                     <Image
                       src={currentCard.imageUrl}
                       alt={currentCard.name}
-                      width={736}
-                      height={1030}
-                      className={`w-full h-auto rounded-xl ${RARITY_GLOW[currentCard.rarity] ?? ""}`}
+                      width={1440}
+                      height={2028}
+                      className={`w-full h-full object-contain rounded-xl ${RARITY_GLOW[currentCard.rarity] ?? ""}`}
                       draggable={false}
                       priority
                       onError={() => setImgError(true)}
@@ -407,9 +407,9 @@ export default function CardReveal() {
                   <Image
                     src={cardBackSrc}
                     alt="Card Back"
-                    width={736}
-                    height={1030}
-                    className="w-full h-auto rounded-xl"
+                    width={1440}
+                    height={2028}
+                    className="w-full h-full object-contain rounded-xl"
                     draggable={false}
                     priority
                   />

@@ -60,11 +60,13 @@ const PITY_STEP      = 20; // basis points per pack above threshold
 
 const PITY_KEY = "gacha_pity_counter";
 
-// Pack config: [size, minRare, minLegendary]
-const PACK_CONFIG: Record<PackType, { size: number; minRare: number; minLegendary: boolean }> = {
-  standard: { size: 10, minRare: 1, minLegendary: false },
-  premium:  { size: 20, minRare: 2, minLegendary: false },
-  ultra:    { size: 30, minRare: 3, minLegendary: true  },
+// Pack config: [size, minRare, minLegendary, maxCopies]
+// maxCopies = max times a single card can appear within ONE pack open:
+//   x10 → 1 (no duplicates), x20 → 2 (max 1 dupe), x30 → 3 (max 2 dupes)
+const PACK_CONFIG: Record<PackType, { size: number; minRare: number; minLegendary: boolean; maxCopies: number }> = {
+  standard: { size: 10, minRare: 1, minLegendary: false, maxCopies: 1 },
+  premium:  { size: 20, minRare: 2, minLegendary: false, maxCopies: 2 },
+  ultra:    { size: 30, minRare: 3, minLegendary: true,  maxCopies: 3 },
 };
 
 // ── Card pool (derived from cards.json) ──────────────────────────────────────
@@ -192,38 +194,41 @@ function rollGuaranteedRarity(minRarity: Rarity): Rarity {
 // ── Card picker ───────────────────────────────────────────────────────────────
 //
 // Strategy:
-//   1. Try to pick a unique card of the requested rarity.
-//   2. If there are no unique cards left of that rarity, allow a duplicate
-//      from the same rarity (pool exhaustion — happens with x20/x30).
-//   3. If the rarity pool itself is empty (e.g. a series with no Mythic),
-//      fall back through lower rarities.
+//   1. Try to pick a card of the requested rarity that is still under its copy cap.
+//   2. If all cards of that rarity have hit the cap, fall back through lower rarities
+//      looking for any card still under the cap.
+//   3. If every card in the pool is at the cap (extremely unlikely) return null.
+//
+// maxCopies controls per-pack duplicate limits:
+//   x10 → 1 (no duplicates allowed), x20 → 2 (max 1 dupe), x30 → 3 (max 2 dupes)
 //
 function pickCard(
   pool: SimCard[],
   rarity: Rarity,
-  used: Set<number>,
+  usedCounts: Map<number, number>,
+  maxCopies: number,
 ): SimCard | null {
-  // Try unique first
-  const uniqueCandidates = getPoolByRarity(pool, rarity).filter(c => !used.has(c.tokenId));
-  if (uniqueCandidates.length > 0) {
-    const pick = uniqueCandidates[secureRandInt(uniqueCandidates.length)];
-    used.add(pick.tokenId);
+  // Cards of the requested rarity that haven't hit their copy cap yet
+  const candidates = getPoolByRarity(pool, rarity).filter(
+    c => (usedCounts.get(c.tokenId) ?? 0) < maxCopies
+  );
+  if (candidates.length > 0) {
+    const pick = candidates[secureRandInt(candidates.length)];
+    usedCounts.set(pick.tokenId, (usedCounts.get(pick.tokenId) ?? 0) + 1);
     return pick;
   }
 
-  // Pool exhausted for this rarity — allow duplicate (don't add to used set again)
-  const allOfRarity = getPoolByRarity(pool, rarity);
-  if (allOfRarity.length > 0) {
-    return allOfRarity[secureRandInt(allOfRarity.length)];
-  }
-
-  // Rarity entirely absent in this pool — fall back through lower rarities
+  // All cards of this rarity are at cap — fall back through lower rarities
   const fallbackOrder: Rarity[] = ["Legendary", "Rare", "Common"];
   for (const r of fallbackOrder) {
     if (r === rarity) continue;
-    const fb = getPoolByRarity(pool, r);
+    const fb = getPoolByRarity(pool, r).filter(
+      c => (usedCounts.get(c.tokenId) ?? 0) < maxCopies
+    );
     if (fb.length > 0) {
-      return fb[secureRandInt(fb.length)];
+      const pick = fb[secureRandInt(fb.length)];
+      usedCounts.set(pick.tokenId, (usedCounts.get(pick.tokenId) ?? 0) + 1);
+      return pick;
     }
   }
   return null;
@@ -257,8 +262,9 @@ export function simulatePack(
 
   const cfg  = PACK_CONFIG[packType];
   const pool = getPool(series);
-  // `used` tracks which tokenIds have been picked uniquely (for preferring variety)
-  const used = new Set<number>();
+  // `usedCounts` tracks how many times each tokenId has been picked in this pack.
+  // Combined with cfg.maxCopies this enforces the per-pack duplicate caps.
+  const usedCounts = new Map<number, number>();
   const cards: SimCard[] = [];
 
   const pityCount = getPityCount();
@@ -269,7 +275,7 @@ export function simulatePack(
   // ── Guaranteed Rare slots ─────────────────────────────────────────────────
   for (let g = 0; g < cfg.minRare; g++) {
     const rarity = rollGuaranteedRarity("Rare");
-    const card = pickCard(pool, rarity, used);
+    const card = pickCard(pool, rarity, usedCounts, cfg.maxCopies);
     if (card) {
       cards.push(card);
       if (card.rarity === "Mythic") gotMythic = true;
@@ -279,7 +285,7 @@ export function simulatePack(
   // ── Guaranteed Legendary slot (Ultra pack) ────────────────────────────────
   if (cfg.minLegendary) {
     const rarity = rollGuaranteedRarity("Legendary");
-    const card = pickCard(pool, rarity, used);
+    const card = pickCard(pool, rarity, usedCounts, cfg.maxCopies);
     if (card) {
       cards.push(card);
       if (card.rarity === "Mythic") gotMythic = true;
@@ -292,7 +298,7 @@ export function simulatePack(
   while (cards.length < cfg.size && attempts < cfg.size * 3) {
     attempts++;
     const rarity = rollRarity(pityBonus);
-    const card = pickCard(pool, rarity, used);
+    const card = pickCard(pool, rarity, usedCounts, cfg.maxCopies);
     if (card) {
       cards.push(card);
       if (card.rarity === "Mythic") gotMythic = true;

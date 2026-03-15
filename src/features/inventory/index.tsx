@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Footer from "@/components/footer";
 import { useWallet } from "@/context/wallet-context";
@@ -435,6 +435,7 @@ function DesktopCardModal({
         <div className="grid grid-cols-[360px_1fr] gap-8">
           <DetailCard card={card} />
           <div className="flex flex-col">
+            {/* Title + rarity badge */}
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-[26px] leading-[39px] font-bold text-white">
@@ -452,36 +453,37 @@ function DesktopCardModal({
                 {meta.detailLabel}
               </span>
             </div>
-            <div className="mt-6 space-y-4">
-              <div>
-                <p className="text-[14px] text-[#99a1af]">Series</p>
-                <p className="text-[16px] leading-[24px] font-medium text-white">
-                  {card.anime === "OnePiece" ? "One Piece" : card.anime}
-                </p>
-              </div>
-              <div>
-                <p className="text-[14px] text-[#99a1af]">Token ID</p>
-                <p className="text-[16px] leading-[24px] font-medium text-white">
-                  #{card.tokenId}
-                </p>
-              </div>
-              <div>
-                <p className="text-[14px] text-[#99a1af]">Copies Owned</p>
-                <p className="text-[16px] leading-[24px] font-medium text-white">
-                  ×{card.count}
-                </p>
+
+            {/* Traits */}
+            <div className="mt-6 space-y-1">
+              <p className="text-[14px] text-[#99a1af]">Traits</p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {(card.traits ?? []).map((t) => (
+                  <span
+                    key={t}
+                    className="inline-flex items-center rounded-full bg-white/10 px-3 py-0.5 text-[12px] font-medium text-white"
+                  >
+                    {t}
+                  </span>
+                ))}
               </div>
             </div>
-            <div className="mt-5 rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] pt-[17px] pb-4">
-              <p className="text-[16px] leading-[24px] font-bold text-white">
-                Rarity
-              </p>
-              <p
-                className={`mt-3 text-[14px] leading-[22.75px] ${meta.valueColor}`}
-              >
-                {meta.detailLabel}
-              </p>
+
+            {/* Description box */}
+            <div className="mt-5 flex-1 rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] pt-[17px] pb-4">
+              <p className="text-[16px] leading-[24px] font-bold text-white">Description</p>
+              {card.abilityDescription && (
+                <p className="mt-3 text-[14px] leading-[22.75px] text-[#99a1af]">
+                  {card.abilityDescription}
+                </p>
+              )}
+              {(card.leaderEligible ?? false) && card.leaderDescription && (
+                <p className="mt-4 text-[14px] leading-[22.75px] text-[#99a1af]">
+                  {card.leaderDescription}
+                </p>
+              )}
             </div>
+
             <div className="mx-auto mt-4 w-full max-w-[270px]">
               <Image
                 src="/assets/inventory/web/filter-separator.svg"
@@ -671,6 +673,66 @@ function EmptyState({ walletConnected }: { walletConnected: boolean }) {
   );
 }
 
+// ── Pagination ────────────────────────────────────────────────────────────────
+
+const MOBILE_PAGE_SIZE = 10;
+const DESKTOP_PAGE_SIZE = 9;
+
+function Pagination({
+  page,
+  totalPages,
+  onPrev,
+  onNext,
+}: {
+  page: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-center gap-4 mt-6">
+      <button
+        type="button"
+        onClick={onPrev}
+        disabled={page === 1}
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2D3548] text-white disabled:opacity-30 hover:bg-[#3a4560] transition-colors"
+        aria-label="Previous page"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <path d="M15 5l-7 7 7 7" />
+        </svg>
+      </button>
+      <span className="text-sm text-white/60">
+        <span className="text-white font-semibold">{page}</span> / {totalPages}
+      </span>
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={page === totalPages}
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2D3548] text-white disabled:opacity-30 hover:bg-[#3a4560] transition-colors"
+        aria-label="Next page"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 // ── Main inventory page ───────────────────────────────────────────────────────
 
 export default function Inventory() {
@@ -680,6 +742,7 @@ export default function Inventory() {
   // Mobile state
   const [activeFilter, setActiveFilter] = useState<"all" | CardRarity>("all");
   const [selectedCard, setSelectedCard] = useState<OwnedCard | null>(null);
+  const [mobilePage, setMobilePage] = useState(1);
 
   // Desktop state
   const [desktopSearch, setDesktopSearch] = useState("");
@@ -688,6 +751,7 @@ export default function Inventory() {
   const [draftRarity, setDraftRarity] = useState<"all" | CardRarity>("all");
   const [draftAnime, setDraftAnime] = useState<"all" | CardAnime>("all");
   const [desktopFilterOpen, setDesktopFilterOpen] = useState(false);
+  const [desktopPage, setDesktopPage] = useState(1);
   const [desktopSelectedCard, setDesktopSelectedCard] =
     useState<OwnedCard | null>(null);
 
@@ -697,7 +761,7 @@ export default function Inventory() {
       Array.from({ length: c.count }, (_, i) => ({ card: c, copyIndex: i })),
     );
 
-  const mobileVisibleCards = useMemo(() => {
+  const mobileAllCards = useMemo(() => {
     const filtered =
       activeFilter === "all"
         ? ownedCards
@@ -705,7 +769,20 @@ export default function Inventory() {
     return expandCards(filtered);
   }, [ownedCards, activeFilter]);
 
-  const desktopVisibleCards = useMemo(() => {
+  const mobileTotalPages = Math.max(
+    1,
+    Math.ceil(mobileAllCards.length / MOBILE_PAGE_SIZE),
+  );
+  const mobileVisibleCards = useMemo(
+    () =>
+      mobileAllCards.slice(
+        (mobilePage - 1) * MOBILE_PAGE_SIZE,
+        mobilePage * MOBILE_PAGE_SIZE,
+      ),
+    [mobileAllCards, mobilePage],
+  );
+
+  const desktopAllCards = useMemo(() => {
     const q = desktopSearch.trim().toLowerCase();
     const filtered = ownedCards.filter(
       (c) =>
@@ -717,6 +794,29 @@ export default function Inventory() {
     );
     return expandCards(filtered);
   }, [ownedCards, desktopSearch, desktopRarity, desktopAnime]);
+
+  const desktopTotalPages = Math.max(
+    1,
+    Math.ceil(desktopAllCards.length / DESKTOP_PAGE_SIZE),
+  );
+  const desktopVisibleCards = useMemo(
+    () =>
+      desktopAllCards.slice(
+        (desktopPage - 1) * DESKTOP_PAGE_SIZE,
+        desktopPage * DESKTOP_PAGE_SIZE,
+      ),
+    [desktopAllCards, desktopPage],
+  );
+
+  // Reset pages when filters change
+  const setActiveMobileFilter = useCallback((f: "all" | CardRarity) => {
+    setActiveFilter(f);
+    setMobilePage(1);
+  }, []);
+  const setDesktopSearchAndReset = useCallback((v: string) => {
+    setDesktopSearch(v);
+    setDesktopPage(1);
+  }, []);
 
   const totalCards = ownedCards.reduce((s, c) => s + c.count, 0);
 
@@ -784,7 +884,7 @@ export default function Inventory() {
                 <button
                   key={f.id}
                   type="button"
-                  onClick={() => setActiveFilter(f.id)}
+                  onClick={() => setActiveMobileFilter(f.id)}
                   className={`h-[26px] rounded-[4px] px-[10px] text-[10.769px] font-bold ${
                     activeFilter === f.id
                       ? "bg-[linear-gradient(180deg,#0144BD_0%,#192871_100%)] text-white"
@@ -795,6 +895,15 @@ export default function Inventory() {
                 </button>
               ))}
             </div>
+            {/* Pagination — top */}
+            <Pagination
+              page={mobilePage}
+              totalPages={mobileTotalPages}
+              onPrev={() => setMobilePage((p) => Math.max(1, p - 1))}
+              onNext={() =>
+                setMobilePage((p) => Math.min(mobileTotalPages, p + 1))
+              }
+            />
             {/* Grid */}
             <div className="grid grid-cols-2 gap-3">
               <AnimatePresence>
@@ -811,6 +920,14 @@ export default function Inventory() {
                 ))}
               </AnimatePresence>
             </div>
+            <Pagination
+              page={mobilePage}
+              totalPages={mobileTotalPages}
+              onPrev={() => setMobilePage((p) => Math.max(1, p - 1))}
+              onNext={() =>
+                setMobilePage((p) => Math.min(mobileTotalPages, p + 1))
+              }
+            />
           </section>
         ) : (
           <section className="space-y-5">
@@ -818,8 +935,9 @@ export default function Inventory() {
               <DetailCard card={selectedCard} />
             </div>
             <div className="mx-auto flex w-full max-w-[365px] flex-col items-center gap-5 px-[15.995px]">
-              <div className="mt-1 flex h-[42px] w-full max-w-[348px] items-start justify-between">
-                <div className="w-[202px]">
+              {/* Name + rarity badge */}
+              <div className="mt-1 flex w-full max-w-[348px] items-start justify-between">
+                <div className="flex-1 min-w-0">
                   <p className="text-[18px] leading-[28px] font-bold text-white">
                     {selectedCard.name}
                   </p>
@@ -830,53 +948,42 @@ export default function Inventory() {
                   )}
                 </div>
                 <span
-                  className={`mt-0.5 inline-flex h-[26px] w-[92px] items-center justify-center rounded-[62758468px] text-[12.936px] leading-[17.248px] font-bold text-white ${RARITY_META[toFigmaRarity(selectedCard.rarity)].tagBg}`}
+                  className={`ml-2 mt-0.5 shrink-0 inline-flex h-[26px] min-w-[72px] items-center justify-center rounded-full px-3 text-[12px] leading-[17px] font-bold text-white ${RARITY_META[toFigmaRarity(selectedCard.rarity)].tagBg}`}
                 >
                   {RARITY_META[toFigmaRarity(selectedCard.rarity)].detailLabel}
                 </span>
               </div>
-              <div className="relative h-[36px] w-full max-w-[348px]">
-                <div className="absolute left-0 top-0 flex h-[35.975px] items-center gap-[7.997px]">
-                  <SetInfoIcon />
-                  <div className="h-[35.975px]">
-                    <p className="text-[12px] leading-[16px] font-normal text-[#e8e8e8]">
-                      Series
-                    </p>
-                    <p className="text-[14px] leading-[20px] font-bold text-white">
-                      {selectedCard.anime === "OnePiece"
-                        ? "One Piece"
-                        : selectedCard.anime}
-                    </p>
-                  </div>
-                </div>
-                <div className="absolute left-[156.18px] top-0 flex h-[35.975px] items-center gap-[7.997px]">
-                  <CardInfoIcon />
-                  <div className="h-[35.975px]">
-                    <p className="text-[12px] leading-[16px] font-normal text-[#e8e8e8]">
-                      Token ID
-                    </p>
-                    <p className="text-[14px] leading-[20px] font-bold text-white">
-                      #{selectedCard.tokenId}
-                    </p>
-                  </div>
+
+              {/* Traits */}
+              <div className="w-full max-w-[348px] space-y-1">
+                <p className="text-[12px] leading-[16px] text-[#e8e8e8]">Traits</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(selectedCard.traits ?? []).map((t) => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-medium text-white"
+                    >
+                      {t}
+                    </span>
+                  ))}
                 </div>
               </div>
-              <div className="h-[220px] w-[361px] max-w-full rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] pt-[17px] pb-px">
-                <p className="text-[12px] leading-[24px] font-bold text-white">
-                  Rarity
-                </p>
-                <p
-                  className={`mt-2 text-[14px] leading-[32px] font-normal ${RARITY_META[toFigmaRarity(selectedCard.rarity)].valueColor}`}
-                >
-                  {RARITY_META[toFigmaRarity(selectedCard.rarity)].detailLabel}
-                </p>
-                <p className="text-[12px] leading-[24px] font-bold text-white mt-3">
-                  Copies
-                </p>
-                <p className="mt-2 text-[14px] leading-[32px] font-normal text-[#99a1af]">
-                  ×{selectedCard.count}
-                </p>
+
+              {/* Description box */}
+              <div className="w-full max-w-[361px] rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] pt-[17px] pb-4">
+                <p className="text-[12px] leading-[24px] font-bold text-white">Description</p>
+                {selectedCard.abilityDescription && (
+                  <p className="mt-2 text-[13px] leading-[22px] font-normal text-[#99a1af]">
+                    {selectedCard.abilityDescription}
+                  </p>
+                )}
+                {(selectedCard.leaderEligible ?? false) && selectedCard.leaderDescription && (
+                  <p className="mt-4 text-[13px] leading-[22px] font-normal text-[#99a1af]">
+                    {selectedCard.leaderDescription}
+                  </p>
+                )}
               </div>
+
               <div className="w-full pb-2">
                 <SellButtonMobile />
               </div>
@@ -925,7 +1032,7 @@ export default function Inventory() {
                 </span>
                 <input
                   value={desktopSearch}
-                  onChange={(e) => setDesktopSearch(e.target.value)}
+                  onChange={(e) => setDesktopSearchAndReset(e.target.value)}
                   placeholder="Search cards..."
                   className="w-full bg-transparent text-[18px] text-white placeholder:text-[#99a1af] outline-none"
                 />
@@ -940,29 +1047,49 @@ export default function Inventory() {
               </button>
             </div>
 
+            {/* Pagination — top */}
+            <Pagination
+              page={desktopPage}
+              totalPages={desktopTotalPages}
+              onPrev={() => setDesktopPage((p) => Math.max(1, p - 1))}
+              onNext={() =>
+                setDesktopPage((p) => Math.min(desktopTotalPages, p + 1))
+              }
+            />
+
             {/* Card grid */}
             {ownedCards.length === 0 ? (
               <EmptyState walletConnected={!!wallet} />
             ) : (
-              <div className="grid grid-cols-3 gap-4">
-                <AnimatePresence>
-                  {desktopVisibleCards.map(({ card, copyIndex }) => (
-                    <motion.button
-                      key={`${card.tokenId}-${copyIndex}`}
-                      type="button"
-                      onClick={() => setDesktopSelectedCard(card)}
-                      className="overflow-hidden rounded-[12px] text-left"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      whileHover={{ y: -4 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <DetailCard card={card} />
-                    </motion.button>
-                  ))}
-                </AnimatePresence>
-              </div>
+              <>
+                <div className="grid grid-cols-3 gap-4">
+                  <AnimatePresence>
+                    {desktopVisibleCards.map(({ card, copyIndex }) => (
+                      <motion.button
+                        key={`${card.tokenId}-${copyIndex}`}
+                        type="button"
+                        onClick={() => setDesktopSelectedCard(card)}
+                        className="overflow-hidden rounded-[12px] text-left"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        whileHover={{ y: -4 }}
+                        transition={{ duration: 0.25 }}
+                      >
+                        <DetailCard card={card} />
+                      </motion.button>
+                    ))}
+                  </AnimatePresence>
+                </div>
+                <Pagination
+                  page={desktopPage}
+                  totalPages={desktopTotalPages}
+                  onPrev={() => setDesktopPage((p) => Math.max(1, p - 1))}
+                  onNext={() =>
+                    setDesktopPage((p) => Math.min(desktopTotalPages, p + 1))
+                  }
+                />
+              </>
             )}
           </div>
         </section>
@@ -991,6 +1118,7 @@ export default function Inventory() {
           onApply={() => {
             setDesktopRarity(draftRarity);
             setDesktopAnime(draftAnime);
+            setDesktopPage(1);
             setDesktopFilterOpen(false);
           }}
         />
