@@ -23,8 +23,8 @@ const ANIME_MAP: Record<string, number> = {
 
 // Explicit gas overrides — bypass eth_estimateGas on Frontier
 const GAS_OVERRIDES = {
-  gasPrice: 1_000_000_000n, // 1 gwei
-  gasLimit: 12_000_000n,
+  gasPrice: 10_000_000_000n, // 1 gwei
+  gasLimit: 10_000_000_000n,
 };
 
 async function main() {
