@@ -286,6 +286,22 @@ async function findPackOpenedTokenIdsByTx(
   return [];
 }
 
+async function hasPendingTransaction(
+  provider: ethers.JsonRpcProvider,
+  address: string,
+): Promise<boolean> {
+  try {
+    const [latestNonce, pendingNonce] = await Promise.all([
+      provider.getTransactionCount(address, "latest"),
+      provider.getTransactionCount(address, "pending"),
+    ]);
+    return pendingNonce > latestNonce;
+  } catch (error) {
+    console.warn("[GachaPack] Pending nonce check failed:", error);
+    return false;
+  }
+}
+
 export function usePackOpening() {
   const { wallet, getEthersProvider } = useWallet();
   const [isOpening, setIsOpening] = useState(false);
@@ -319,6 +335,13 @@ export function usePackOpening() {
         const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
         const cfg = PACK_CONFIG[packType];
         const startBlock = await readProvider.getBlockNumber();
+
+        if (await hasPendingTransaction(readProvider, signerAddress)) {
+          setError(
+            "A previous Westend transaction is still pending. Wait for it to confirm, or Speed Up / Cancel it in MetaMask before opening another pack.",
+          );
+          return;
+        }
 
         const seriesIndex = series === "onepiece" ? 1 : 0;
         const tx = await contract[cfg.method](seriesIndex, {
@@ -410,6 +433,13 @@ export function usePackOpening() {
         setError("Transaction cancelled.");
       } else if (msg.includes("Already Imported")) {
         setError("A pack-open transaction is already pending in MetaMask. Wait for it to settle, then try again.");
+      } else if (
+        msg.includes("Priority is too low") ||
+        msg.includes("too low priority to replace another transaction already in the pool")
+      ) {
+        setError(
+          "A previous transaction with this nonce is still pending. Wait for it to confirm, or Speed Up / Cancel it in MetaMask before retrying.",
+        );
       } else if (msg.includes("insufficient funds")) {
         setError("Insufficient WND balance.");
       } else {
