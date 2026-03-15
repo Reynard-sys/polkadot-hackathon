@@ -63,6 +63,7 @@ type PersistedDeckState = {
 };
 
 const TOTAL_SLOTS = 12;
+const AVAILABLE_CARDS_PAGE_SIZE = 12;
 
 const CARD_VARIANT_PRESETS: Record<
   CardVariant,
@@ -1320,6 +1321,64 @@ function MobileDetailBackButton({ onBack }: { onBack: () => void }) {
   );
 }
 
+function AvailableCardsPagination({
+  page,
+  totalPages,
+  onPrev,
+  onNext,
+}: {
+  page: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 flex items-center justify-center gap-4">
+      <button
+        type="button"
+        onClick={onPrev}
+        disabled={page === 1}
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2d3548] text-white transition-colors hover:bg-[#3a4560] disabled:opacity-30"
+        aria-label="Previous page"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <path d="M15 5l-7 7 7 7" />
+        </svg>
+      </button>
+      <span className="text-sm text-white/60">
+        <span className="font-semibold text-white">{page}</span> / {totalPages}
+      </span>
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={page === totalPages}
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2d3548] text-white transition-colors hover:bg-[#3a4560] disabled:opacity-30"
+        aria-label="Next page"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 type AvailableCardsEmptyMode = "wallet" | "inventory" | "used" | "filtered";
 
 function AvailableCardsEmptyState({
@@ -2277,6 +2336,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   );
   const [showLeaderRequiredModal, setShowLeaderRequiredModal] = useState(false);
   const [shakingCardId, setShakingCardId] = useState<number | null>(null);
+  const [mobileAvailablePage, setMobileAvailablePage] = useState(1);
+  const [desktopAvailablePage, setDesktopAvailablePage] = useState(1);
   const [desktopSearch, setDesktopSearch] = useState("");
   const [desktopRarity, setDesktopRarity] = useState<
     "all" | OwnedCard["rarity"]
@@ -2333,17 +2394,51 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
         (desktopZone === "all" || card.zone === desktopZone) &&
         (q.length === 0 ||
           card.name.toLowerCase().includes(q) ||
-          card.faction.toLowerCase().includes(q) ||
+        card.faction.toLowerCase().includes(q) ||
           (card.zone ?? "").toLowerCase().includes(q)),
     );
   }, [desktopRarity, desktopSearch, desktopZone, remainingInventoryCards]);
+  const mobileAvailableTotalPages = Math.max(
+    1,
+    Math.ceil(remainingInventoryCards.length / AVAILABLE_CARDS_PAGE_SIZE),
+  );
+  const desktopAvailableTotalPages = Math.max(
+    1,
+    Math.ceil(
+      desktopVisibleInventoryCards.length / AVAILABLE_CARDS_PAGE_SIZE,
+    ),
+  );
+  const resolvedMobileAvailablePage = Math.min(
+    mobileAvailablePage,
+    mobileAvailableTotalPages,
+  );
+  const resolvedDesktopAvailablePage = Math.min(
+    desktopAvailablePage,
+    desktopAvailableTotalPages,
+  );
+  const mobileVisibleAvailableCards = useMemo(
+    () =>
+      remainingInventoryCards.slice(
+        (resolvedMobileAvailablePage - 1) * AVAILABLE_CARDS_PAGE_SIZE,
+        resolvedMobileAvailablePage * AVAILABLE_CARDS_PAGE_SIZE,
+      ),
+    [remainingInventoryCards, resolvedMobileAvailablePage],
+  );
+  const desktopVisibleAvailablePageCards = useMemo(
+    () =>
+      desktopVisibleInventoryCards.slice(
+        (resolvedDesktopAvailablePage - 1) * AVAILABLE_CARDS_PAGE_SIZE,
+        resolvedDesktopAvailablePage * AVAILABLE_CARDS_PAGE_SIZE,
+      ),
+    [desktopVisibleInventoryCards, resolvedDesktopAvailablePage],
+  );
   const availableCardGrid = useMemo(
-    () => padGrid(remainingInventoryCards, 4),
-    [remainingInventoryCards],
+    () => padGrid(mobileVisibleAvailableCards, 4),
+    [mobileVisibleAvailableCards],
   );
   const desktopAvailableCardGrid = useMemo(
-    () => padGrid(desktopVisibleInventoryCards, 4),
-    [desktopVisibleInventoryCards],
+    () => padGrid(desktopVisibleAvailablePageCards, 4),
+    [desktopVisibleAvailablePageCards],
   );
 
   const selectedCards = useMemo(
@@ -2361,6 +2456,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     setDeckName(`Deck ${savedDecks.length + 1}`);
     setDeckSlots(emptySlots());
     setEditingDeckId(null);
+    setMobileAvailablePage(1);
+    setDesktopAvailablePage(1);
     setIsEditing(true);
   };
 
@@ -2574,6 +2671,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     setDeckName(deck.name);
     setDeckSlots([...normalizeDeckCards(deck.cards)]);
     setEditingDeckId(deck.id);
+    setMobileAvailablePage(1);
+    setDesktopAvailablePage(1);
     setIsEditing(true);
   };
 
@@ -2768,9 +2867,10 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                           </span>
                           <input
                             value={desktopSearch}
-                            onChange={(event) =>
-                              setDesktopSearch(event.target.value)
-                            }
+                            onChange={(event) => {
+                              setDesktopSearch(event.target.value);
+                              setDesktopAvailablePage(1);
+                            }}
                             placeholder="Search cards..."
                             className="w-full bg-transparent text-[18px] text-white placeholder:text-[#99a1af] outline-none"
                           />
@@ -2784,7 +2884,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                           Filters
                         </button>
                       </div>
-                      {desktopAvailableCardGrid.length === 0 ? (
+                      {desktopVisibleInventoryCards.length === 0 ? (
                         <div className="mt-[24px]">
                           <AvailableCardsEmptyState
                             mode={
@@ -2800,26 +2900,45 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                           />
                         </div>
                       ) : (
-                        <div className="mt-[24px] grid grid-cols-4 gap-x-[20.542px] gap-y-[20.542px]">
-                          {desktopAvailableCardGrid.map((card, index) =>
-                            card ? (
-                              <DesktopAvailableInventoryCard
-                                key={`desktop-available-${card.id}`}
-                                card={card}
-                                remainingCount={
-                                  remainingCountById.get(card.id) ?? 0
-                                }
-                                onAdd={() => handleQuickAdd(card)}
-                                onInspect={() => setInspectedCard(card)}
-                                isShaking={shakingCardId === card.id}
-                              />
-                            ) : (
-                              <AvailableGridPlaceholder
-                                key={`desktop-available-empty-${index}`}
-                              />
-                            ),
-                          )}
-                        </div>
+                        <>
+                          <div className="mt-[24px] grid grid-cols-4 gap-x-[20.542px] gap-y-[20.542px]">
+                            {desktopAvailableCardGrid.map((card, index) =>
+                              card ? (
+                                <DesktopAvailableInventoryCard
+                                  key={`desktop-available-${card.id}`}
+                                  card={card}
+                                  remainingCount={
+                                    remainingCountById.get(card.id) ?? 0
+                                  }
+                                  onAdd={() => handleQuickAdd(card)}
+                                  onInspect={() => setInspectedCard(card)}
+                                  isShaking={shakingCardId === card.id}
+                                />
+                              ) : (
+                                <AvailableGridPlaceholder
+                                  key={`desktop-available-empty-${index}`}
+                                />
+                              ),
+                            )}
+                          </div>
+                          <AvailableCardsPagination
+                            page={resolvedDesktopAvailablePage}
+                            totalPages={desktopAvailableTotalPages}
+                            onPrev={() =>
+                              setDesktopAvailablePage(
+                                Math.max(resolvedDesktopAvailablePage - 1, 1),
+                              )
+                            }
+                            onNext={() =>
+                              setDesktopAvailablePage(
+                                Math.min(
+                                  resolvedDesktopAvailablePage + 1,
+                                  desktopAvailableTotalPages,
+                                ),
+                              )
+                            }
+                          />
+                        </>
                       )}
                     </DroppableSection>
                   </div>
@@ -3028,7 +3147,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                       <h2 className="mb-[12px] h-[35.975px] text-[18px] leading-[28px] font-bold text-white">
                         Available Cards
                       </h2>
-                      {availableCardGrid.length === 0 ? (
+                      {remainingInventoryCards.length === 0 ? (
                         <AvailableCardsEmptyState
                           mode={
                             !wallet
@@ -3040,27 +3159,46 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                           onConnect={openPicker}
                         />
                       ) : (
-                        <div className="grid grid-cols-4 gap-[6px]">
-                          {availableCardGrid.map((card, index) =>
-                            card ? (
-                              <MobileAvailableInventoryCard
-                                key={`available-${card.id}`}
-                                card={card}
-                                remainingCount={
-                                  remainingCountById.get(card.id) ?? 0
-                                }
-                                onAdd={() => handleQuickAdd(card)}
-                                onInspect={() => setInspectedCard(card)}
-                                isShaking={shakingCardId === card.id}
-                              />
-                            ) : (
-                              <AvailableGridPlaceholder
-                                key={`available-empty-${index}`}
-                                mobile
-                              />
-                            ),
-                          )}
-                        </div>
+                        <>
+                          <div className="grid grid-cols-4 gap-[6px]">
+                            {availableCardGrid.map((card, index) =>
+                              card ? (
+                                <MobileAvailableInventoryCard
+                                  key={`available-${card.id}`}
+                                  card={card}
+                                  remainingCount={
+                                    remainingCountById.get(card.id) ?? 0
+                                  }
+                                  onAdd={() => handleQuickAdd(card)}
+                                  onInspect={() => setInspectedCard(card)}
+                                  isShaking={shakingCardId === card.id}
+                                />
+                              ) : (
+                                <AvailableGridPlaceholder
+                                  key={`available-empty-${index}`}
+                                  mobile
+                                />
+                              ),
+                            )}
+                          </div>
+                          <AvailableCardsPagination
+                            page={resolvedMobileAvailablePage}
+                            totalPages={mobileAvailableTotalPages}
+                            onPrev={() =>
+                              setMobileAvailablePage(
+                                Math.max(resolvedMobileAvailablePage - 1, 1),
+                              )
+                            }
+                            onNext={() =>
+                              setMobileAvailablePage(
+                                Math.min(
+                                  resolvedMobileAvailablePage + 1,
+                                  mobileAvailableTotalPages,
+                                ),
+                              )
+                            }
+                          />
+                        </>
                       )}
                     </DroppableSection>
                   </section>
@@ -3155,12 +3293,13 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
               setDraftRarity("all");
               setDraftZone("all");
             }}
-            onApply={() => {
-              setDesktopRarity(draftRarity);
-              setDesktopZone(draftZone);
-              setDesktopFilterOpen(false);
-            }}
-          />
+          onApply={() => {
+            setDesktopRarity(draftRarity);
+            setDesktopZone(draftZone);
+            setDesktopAvailablePage(1);
+            setDesktopFilterOpen(false);
+          }}
+        />
         )}
         {showLeaderRequiredModal && (
           <DeckBuilderLeaderRequiredModal
