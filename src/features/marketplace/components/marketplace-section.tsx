@@ -388,11 +388,11 @@ export default function MarketplaceSection() {
   return (
     <div className="bg-transparent font-sans py-10">
       {/* Mobile Banner */}
-      <div className="lg:hidden relative w-full p-4 pt-18">
+      <div className="lg:hidden relative w-full p-4 pt-18 flex justify-center">
         <Image
           src="/assets/mobile-game-features/mobile-marketplace.svg"
           alt="Marketplace"
-          width={350}
+          width={300}
           height={78}
           className="w-full h-auto pointer-events-none"
           aria-hidden="true"
