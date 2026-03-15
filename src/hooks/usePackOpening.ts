@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+
+import { useRef, useState } from "react";
 import { ethers } from "ethers";
 import { useWallet } from "@/context/wallet-context";
 import { GACHA_PACK_ADDRESS, GACHA_PACK_ABI } from "@/lib/contracts";
@@ -10,15 +11,30 @@ export type PackType = "standard" | "premium" | "ultra";
 export type { PackSeries };
 
 const PACK_CONFIG: Record<PackType, { method: string; price: string }> = {
-  standard: { method: "openStandardPack", price: "0.001"  },
-  premium:  { method: "openPremiumPack",  price: "0.0018" },
-  ultra:    { method: "openUltraPack",    price: "0.0025" },
+  standard: { method: "openStandardPack", price: "0.001" },
+  premium: { method: "openPremiumPack", price: "0.0018" },
+  ultra: { method: "openUltraPack", price: "0.0025" },
 };
+
+const WESTEND_READ_RPC = "https://westend-asset-hub-eth-rpc.polkadot.io";
+const PACK_OPENED_TOPIC = ethers.id("PackOpened(address,uint8,uint8,uint256[])");
+const TRANSFER_BATCH_TOPIC =
+  "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb";
+const ZERO_TOPIC =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
+const INDEX_LOOKUP_ATTEMPTS = 12;
 
 function isSimulationMode(): boolean {
   const addr = GACHA_PACK_ADDRESS;
-  return !addr || addr === "" || addr === "0x0000000000000000000000000000000000000000";
+  return (
+    !addr ||
+    addr === "" ||
+    addr === "0x0000000000000000000000000000000000000000"
+  );
 }
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export interface PackResult {
   tokenIds: number[];
@@ -26,173 +42,253 @@ export interface PackResult {
   series: PackSeries;
 }
 
+function extractTokenIdsFromLogs(
+  logs: ReadonlyArray<{ topics?: readonly string[]; data?: string }>,
+  packInterface: ethers.Interface,
+  playerAddress: string,
+): number[] {
+  for (const log of logs) {
+    const topics = [...(log.topics ?? [])];
+    const data = log.data ?? "0x";
+    if (topics.length === 0) continue;
+
+    try {
+      const parsed = packInterface.parseLog({ topics, data });
+      if (parsed?.name !== "PackOpened") continue;
+      const eventPlayer = String(parsed.args[0]).toLowerCase();
+      if (eventPlayer !== playerAddress.toLowerCase()) continue;
+      return (parsed.args[3] as bigint[]).map(Number);
+    } catch {
+      // Ignore non-GachaPack logs and continue to fallbacks.
+    }
+  }
+
+  const tokenIds: number[] = [];
+  for (const log of logs) {
+    try {
+      const topics = log.topics ?? [];
+      if (
+        topics[0]?.toLowerCase() === TRANSFER_BATCH_TOPIC &&
+        topics[2] === ZERO_TOPIC
+      ) {
+        const [ids] = ethers.AbiCoder.defaultAbiCoder().decode(
+          ["uint256[]", "uint256[]"],
+          log.data ?? "0x",
+        );
+        tokenIds.push(...(ids as bigint[]).map(Number));
+      }
+    } catch (error) {
+      console.warn("[GachaPack] TransferBatch decode error:", error);
+    }
+  }
+
+  return tokenIds;
+}
+
+async function waitForIndexedReceipt(
+  provider: ethers.JsonRpcProvider,
+  txHash: string,
+  initialReceipt: ethers.TransactionReceipt | null,
+  delayMs: number,
+): Promise<ethers.TransactionReceipt | null> {
+  let receipt = initialReceipt;
+  if (receipt?.logs?.length) return receipt;
+
+  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt++) {
+    await sleep(delayMs);
+    receipt = await provider.getTransactionReceipt(txHash);
+    if (receipt?.logs?.length) return receipt;
+  }
+
+  return receipt;
+}
+
+async function findPackOpenedTokenIds(
+  provider: ethers.JsonRpcProvider,
+  blockNumber: number,
+  playerAddress: string,
+  packInterface: ethers.Interface,
+): Promise<number[]> {
+  const paddedPlayer = ethers.zeroPadValue(playerAddress, 32);
+
+  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt++) {
+    if (attempt > 0) await sleep(1500);
+
+    try {
+      const logs = await provider.getLogs({
+        address: GACHA_PACK_ADDRESS,
+        fromBlock: blockNumber,
+        toBlock: blockNumber,
+        topics: [PACK_OPENED_TOPIC, paddedPlayer],
+      });
+      const tokenIds = extractTokenIdsFromLogs(logs, packInterface, playerAddress);
+      if (tokenIds.length > 0) return tokenIds;
+    } catch (error) {
+      console.warn("[GachaPack] PackOpened log lookup failed:", error);
+    }
+  }
+
+  return [];
+}
+
 export function usePackOpening() {
   const { wallet, getEthersProvider } = useWallet();
   const [isOpening, setIsOpening] = useState(false);
-  const [result, setResult]       = useState<PackResult | null>(null);
-  const [error, setError]         = useState<string | null>(null);
-  const [simMode]                 = useState(isSimulationMode);
+  const [result, setResult] = useState<PackResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [simMode] = useState(isSimulationMode);
+  const openingRef = useRef(false);
 
   const openPack = async (packType: PackType, series: PackSeries) => {
+    if (openingRef.current) return;
+    openingRef.current = true;
     setIsOpening(true);
     setError(null);
     setResult(null);
 
     try {
-      // ── On-chain mode (contract deployed) ───────────────────────────────
       if (!simMode) {
         if (!wallet || wallet.type !== "metamask") {
           setError("Pack opening requires MetaMask.");
           return;
         }
+
         await switchToWestend();
         const provider = await getEthersProvider();
         if (!provider) throw new Error("Could not get provider.");
-        const signer   = await provider.getSigner();
-        const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
-        const cfg      = PACK_CONFIG[packType];
 
-        // Westend AssetHub (Frontier EVM) gas settings.
-        // These map to the MetaMask "Advanced gas controls" fields:
-        //   Max base fee    = 0.1 gwei  ─┐
-        //   Priority fee    = 0.1 gwei   ├─ maxFeePerGas = base + priority = 0.2 gwei
-        //   Gas limit       = 10 000 000 000
+        const signer = await provider.getSigner();
+        const signerAddress = await signer.getAddress();
+        const readProvider = new ethers.JsonRpcProvider(WESTEND_READ_RPC);
+        const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
+        const packInterface = new ethers.Interface(GACHA_PACK_ABI);
+        const cfg = PACK_CONFIG[packType];
+
         const FRONTIER_GAS = {
-          maxFeePerGas:         BigInt("200000000"),   // 0.2 gwei  (base 0.1 + priority 0.1)
-          maxPriorityFeePerGas: BigInt("100000000"),   // 0.1 gwei  priority fee
-          gasLimit:             BigInt("10000000000"), // 10 B
+          maxFeePerGas: BigInt("200000000"),
+          maxPriorityFeePerGas: BigInt("100000000"),
+          gasLimit: BigInt("10000000000"),
         };
-        // series: 0 = Naruto (IDs 1-16), 1 = OnePiece (IDs 17-32)
+
         const seriesIndex = series === "onepiece" ? 1 : 0;
         const tx = await contract[cfg.method](seriesIndex, {
           value: ethers.parseEther(cfg.price),
           ...FRONTIER_GAS,
         });
-        const receipt = await tx.wait(1);
 
-        // Westend Frontier sometimes doesn't index logs immediately for larger packs.
-        // Retry fetching the receipt until logs appear (max 10 attempts, 2s apart).
-        let logsToSearch = receipt?.logs ?? [];
+        const minedReceipt = await readProvider.waitForTransaction(tx.hash, 1, 60_000);
+        const delayMs =
+          packType === "ultra" ? 2500 : packType === "premium" ? 2000 : 1500;
+        const indexedReceipt = await waitForIndexedReceipt(
+          readProvider,
+          tx.hash,
+          minedReceipt,
+          delayMs,
+        );
 
-        if (logsToSearch.length === 0 && packType !== "standard") {
-          const MAX_ATTEMPTS = 10;
-          const POLL_INTERVAL = 2000;
+        let tokenIds = extractTokenIdsFromLogs(
+          indexedReceipt?.logs ?? minedReceipt?.logs ?? [],
+          packInterface,
+          signerAddress,
+        );
 
-          for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-            await new Promise(r => setTimeout(r, POLL_INTERVAL));
-            
-            try {
-              const refetched = await provider.getTransactionReceipt(receipt!.hash);
-              console.log(`[GachaPack] receipt refetch attempt ${attempt}, logs:`, refetched?.logs?.length ?? 0);
-              
-              if (refetched && refetched.logs.length > 0) {
-                logsToSearch = refetched.logs;
-                break;
-              }
-            } catch (e) {
-              console.warn(`[GachaPack] refetch attempt ${attempt} failed:`, e);
-            }
-          }
-        }
-
-        // Frontier EVM doesn't support ethers parseLog reliably.
-        // Instead: match the known TransferBatch topic hash manually, then
-        // ABI-decode the data field (non-indexed params: ids[], values[]).
-        //
-        // TransferBatch(address operator, address from, address to, uint256[] ids, uint256[] values)
-        // topic[0] = keccak256 of the event signature (constant below)
-        // topic[2] = from (indexed) — 0x0 for mints
-        // data     = abi.encode(ids, values)
-        const TRANSFER_BATCH_TOPIC =
-          "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb";
-        const ZERO_TOPIC =
-          "0x0000000000000000000000000000000000000000000000000000000000000000";
-
-        const tokenIds: number[] = [];
-        for (const log of logsToSearch) {
-          try {
-            const topics = (log as { topics?: string[] }).topics ?? [];
-            if (
-              topics[0]?.toLowerCase() === TRANSFER_BATCH_TOPIC &&
-              topics[2] === ZERO_TOPIC
-            ) {
-              const [ids] = ethers.AbiCoder.defaultAbiCoder().decode(
-                ["uint256[]", "uint256[]"],
-                (log as { data?: string }).data ?? "0x"
-              );
-              tokenIds.push(...(ids as bigint[]).map(Number));
-            }
-          } catch (e) {
-            console.warn("[GachaPack] log decode error:", e);
+        if (tokenIds.length === 0) {
+          const blockNumber = indexedReceipt?.blockNumber ?? minedReceipt?.blockNumber;
+          if (typeof blockNumber === "number") {
+            tokenIds = await findPackOpenedTokenIds(
+              readProvider,
+              blockNumber,
+              signerAddress,
+              packInterface,
+            );
           }
         }
 
         if (tokenIds.length === 0) {
-          console.warn("[GachaPack] No TransferBatch mint log found. Logs:", receipt?.logs);
+          console.warn("[GachaPack] Could not recover card IDs.", {
+            txHash: tx.hash,
+            minedLogs: minedReceipt?.logs ?? [],
+            indexedLogs: indexedReceipt?.logs ?? [],
+          });
           setError("Transaction confirmed but could not read card IDs. Check your inventory.");
           return;
         }
+
         setResult({ tokenIds, packType, series });
         return;
       }
 
-      // ── Simulation mode ──────────────────────────────────────────────────
-      // If MetaMask is connected: request personal_sign to seed the PRNG.
-      // This gives a real Web3 interaction with zero gas cost.
       let walletSignature: string | undefined;
 
       if (wallet?.type === "metamask") {
         const provider = await getEthersProvider();
         if (provider) {
           const signer = await provider.getSigner();
-          const addr   = await signer.getAddress();
-          const msg    = `Anime Gacha TCG — open ${packType} ${series} pack\nNonce: ${Date.now()}`;
+          const addr = await signer.getAddress();
+          const msg = `Anime Gacha TCG - open ${packType} ${series} pack\nNonce: ${Date.now()}`;
           walletSignature = await signer.signMessage(msg);
-          // Sign only to prove identity and seed randomness — no gas, no tx.
           void addr;
         }
       } else {
-        // No wallet — add a small delay so the loading state is visible
-        await new Promise<void>(r => setTimeout(r, 800));
+        await sleep(800);
       }
 
       const simResult = simulatePack(packType, series, walletSignature);
       setResult({
-        tokenIds: simResult.cards.map(c => c.tokenId),
+        tokenIds: simResult.cards.map((card) => card.tokenId),
         packType,
         series,
       });
     } catch (err: unknown) {
-      // Log the full raw error so it's visible in browser console for debugging
       console.error("[GachaPack] raw error:", err);
-      // Ethers v6 throws structured EthersError objects — not plain Error instances.
-      // Drill through the known fields to get a readable message.
+
       const extractMsg = (e: unknown): string => {
         if (!e || typeof e !== "object") return String(e);
-        const o = e as Record<string, unknown>;
-        if (typeof o.shortMessage === "string") return o.shortMessage;
-        if (typeof o.reason      === "string") return o.reason;
-        if (typeof o.message     === "string") return o.message;
-        if (o.info && typeof o.info === "object") {
-          const ie = (o.info as Record<string, unknown>).error;
-          if (ie && typeof ie === "object" && typeof (ie as Record<string,unknown>).message === "string")
-            return (ie as Record<string,unknown>).message as string;
+        const obj = e as Record<string, unknown>;
+        if (typeof obj.shortMessage === "string") return obj.shortMessage;
+        if (typeof obj.reason === "string") return obj.reason;
+        if (typeof obj.message === "string") return obj.message;
+        if (obj.info && typeof obj.info === "object") {
+          const infoError = (obj.info as Record<string, unknown>).error;
+          if (
+            infoError &&
+            typeof infoError === "object" &&
+            typeof (infoError as Record<string, unknown>).message === "string"
+          ) {
+            return (infoError as Record<string, string>).message;
+          }
         }
-        try { return JSON.stringify(e); } catch { return "[unknown error]"; }
+        try {
+          return JSON.stringify(e);
+        } catch {
+          return "[unknown error]";
+        }
       };
+
       const msg = extractMsg(err);
-      if (msg.includes("user rejected") || msg.includes("User denied") || msg.includes("ACTION_REJECTED"))
+      if (
+        msg.includes("user rejected") ||
+        msg.includes("User denied") ||
+        msg.includes("ACTION_REJECTED")
+      ) {
         setError("Transaction cancelled.");
-      else if (msg.includes("insufficient funds"))
+      } else if (msg.includes("Already Imported")) {
+        setError("A pack-open transaction is already pending in MetaMask. Wait for it to settle, then try again.");
+      } else if (msg.includes("insufficient funds")) {
         setError("Insufficient WND balance.");
-      else
+      } else {
         setError(`Failed: ${msg.slice(0, 200)}`);
+      }
     } finally {
+      openingRef.current = false;
       setIsOpening(false);
     }
   };
 
-  const reset = () => { setResult(null); setError(null); };
+  const reset = () => {
+    setResult(null);
+    setError(null);
+  };
 
   return { openPack, isOpening, result, error, reset, simMode };
 }
