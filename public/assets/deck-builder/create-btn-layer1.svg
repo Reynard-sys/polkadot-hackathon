@@ -1,0 +1,21 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 230.201 46.9808" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Union" filter="url(#filter0_i_0_63)">
+<path d="M209.983 0C213.245 0.000101576 216.318 1.5353 218.276 4.14428L228.126 17.2657C230.894 20.9539 230.893 26.0282 228.124 29.7163L218.276 42.8365L217.897 43.3124C216.064 45.4764 213.423 46.7965 210.593 46.963L209.984 46.9808H20.2179C17.1596 46.9807 14.2685 45.6308 12.3053 43.3124L11.9256 42.8365L2.07625 29.7163C-0.692171 26.0281 -0.691993 20.954 2.07625 17.2657L5.9699 12.0771C6.65322 10.9531 7.44383 9.90346 8.32558 8.93919L11.9256 4.14428C13.884 1.53552 16.9558 0.000151992 20.2179 0H209.983Z" fill="url(#paint0_linear_0_63)"/>
+</g>
+<defs>
+<filter id="filter0_i_0_63" x="0" y="-10.3696" width="230.201" height="57.3503" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="-10.3696"/>
+<feGaussianBlur stdDeviation="6.48098"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_0_63"/>
+</filter>
+<linearGradient id="paint0_linear_0_63" x1="115.101" y1="0" x2="115.101" y2="46.9808" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0144BD"/>
+<stop offset="1" stop-color="#192871"/>
+</linearGradient>
+</defs>
+</svg>

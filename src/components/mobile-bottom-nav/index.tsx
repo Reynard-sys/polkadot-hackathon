@@ -55,7 +55,6 @@ function NavIcon({ kind, active }: { kind: NavKind; active: boolean }) {
         );
     }
 
-    // tournament
     return (
         <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M6 4h12v4c0 3.5-2.7 5.6-6 6-3.3-.4-6-2.5-6-6V4z" />

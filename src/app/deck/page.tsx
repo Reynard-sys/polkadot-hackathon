@@ -1,9 +1,5 @@
-import PageBackground from "@/components/page-background";
+import DeckBuilder from "@/features/deck-builder";
 
 export default function DeckPage() {
-    return (
-        <PageBackground>
-            {/* Deck page content goes here */}
-        </PageBackground>
-    );
+  return <DeckBuilder />;
 }
