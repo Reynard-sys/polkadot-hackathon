@@ -54,7 +54,7 @@ export default function MarketplaceCard({
     onBuy,
 }: MarketplaceCardProps) {
     return (
-        <div className="flex items-stretch w-100 lg:w-auto gap-5 bg-[linear-gradient(to_bottom,#2D3548_8%,#030A30_100%)]
+        <div className="flex items-stretch w-100 max-[400]:w-85 lg:w-auto gap-5 bg-[linear-gradient(to_bottom,#2D3548_8%,#030A30_100%)]
                         border border-[#1e3a6e]/60 rounded-xl px-4 py-3 hover:border-[#3B82F6]/40
                         transition-all duration-200 group">
             {/* Card Image */}
@@ -70,21 +70,21 @@ export default function MarketplaceCard({
             <div className="flex flex-col w-full justify-between py-1">
                 <div>
                     <div>
-                        <p className="text-white font-bold text-lg truncate">{CardName}</p>
+                        <p className="text-white font-bold text-md lg:text-lg ">{CardName}</p>
                         <p className="text-white/50 text-sm truncate bg">{CardInfo}</p>
                         <p className="text-white/50 text-sm">by {CardOwner}</p>
                     </div>
 
                     <div className="flex flex-col lg:flex-row lg:items-center lg:w-full lg:justify-between pt-3 lg:pt-0">
-                        <div className="flex items-center gap-3 lg:mt-15">
-                            <span className="text-white font-bold text-2xl">{CardPrice} </span>
-                            <span className="font-normal text-xs mt-2">WND</span>
-                            <span className={`text-xs mt-2 ${CardPriceChangePositive ? "text-green-400" : "text-red-400"}`}>
+                        <div className="flex items-center gap-3 max-[400]:gap-1.5 lg:mt-15">
+                            <span className="text-white font-bold text-lg lg:text-2xl">{CardPrice} </span>
+                            <span className="font-normal text-xs mt-1">WND</span>
+                            <span className={`text-xs mt-1 ${CardPriceChangePositive ? "text-green-400" : "text-red-400"}`}>
                                 {CardPriceChange}
                             </span>
                         </div>
                         {/* Action Buttons */}
-                        <div className="flex gap-2 lg:mt-10">
+                        <div className="flex gap-2 pt-5 lg:mt-10">
                             <CardButton label="Buy" onClick={onBuy} variant="buy" />
                         </div>
                     </div>
