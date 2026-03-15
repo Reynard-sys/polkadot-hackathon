@@ -27,14 +27,14 @@ async function main() {
 
   for (const [packName, cfg] of Object.entries(PACK_TYPES)) {
     console.log(`--- Opening ${packName} Pack (${cfg.price} WND)... ---`);
-    const tx = await (gachaPack as any)[cfg.method]({
+    const tx = await (gachaPack as any)[cfg.method](0, {
       value: ethers.parseEther(cfg.price),
     });
     const receipt = await tx.wait();
 
     // Parse PackOpened event
     const packOpenedIface = new ethers.Interface([
-      "event PackOpened(address indexed player, uint8 packType, uint256[] tokenIds)",
+      "event PackOpened(address indexed player, uint8 packType, uint8 series, uint256[] tokenIds)",
     ]);
 
     for (const log of receipt.logs ?? []) {

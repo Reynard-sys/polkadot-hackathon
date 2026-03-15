@@ -293,12 +293,12 @@ describe("GachaPack", function () {
   // -------------------------------------------------------------------
   // Helper: open a pack and return minted token IDs
   // -------------------------------------------------------------------
-  async function openPack(method: string, value: bigint): Promise<number[]> {
-    const tx = await pack.connect(player)[method]({ value });
+  async function openPack(method: string, value: bigint, series = 0): Promise<number[]> {
+    const tx = await pack.connect(player)[method](series, { value });
     const receipt = await tx.wait();
 
     const iface = new ethers.Interface([
-      "event PackOpened(address indexed player, uint8 packType, uint256[] tokenIds)",
+      "event PackOpened(address indexed player, uint8 packType, uint8 series, uint256[] tokenIds)",
     ]);
 
     for (const log of receipt.logs ?? []) {
@@ -312,20 +312,31 @@ describe("GachaPack", function () {
     throw new Error("PackOpened event not found");
   }
 
+  function getMaxCopies(tokenIds: number[]): number {
+    const counts = new Map<number, number>();
+    let maxCopies = 0;
+    for (const tokenId of tokenIds) {
+      const nextCount = (counts.get(tokenId) ?? 0) + 1;
+      counts.set(tokenId, nextCount);
+      maxCopies = Math.max(maxCopies, nextCount);
+    }
+    return maxCopies;
+  }
+
   // -------------------------------------------------------------------
   // Payment tests
   // -------------------------------------------------------------------
 
   it("reverts if insufficient payment for Standard pack", async () => {
     await expect(
-      pack.connect(player).openStandardPack({ value: ethers.parseEther("0.0005") })
+      pack.connect(player).openStandardPack(0, { value: ethers.parseEther("0.0005") })
     ).to.be.revertedWithCustomError(pack, "InsufficientPayment");
   });
 
   it("refunds excess payment", async () => {
     const overpay = ethers.parseEther("0.01"); // much more than 0.001
     const balBefore = await ethers.provider.getBalance(player.address);
-    const tx = await pack.connect(player).openStandardPack({ value: overpay });
+    const tx = await pack.connect(player).openStandardPack(0, { value: overpay });
     const receipt = await tx.wait();
     const gasUsed = (receipt?.gasUsed ?? 0n) * (receipt?.gasPrice ?? 0n);
     const balAfter = await ethers.provider.getBalance(player.address);
@@ -353,8 +364,7 @@ describe("GachaPack", function () {
 
   it("Standard pack: no duplicate cards", async () => {
     const tokenIds = await openPack("openStandardPack", PRICES.standard);
-    const unique = new Set(tokenIds);
-    expect(unique.size).to.equal(tokenIds.length);
+    expect(getMaxCopies(tokenIds)).to.equal(1);
   });
 
   it("Standard pack: player receives the minted tokens", async () => {
@@ -390,10 +400,9 @@ describe("GachaPack", function () {
     expect(tokenIds.length).to.equal(20);
   });
 
-  it("Premium pack: no duplicate cards", async () => {
+  it("Premium pack: each card appears at most twice", async () => {
     const tokenIds = await openPack("openPremiumPack", PRICES.premium);
-    const unique = new Set(tokenIds);
-    expect(unique.size).to.equal(tokenIds.length);
+    expect(getMaxCopies(tokenIds)).to.be.lte(2);
   });
 
   // -------------------------------------------------------------------
@@ -405,10 +414,9 @@ describe("GachaPack", function () {
     expect(tokenIds.length).to.equal(30);
   });
 
-  it("Ultra pack: no duplicate cards", async () => {
+  it("Ultra pack: each card appears at most three times", async () => {
     const tokenIds = await openPack("openUltraPack", PRICES.ultra);
-    const unique = new Set(tokenIds);
-    expect(unique.size).to.equal(tokenIds.length);
+    expect(getMaxCopies(tokenIds)).to.be.lte(3);
   });
 
   // -------------------------------------------------------------------

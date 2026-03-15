@@ -36,6 +36,14 @@ contract GachaPack is Ownable, ReentrancyGuard {
         uint8   size;
         uint8   minRare;
         bool    minLegendary;
+        uint8   maxCopies;
+    }
+
+    struct PoolSet {
+        uint256[] common;
+        uint256[] rare;
+        uint256[] legendary;
+        uint256[] mythic;
     }
 
     // ── Constants ──────────────────────────────────────────────────────────
@@ -72,9 +80,9 @@ contract GachaPack is Ownable, ReentrancyGuard {
         nft      = GachaNFT(_nft);
         registry = CardRegistry(_registry);
 
-        packConfigs[PackType.Standard] = PackConfig({ price: 0.001  ether, size: 10, minRare: 1, minLegendary: false });
-        packConfigs[PackType.Premium]  = PackConfig({ price: 0.0018 ether, size: 20, minRare: 2, minLegendary: false });
-        packConfigs[PackType.Ultra]    = PackConfig({ price: 0.0025 ether, size: 30, minRare: 3, minLegendary: true  });
+        packConfigs[PackType.Standard] = PackConfig({ price: 0.001 ether,  size: 10, minRare: 1, minLegendary: false, maxCopies: 1 });
+        packConfigs[PackType.Premium]  = PackConfig({ price: 0.0018 ether, size: 20, minRare: 2, minLegendary: false, maxCopies: 2 });
+        packConfigs[PackType.Ultra]    = PackConfig({ price: 0.0025 ether, size: 30, minRare: 3, minLegendary: true,  maxCopies: 3 });
     }
 
     // ── Public ────────────────────────────────────────────────────────────
@@ -86,19 +94,15 @@ contract GachaPack is Ownable, ReentrancyGuard {
 
     function _openPack(PackType packType, uint8 series) internal {
         if (series > 1) revert InvalidSeries(series);
-        PackConfig memory cfg = packConfigs[packType];
-        if (msg.value < cfg.price) revert InsufficientPayment(msg.value, cfg.price);
+        PackConfig storage cfg = packConfigs[packType];
+        uint256 packPrice = cfg.price;
+        uint8 packSize = cfg.size;
+        uint8 minRare = cfg.minRare;
+        bool minLegendary = cfg.minLegendary;
+        uint8 maxCopies = cfg.maxCopies;
+        if (msg.value < packPrice) revert InsufficientPayment(msg.value, packPrice);
 
         // ── Cache pools ONCE ── (4 external calls total, not N per slot)
-        uint256[] memory commonPool   = _seriesPool(CardRegistry.Rarity.Common,    series);
-        uint256[] memory rarePool     = _seriesPool(CardRegistry.Rarity.Rare,      series);
-        uint256[] memory legendPool   = _seriesPool(CardRegistry.Rarity.Legendary, series);
-        uint256[] memory mythicPool   = _seriesPool(CardRegistry.Rarity.Mythic,    series);
-
-        // Supply-downgrade fallbacks (pure memory, no external calls)
-        if (mythicPool.length  == 0) mythicPool  = legendPool;
-        if (legendPool.length  == 0) legendPool  = rarePool;
-        if (rarePool.length    == 0) rarePool    = commonPool;
 
         // ── Seed ──────────────────────────────────────────────────────────
         uint256 seed = uint256(keccak256(abi.encodePacked(
@@ -110,52 +114,22 @@ contract GachaPack is Ownable, ReentrancyGuard {
         )));
 
         uint256 pityBonus = _getPityBonus(msg.sender);
-        uint256[] memory tokenIds = new uint256[](cfg.size);
-        bool gotMythic = false;
-        uint256 slot = 0;
-
-        // Guaranteed Rare+ slots
-        for (uint256 g = 0; g < cfg.minRare; g++) {
-            uint256 roll = uint256(keccak256(abi.encodePacked(seed, slot, "g"))) % 10000;
-            uint256[] memory pool = rarePool;
-            if      (roll >= WEIGHT_LEGENDARY) pool = mythicPool;
-            else if (roll >= WEIGHT_RARE)      pool = legendPool;
-            tokenIds[slot] = _drawFromPool(pool, seed, slot);
-            if (pool.length == mythicPool.length && roll >= WEIGHT_LEGENDARY) gotMythic = true;
-            slot++;
-        }
-
-        // Guaranteed Legendary+ slot (Ultra only)
-        if (cfg.minLegendary) {
-            uint256 roll = uint256(keccak256(abi.encodePacked(seed, slot, "g"))) % 10000;
-            uint256[] memory pool = roll >= WEIGHT_LEGENDARY ? mythicPool : legendPool;
-            tokenIds[slot] = _drawFromPool(pool, seed, slot);
-            if (roll >= WEIGHT_LEGENDARY) gotMythic = true;
-            slot++;
-        }
-
-        // Random slots (duplicates allowed)
-        for (uint256 i = slot; i < cfg.size; i++) {
-            uint256 roll = uint256(keccak256(abi.encodePacked(seed, i, "rarity"))) % 10000;
-            uint256 mythicThreshold = pityBonus >= (10000 - WEIGHT_LEGENDARY)
-                ? WEIGHT_LEGENDARY
-                : WEIGHT_LEGENDARY - pityBonus;
-
-            uint256[] memory pool;
-            if      (roll < WEIGHT_COMMON)    pool = commonPool;
-            else if (roll < WEIGHT_RARE)      pool = rarePool;
-            else if (roll < mythicThreshold)  pool = legendPool;
-            else                              { pool = mythicPool; gotMythic = true; }
-
-            tokenIds[i] = _drawFromPool(pool, seed, i);
-        }
+        (uint256[] memory tokenIds, bool gotMythic) = _buildPack(
+            series,
+            packSize,
+            minRare,
+            minLegendary,
+            maxCopies,
+            seed,
+            pityBonus
+        );
 
         // Pity update
         packsWithoutMythic[msg.sender] = gotMythic ? 0 : packsWithoutMythic[msg.sender] + 1;
 
         // Mint all cards (duplicates accumulate in ERC-1155 balance)
-        uint256[] memory amounts = new uint256[](cfg.size);
-        for (uint256 i = 0; i < cfg.size; i++) {
+        uint256[] memory amounts = new uint256[](packSize);
+        for (uint256 i = 0; i < packSize; i++) {
             amounts[i] = 1;
             emit CardMinted(msg.sender, tokenIds[i], registry.getRarity(tokenIds[i]));
         }
@@ -163,7 +137,7 @@ contract GachaPack is Ownable, ReentrancyGuard {
         emit PackOpened(msg.sender, packType, series, tokenIds);
 
         // Refund excess
-        uint256 excess = msg.value - cfg.price;
+        uint256 excess = msg.value - packPrice;
         if (excess > 0) {
             (bool ok,) = msg.sender.call{value: excess}("");
             require(ok, "GachaPack: refund failed");
@@ -197,18 +171,259 @@ contract GachaPack is Ownable, ReentrancyGuard {
         return result;
     }
 
+    function _buildPack(
+        uint8 series,
+        uint8 packSize,
+        uint8 minRare,
+        bool minLegendary,
+        uint8 maxCopies,
+        uint256 seed,
+        uint256 pityBonus
+    ) internal view returns (uint256[] memory tokenIds, bool gotMythic) {
+        PoolSet memory pools = PoolSet({
+            common: _seriesPool(CardRegistry.Rarity.Common, series),
+            rare: _seriesPool(CardRegistry.Rarity.Rare, series),
+            legendary: _seriesPool(CardRegistry.Rarity.Legendary, series),
+            mythic: _seriesPool(CardRegistry.Rarity.Mythic, series)
+        });
+
+        tokenIds = new uint256[](packSize);
+        uint256 slot = 0;
+
+        for (uint256 g = 0; g < minRare; g++) {
+            (uint256 drawnTokenId, bool drewMythic) = _drawGuaranteedRareSlot(
+                pools,
+                tokenIds,
+                slot,
+                seed,
+                maxCopies
+            );
+            tokenIds[slot] = drawnTokenId;
+            if (drewMythic) gotMythic = true;
+            slot++;
+        }
+
+        if (minLegendary) {
+            (uint256 drawnTokenId, bool drewMythic) = _drawGuaranteedLegendarySlot(
+                pools,
+                tokenIds,
+                slot,
+                seed,
+                maxCopies
+            );
+            tokenIds[slot] = drawnTokenId;
+            if (drewMythic) gotMythic = true;
+            slot++;
+        }
+
+        for (uint256 i = slot; i < packSize; i++) {
+            (uint256 drawnTokenId, bool drewMythic) = _drawRandomSlot(
+                pools,
+                tokenIds,
+                i,
+                seed,
+                pityBonus,
+                maxCopies
+            );
+            tokenIds[i] = drawnTokenId;
+            if (drewMythic) gotMythic = true;
+        }
+    }
+
+    function _drawGuaranteedRareSlot(
+        PoolSet memory pools,
+        uint256[] memory tokenIds,
+        uint256 drawnCount,
+        uint256 seed,
+        uint8 maxCopies
+    ) internal pure returns (uint256 tokenId, bool drewMythic) {
+        uint256 roll = uint256(keccak256(abi.encodePacked(seed, drawnCount, "g"))) % 10000;
+        CardRegistry.Rarity targetRarity = CardRegistry.Rarity.Rare;
+        if (roll >= WEIGHT_LEGENDARY) {
+            targetRarity = CardRegistry.Rarity.Mythic;
+        } else if (roll >= WEIGHT_RARE) {
+            targetRarity = CardRegistry.Rarity.Legendary;
+        }
+
+        CardRegistry.Rarity actualRarity;
+        (tokenId, actualRarity) = _drawForRarity(
+            targetRarity,
+            pools,
+            tokenIds,
+            drawnCount,
+            seed,
+            drawnCount,
+            maxCopies
+        );
+        return (tokenId, actualRarity == CardRegistry.Rarity.Mythic);
+    }
+
+    function _drawGuaranteedLegendarySlot(
+        PoolSet memory pools,
+        uint256[] memory tokenIds,
+        uint256 drawnCount,
+        uint256 seed,
+        uint8 maxCopies
+    ) internal pure returns (uint256 tokenId, bool drewMythic) {
+        uint256 roll = uint256(keccak256(abi.encodePacked(seed, drawnCount, "g"))) % 10000;
+        CardRegistry.Rarity targetRarity = roll >= WEIGHT_LEGENDARY
+            ? CardRegistry.Rarity.Mythic
+            : CardRegistry.Rarity.Legendary;
+
+        CardRegistry.Rarity actualRarity;
+        (tokenId, actualRarity) = _drawForRarity(
+            targetRarity,
+            pools,
+            tokenIds,
+            drawnCount,
+            seed,
+            drawnCount,
+            maxCopies
+        );
+        return (tokenId, actualRarity == CardRegistry.Rarity.Mythic);
+    }
+
+    function _drawRandomSlot(
+        PoolSet memory pools,
+        uint256[] memory tokenIds,
+        uint256 drawnCount,
+        uint256 seed,
+        uint256 pityBonus,
+        uint8 maxCopies
+    ) internal pure returns (uint256 tokenId, bool drewMythic) {
+        uint256 roll = uint256(keccak256(abi.encodePacked(seed, drawnCount, "rarity"))) % 10000;
+        uint256 mythicThreshold = pityBonus >= (10000 - WEIGHT_LEGENDARY)
+            ? WEIGHT_LEGENDARY
+            : WEIGHT_LEGENDARY - pityBonus;
+
+        CardRegistry.Rarity targetRarity;
+        if (roll < WEIGHT_COMMON) {
+            targetRarity = CardRegistry.Rarity.Common;
+        } else if (roll < WEIGHT_RARE) {
+            targetRarity = CardRegistry.Rarity.Rare;
+        } else if (roll < mythicThreshold) {
+            targetRarity = CardRegistry.Rarity.Legendary;
+        } else {
+            targetRarity = CardRegistry.Rarity.Mythic;
+        }
+
+        CardRegistry.Rarity actualRarity;
+        (tokenId, actualRarity) = _drawForRarity(
+            targetRarity,
+            pools,
+            tokenIds,
+            drawnCount,
+            seed,
+            drawnCount,
+            maxCopies
+        );
+        return (tokenId, actualRarity == CardRegistry.Rarity.Mythic);
+    }
+
     /**
      * @dev Pick a random element from a pre-built in-memory pool.
      *      Pure memory — no external calls.
      *      Duplicates are allowed; pool size does not need to exceeds pack size.
      */
-    function _drawFromPool(
-        uint256[] memory pool,
+    function _drawForRarity(
+        CardRegistry.Rarity targetRarity,
+        PoolSet memory pools,
+        uint256[] memory tokenIds,
+        uint256 drawnCount,
         uint256 seed,
-        uint256 nonce
-    ) internal pure returns (uint256) {
-        require(pool.length > 0, "GachaPack: empty pool");
-        return pool[uint256(keccak256(abi.encodePacked(seed, nonce, "draw"))) % pool.length];
+        uint256 nonce,
+        uint8 maxCopies
+    ) internal pure returns (uint256 tokenId, CardRegistry.Rarity actualRarity) {
+        bool found;
+
+        if (targetRarity == CardRegistry.Rarity.Mythic) {
+            (found, tokenId) = _drawFromPoolWithCap(pools.mythic, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Mythic);
+            (found, tokenId) = _drawFromPoolWithCap(pools.legendary, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Legendary);
+            (found, tokenId) = _drawFromPoolWithCap(pools.rare, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Rare);
+            (found, tokenId) = _drawFromPoolWithCap(pools.common, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Common);
+        } else if (targetRarity == CardRegistry.Rarity.Legendary) {
+            (found, tokenId) = _drawFromPoolWithCap(pools.legendary, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Legendary);
+            (found, tokenId) = _drawFromPoolWithCap(pools.rare, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Rare);
+            (found, tokenId) = _drawFromPoolWithCap(pools.common, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Common);
+        } else if (targetRarity == CardRegistry.Rarity.Rare) {
+            (found, tokenId) = _drawFromPoolWithCap(pools.rare, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Rare);
+            (found, tokenId) = _drawFromPoolWithCap(pools.legendary, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Legendary);
+            (found, tokenId) = _drawFromPoolWithCap(pools.common, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Common);
+        } else {
+            (found, tokenId) = _drawFromPoolWithCap(pools.common, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Common);
+            (found, tokenId) = _drawFromPoolWithCap(pools.legendary, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Legendary);
+            (found, tokenId) = _drawFromPoolWithCap(pools.rare, tokenIds, drawnCount, seed, nonce, maxCopies);
+            if (found) return (tokenId, CardRegistry.Rarity.Rare);
+        }
+
+        revert("GachaPack: no available card");
+    }
+
+    function _drawFromPoolWithCap(
+        uint256[] memory pool,
+        uint256[] memory tokenIds,
+        uint256 drawnCount,
+        uint256 seed,
+        uint256 nonce,
+        uint8 maxCopies
+    ) internal pure returns (bool found, uint256 tokenId) {
+        uint256 available;
+        for (uint256 i = 0; i < pool.length; i++) {
+            if (_isBelowCopyCap(tokenIds, drawnCount, pool[i], maxCopies)) {
+                available++;
+            }
+        }
+
+        if (available == 0) {
+            return (false, 0);
+        }
+
+        uint256 pickIndex = uint256(
+            keccak256(abi.encodePacked(seed, nonce, "draw-cap", pool.length, available))
+        ) % available;
+        uint256 cursor = 0;
+
+        for (uint256 i = 0; i < pool.length; i++) {
+            uint256 candidate = pool[i];
+            if (!_isBelowCopyCap(tokenIds, drawnCount, candidate, maxCopies)) {
+                continue;
+            }
+            if (cursor == pickIndex) {
+                return (true, candidate);
+            }
+            cursor++;
+        }
+
+        revert("GachaPack: draw failed");
+    }
+
+    function _isBelowCopyCap(
+        uint256[] memory tokenIds,
+        uint256 drawnCount,
+        uint256 candidate,
+        uint8 maxCopies
+    ) internal pure returns (bool) {
+        uint8 copies = 0;
+        for (uint256 i = 0; i < drawnCount; i++) {
+            if (tokenIds[i] != candidate) continue;
+            copies++;
+            if (copies >= maxCopies) {
+                return false;
+            }
+        }
+        return true;
     }
 
     function _getPityBonus(address player) internal view returns (uint256) {

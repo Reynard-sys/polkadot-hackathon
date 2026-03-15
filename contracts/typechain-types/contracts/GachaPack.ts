@@ -267,11 +267,12 @@ export interface GachaPack extends BaseContract {
   packConfigs: TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [bigint, bigint, bigint, boolean] & {
+      [bigint, bigint, bigint, boolean, bigint] & {
         price: bigint;
         size: bigint;
         minRare: bigint;
         minLegendary: boolean;
+        maxCopies: bigint;
       }
     ],
     "view"
@@ -328,11 +329,12 @@ export interface GachaPack extends BaseContract {
   ): TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [bigint, bigint, bigint, boolean] & {
+      [bigint, bigint, bigint, boolean, bigint] & {
         price: bigint;
         size: bigint;
         minRare: bigint;
         minLegendary: boolean;
+        maxCopies: bigint;
       }
     ],
     "view"

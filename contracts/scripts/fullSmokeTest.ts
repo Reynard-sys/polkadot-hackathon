@@ -101,7 +101,7 @@ async function main() {
   // ─── 6. Open packs ───────────────────────────────────────────────────────
   console.log("\n6. Opening packs as deployer...");
   const iface = new ethers.Interface([
-    "event PackOpened(address indexed player, uint8 packType, uint256[] tokenIds)",
+    "event PackOpened(address indexed player, uint8 packType, uint8 series, uint256[] tokenIds)",
   ]);
 
   for (const [packName, method, price] of [
@@ -111,7 +111,7 @@ async function main() {
   ] as const) {
     process.stdout.write(`   Opening ${packName}... `);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tx = await (gachaPack as any)[method]({
+    const tx = await (gachaPack as any)[method](0, {
       value: ethers.parseEther(price),
       ...GAS_OVERRIDES,
     });
