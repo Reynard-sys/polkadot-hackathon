@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, useCallback } from "react";
+import SvgButton from "@/components/svg-button";
 import { motion, AnimatePresence } from "motion/react";
 import Footer from "@/components/footer";
 import { useWallet } from "@/context/wallet-context";
@@ -356,14 +357,45 @@ function DetailCard({ card }: { card: OwnedCard }) {
   );
 }
 
+// ── Upcoming selling modal ─────────────────────────────────────────────────────
+
+function UpcomingSellingModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative z-10 bg-gradient-to-b from-[#0e1e4a] to-[#0a1228] border border-[#1e3a6e] rounded-2xl p-8 max-w-sm w-full flex flex-col items-center gap-4 text-center shadow-2xl">
+        <div className="w-16 h-16 rounded-full bg-[#1A56DB]/20 border border-[#1A56DB]/40 flex items-center justify-center">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="4" width="11" height="11" rx="2" stroke="white" strokeWidth="1.5" />
+            <rect x="17" y="4" width="11" height="11" rx="2" stroke="white" strokeWidth="1.5" />
+            <rect x="4" y="17" width="11" height="11" rx="2" stroke="white" strokeWidth="1.5" />
+            <rect x="17" y="17" width="11" height="11" rx="2" stroke="white" strokeWidth="1.5" />
+          </svg>
+        </div>
+        <h2 className="text-white font-bold text-xl">Upcoming Feature</h2>
+        <p className="text-[#8a9fc8] text-sm leading-relaxed">
+          Selling cards is coming soon! Stay tuned for updates.
+        </p>
+        <SvgButton onClick={onClose} className="w-full h-[60px] mt-2">
+          Go back
+        </SvgButton>
+      </div>
+    </div>
+  );
+}
+
 // ── Sell button stubs ──────────────────────────────────────────────────────────
 
-function SellButtonMobile() {
+function SellButtonMobile({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
       className="relative mx-auto h-[47.957px] w-full max-w-[348.459px]"
       aria-label="Sell card"
+      onClick={onClick}
     >
       <span className="pointer-events-none absolute inset-[-16.22%_-3.72%_-37.84%_-3.72%]">
         <Image
@@ -381,12 +413,13 @@ function SellButtonMobile() {
   );
 }
 
-function SellButtonDesktop() {
+function SellButtonDesktop({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
       className="relative h-[47.957px] w-full max-w-[434.323px]"
       aria-label="Sell card"
+      onClick={onClick}
     >
       <span className="pointer-events-none absolute inset-[-16.22%_-2.98%_-37.84%_-2.98%]">
         <Image
@@ -413,6 +446,7 @@ function DesktopCardModal({
   card: OwnedCard;
   onClose: () => void;
 }) {
+  const [showSellModal, setShowSellModal] = useState(false);
   const figmaRarity = toFigmaRarity(card.rarity);
   const meta = RARITY_META[figmaRarity];
   return (
@@ -495,11 +529,14 @@ function DesktopCardModal({
               />
             </div>
             <div className="mt-4">
-              <SellButtonDesktop />
+              <SellButtonDesktop onClick={() => setShowSellModal(true)} />
             </div>
           </div>
         </div>
       </div>
+      {showSellModal && (
+        <UpcomingSellingModal onClose={() => setShowSellModal(false)} />
+      )}
     </div>
   );
 }
@@ -743,6 +780,7 @@ export default function Inventory() {
   const [activeFilter, setActiveFilter] = useState<"all" | CardRarity>("all");
   const [selectedCard, setSelectedCard] = useState<OwnedCard | null>(null);
   const [mobilePage, setMobilePage] = useState(1);
+  const [showMobileSellModal, setShowMobileSellModal] = useState(false);
 
   // Desktop state
   const [desktopSearch, setDesktopSearch] = useState("");
@@ -985,8 +1023,11 @@ export default function Inventory() {
               </div>
 
               <div className="w-full pb-2">
-                <SellButtonMobile />
+                <SellButtonMobile onClick={() => setShowMobileSellModal(true)} />
               </div>
+              {showMobileSellModal && (
+                <UpcomingSellingModal onClose={() => setShowMobileSellModal(false)} />
+              )}
             </div>
           </section>
         )}
