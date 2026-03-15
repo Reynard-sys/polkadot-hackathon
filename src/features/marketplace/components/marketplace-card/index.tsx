@@ -10,7 +10,6 @@ interface MarketplaceCardProps {
     CardPriceChangePositive?: boolean;
     CardImage?: string;
     onBuy?: () => void;
-    onSell?: () => void;
 }
 
 function CardButton({
@@ -53,7 +52,6 @@ export default function MarketplaceCard({
     CardPriceChangePositive = true,
     CardImage,
     onBuy,
-    onSell,
 }: MarketplaceCardProps) {
     return (
         <div className="flex items-stretch w-100 lg:w-auto gap-5 bg-[linear-gradient(to_bottom,#2D3548_8%,#030A30_100%)]
@@ -88,7 +86,6 @@ export default function MarketplaceCard({
                         {/* Action Buttons */}
                         <div className="flex gap-2 lg:mt-10">
                             <CardButton label="Buy" onClick={onBuy} variant="buy" />
-                            <CardButton label="Sell" onClick={onSell} variant="sell" />
                         </div>
                     </div>
                 </div>
