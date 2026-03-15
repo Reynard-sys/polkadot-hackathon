@@ -106,26 +106,6 @@ const ANIME_FILTERS: Array<{ id: "all" | CardAnime; label: string }> = [
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
-function IconLine({
-  className = "h-6 w-6 text-white",
-}: {
-  className?: string;
-}) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M5 7h14" />
-      <path d="M5 12h14" />
-      <path d="M5 17h14" />
-    </svg>
-  );
-}
-
 function BackIcon() {
   return (
     <svg
@@ -141,36 +121,16 @@ function BackIcon() {
   );
 }
 
-function SetInfoIcon() {
+function MobileDetailBackButton({ onBack }: { onBack: () => void }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-[18px] w-[18px] text-white"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
+    <button
+      type="button"
+      onClick={onBack}
+      className="fixed left-4 top-[84px] z-[55] flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#151932]/85 shadow-[0_10px_24px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+      aria-label="Back"
     >
-      <path d="M6 4h12v4c0 3.5-2.7 5.6-6 6-3.3-.4-6-2.5-6-6V4z" />
-      <path d="M12 14v6" />
-      <path d="M8.5 20h7" />
-    </svg>
-  );
-}
-
-function CardInfoIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-[20px] w-[20px] text-white"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-    >
-      <circle cx="8" cy="9" r="2.4" />
-      <path d="M3.8 16.3c1-2.1 2.9-3.2 4.2-3.2s3.1 1.1 4.2 3.2" />
-      <circle cx="16.2" cy="9.7" r="1.9" />
-      <path d="M13.8 15.8c.7-1.3 1.8-2 2.9-2 .8 0 1.8.4 2.6 1.4" />
-    </svg>
+      <BackIcon />
+    </button>
   );
 }
 
@@ -251,50 +211,6 @@ function InventoryTopCard() {
   );
 }
 
-function InventoryMainMobileHeader() {
-  return (
-    <div className="fixed inset-x-0 top-0 z-50 h-[74px] border-b border-[rgba(151,151,151,0.2)] bg-[#272727] md:hidden">
-      <div className="mx-auto flex h-full w-full max-w-[412px] items-center justify-between px-[16px]">
-        <div className="h-[28px] w-[98px]" />
-        <button
-          type="button"
-          className="flex h-[40px] w-[40px] items-center justify-center"
-          aria-label="Open menu"
-        >
-          <IconLine />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function InventoryDetailMobileHeader({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="fixed inset-x-0 top-0 z-50 h-[74px] border-b border-[rgba(151,151,151,0.2)] bg-[#272727] md:hidden">
-      <div className="mx-auto grid h-full w-full max-w-[412px] grid-cols-[40px_1fr_40px] items-center px-[16px]">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex h-[40px] w-[40px] items-center justify-center"
-          aria-label="Back"
-        >
-          <BackIcon />
-        </button>
-        <p className="text-center text-[20px] leading-[16px] font-normal text-white">
-          View
-        </p>
-        <button
-          type="button"
-          className="flex h-[40px] w-[40px] items-center justify-center"
-          aria-label="Open menu"
-        >
-          <IconLine />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── Card sprite (grid thumbnail) ───────────────────────────────────────────────
 
 function CardSprite({
@@ -335,9 +251,6 @@ function CardSprite({
 // ── Detail card (large view) ───────────────────────────────────────────────────
 
 function DetailCard({ card }: { card: OwnedCard }) {
-  const figmaRarity = toFigmaRarity(card.rarity);
-  const meta = RARITY_META[figmaRarity];
-
   return (
     <div className="relative h-[507px] w-full max-w-[360px] overflow-hidden rounded-[12px] border border-white/15 shadow-[0_10px_24px_rgba(0,0,0,0.45)]">
       {card.imageUrl ? (
@@ -369,10 +282,42 @@ function UpcomingSellingModal({ onClose }: { onClose: () => void }) {
       <div className="relative z-10 bg-gradient-to-b from-[#0e1e4a] to-[#0a1228] border border-[#1e3a6e] rounded-2xl p-8 max-w-sm w-full flex flex-col items-center gap-4 text-center shadow-2xl">
         <div className="w-16 h-16 rounded-full bg-[#1A56DB]/20 border border-[#1A56DB]/40 flex items-center justify-center">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect x="4" y="4" width="11" height="11" rx="2" stroke="white" strokeWidth="1.5" />
-            <rect x="17" y="4" width="11" height="11" rx="2" stroke="white" strokeWidth="1.5" />
-            <rect x="4" y="17" width="11" height="11" rx="2" stroke="white" strokeWidth="1.5" />
-            <rect x="17" y="17" width="11" height="11" rx="2" stroke="white" strokeWidth="1.5" />
+            <rect
+              x="4"
+              y="4"
+              width="11"
+              height="11"
+              rx="2"
+              stroke="white"
+              strokeWidth="1.5"
+            />
+            <rect
+              x="17"
+              y="4"
+              width="11"
+              height="11"
+              rx="2"
+              stroke="white"
+              strokeWidth="1.5"
+            />
+            <rect
+              x="4"
+              y="17"
+              width="11"
+              height="11"
+              rx="2"
+              stroke="white"
+              strokeWidth="1.5"
+            />
+            <rect
+              x="17"
+              y="17"
+              width="11"
+              height="11"
+              rx="2"
+              stroke="white"
+              strokeWidth="1.5"
+            />
           </svg>
         </div>
         <h2 className="text-white font-bold text-xl">Upcoming Feature</h2>
@@ -505,7 +450,9 @@ function DesktopCardModal({
 
             {/* Description box */}
             <div className="mt-5 flex-1 rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] pt-[17px] pb-4">
-              <p className="text-[16px] leading-[24px] font-bold text-white">Description</p>
+              <p className="text-[16px] leading-[24px] font-bold text-white">
+                Description
+              </p>
               {card.abilityDescription && (
                 <p className="mt-3 text-[14px] leading-[22.75px] text-[#99a1af]">
                   {card.abilityDescription}
@@ -879,11 +826,8 @@ export default function Inventory() {
         <div className="absolute right-[-258px] top-[880px] h-[924px] w-[436px] rounded-full bg-[#001fe8]/24 blur-[170px]" />
       </div>
 
-      {/* Mobile headers */}
-      {!selectedCard ? (
-        <InventoryMainMobileHeader />
-      ) : (
-        <InventoryDetailMobileHeader onBack={() => setSelectedCard(null)} />
+      {selectedCard && (
+        <MobileDetailBackButton onBack={() => setSelectedCard(null)} />
       )}
 
       {/* ── Mobile layout ── */}
@@ -994,7 +938,9 @@ export default function Inventory() {
 
               {/* Traits */}
               <div className="w-full max-w-[348px] space-y-1">
-                <p className="text-[12px] leading-[16px] text-[#e8e8e8]">Traits</p>
+                <p className="text-[12px] leading-[16px] text-[#e8e8e8]">
+                  Traits
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {(selectedCard.traits ?? []).map((t) => (
                     <span
@@ -1009,24 +955,31 @@ export default function Inventory() {
 
               {/* Description box */}
               <div className="w-full max-w-[361px] rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] pt-[17px] pb-4">
-                <p className="text-[12px] leading-[24px] font-bold text-white">Description</p>
+                <p className="text-[12px] leading-[24px] font-bold text-white">
+                  Description
+                </p>
                 {selectedCard.abilityDescription && (
                   <p className="mt-2 text-[13px] leading-[22px] font-normal text-[#99a1af]">
                     {selectedCard.abilityDescription}
                   </p>
                 )}
-                {(selectedCard.leaderEligible ?? false) && selectedCard.leaderDescription && (
-                  <p className="mt-4 text-[13px] leading-[22px] font-normal text-[#99a1af]">
-                    {selectedCard.leaderDescription}
-                  </p>
-                )}
+                {(selectedCard.leaderEligible ?? false) &&
+                  selectedCard.leaderDescription && (
+                    <p className="mt-4 text-[13px] leading-[22px] font-normal text-[#99a1af]">
+                      {selectedCard.leaderDescription}
+                    </p>
+                  )}
               </div>
 
               <div className="w-full pb-2">
-                <SellButtonMobile onClick={() => setShowMobileSellModal(true)} />
+                <SellButtonMobile
+                  onClick={() => setShowMobileSellModal(true)}
+                />
               </div>
               {showMobileSellModal && (
-                <UpcomingSellingModal onClose={() => setShowMobileSellModal(false)} />
+                <UpcomingSellingModal
+                  onClose={() => setShowMobileSellModal(false)}
+                />
               )}
             </div>
           </section>

@@ -505,7 +505,11 @@ export default function CardReveal() {
                   className="relative"
                   initial={{ opacity: 0, scale: 0.8, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: "easeOut", delay: i * 0.1 }}
+                  transition={{
+                    duration: 0.4,
+                    ease: "easeOut",
+                    delay: i * 0.1,
+                  }}
                 >
                   {card.imageUrl ? (
                     <Image
@@ -519,7 +523,9 @@ export default function CardReveal() {
                     />
                   ) : (
                     <div className="w-full aspect-3/4 rounded-lg bg-[#2d3548] flex items-center justify-center">
-                      <span className="text-white/30 text-xs text-center px-1">#{card.tokenId}</span>
+                      <span className="text-white/30 text-xs text-center px-1">
+                        #{card.tokenId}
+                      </span>
                     </div>
                   )}
                 </motion.div>

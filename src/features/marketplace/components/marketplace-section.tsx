@@ -354,9 +354,9 @@ export default function MarketplaceSection() {
     sort: SortOrder;
   }>({ rarity: "ALL", element: "ALL", sort: "low-to-high" });
 
-  const [buyCard, setBuyCard] = useState<
-    (typeof MARKETPLACE_CARDS)[0] | null
-  >(null);
+  const [buyCard, setBuyCard] = useState<(typeof MARKETPLACE_CARDS)[0] | null>(
+    null,
+  );
 
   const filteredCards = useMemo(() => {
     let cards = [...MARKETPLACE_CARDS];
