@@ -23,11 +23,9 @@ const TRANSFER_BATCH_TOPIC =
 const ZERO_TOPIC =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 const INDEX_LOOKUP_ATTEMPTS = 12;
-const FRONTIER_GAS = {
-  type: 0,
-  gasPrice: BigInt("10000000000"),
-  gasLimit: BigInt("10000000000"),
-} as const;
+const FRONTIER_GAS_LIMIT = BigInt("10000000000");
+const FRONTIER_GAS_PRICE_FLOOR = BigInt("20000000000");
+const FRONTIER_GAS_PRICE_BUMP = BigInt("2000000000");
 const GENERIC_ERROR_SNIPPETS = [
   "could not coalesce error",
   "internal json-rpc error",
@@ -286,19 +284,35 @@ async function findPackOpenedTokenIdsByTx(
   return [];
 }
 
-async function hasPendingTransaction(
+async function buildFrontierGas(
   provider: ethers.JsonRpcProvider,
-  address: string,
-): Promise<boolean> {
+  minGasPrice?: bigint | null,
+): Promise<{ type: 0; gasPrice: bigint; gasLimit: bigint }> {
   try {
-    const [latestNonce, pendingNonce] = await Promise.all([
-      provider.getTransactionCount(address, "latest"),
-      provider.getTransactionCount(address, "pending"),
-    ]);
-    return pendingNonce > latestNonce;
+    const feeData = await provider.getFeeData();
+    const suggestedGasPrice =
+      feeData.gasPrice ??
+      feeData.maxFeePerGas ??
+      feeData.maxPriorityFeePerGas ??
+      BigInt("0");
+    return {
+      type: 0,
+      gasPrice: [
+        FRONTIER_GAS_PRICE_FLOOR,
+        minGasPrice ?? BigInt("0"),
+        suggestedGasPrice * BigInt("2"),
+      ].reduce((max, value) => (value > max ? value : max), BigInt("0")),
+      gasLimit: FRONTIER_GAS_LIMIT,
+    };
   } catch (error) {
-    console.warn("[GachaPack] Pending nonce check failed:", error);
-    return false;
+    console.warn("[GachaPack] Fee data lookup failed, using gas floor:", error);
+    return {
+      type: 0,
+      gasPrice: minGasPrice && minGasPrice > FRONTIER_GAS_PRICE_FLOOR
+        ? minGasPrice
+        : FRONTIER_GAS_PRICE_FLOOR,
+      gasLimit: FRONTIER_GAS_LIMIT,
+    };
   }
 }
 
@@ -309,6 +323,8 @@ export function usePackOpening() {
   const [error, setError] = useState<string | null>(null);
   const [simMode] = useState(isSimulationMode);
   const openingRef = useRef(false);
+  const nextGasPriceRef = useRef<bigint | null>(null);
+  const lastGasPriceRef = useRef<bigint | null>(null);
 
   const openPack = async (packType: PackType, series: PackSeries) => {
     if (openingRef.current) return;
@@ -335,19 +351,18 @@ export function usePackOpening() {
         const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
         const cfg = PACK_CONFIG[packType];
         const startBlock = await readProvider.getBlockNumber();
-
-        if (await hasPendingTransaction(readProvider, signerAddress)) {
-          setError(
-            "A previous Westend transaction is still pending. Wait for it to confirm, or Speed Up / Cancel it in MetaMask before opening another pack.",
-          );
-          return;
-        }
+        const gasOverrides = await buildFrontierGas(
+          readProvider,
+          nextGasPriceRef.current,
+        );
+        lastGasPriceRef.current = gasOverrides.gasPrice;
 
         const seriesIndex = series === "onepiece" ? 1 : 0;
         const tx = await contract[cfg.method](seriesIndex, {
           value: ethers.parseEther(cfg.price),
-          ...FRONTIER_GAS,
+          ...gasOverrides,
         });
+        nextGasPriceRef.current = null;
 
         const minedReceipt = await readProvider.waitForTransaction(tx.hash, 1, 60_000);
         const delayMs =
@@ -437,8 +452,11 @@ export function usePackOpening() {
         msg.includes("Priority is too low") ||
         msg.includes("too low priority to replace another transaction already in the pool")
       ) {
+        nextGasPriceRef.current =
+          (lastGasPriceRef.current ?? FRONTIER_GAS_PRICE_FLOOR) +
+          FRONTIER_GAS_PRICE_BUMP;
         setError(
-          "A previous transaction with this nonce is still pending. Wait for it to confirm, or Speed Up / Cancel it in MetaMask before retrying.",
+          "Westend still sees a stale transaction for this nonce, even if MetaMask Activity is empty. Retry once; the next attempt will use a higher gas price.",
         );
       } else if (msg.includes("insufficient funds")) {
         setError("Insufficient WND balance.");
