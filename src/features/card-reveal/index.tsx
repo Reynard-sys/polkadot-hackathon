@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -66,60 +66,98 @@ export default function CardReveal() {
 
   const { wallet } = useWallet();
   const { addPulledCards } = useInventory(wallet?.address ?? null);
+  const initialInventoryAddressRef = useRef(wallet?.address ?? "anonymous");
+  const resolvedCardsRef = useRef<RevealCard[] | null>(null);
+  const resolvedTokenIdsRef = useRef<number[] | null>(null);
+  const resolvedSeriesRef = useRef<PackSeries>("naruto");
+  const inventorySavedRef = useRef(false);
 
   // Load token IDs from sessionStorage on mount
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem("packResult");
-      if (!raw) {
-        setNoData(true);
-        return;
-      }
-      const { tokenIds, series: storedSeries } = JSON.parse(raw) as {
-        tokenIds: number[];
-        series?: PackSeries;
-      };
-      if (!tokenIds || tokenIds.length === 0) {
-        setNoData(true);
-        return;
-      }
+    let cancelled = false;
 
-      if (storedSeries) setSeries(storedSeries);
+    queueMicrotask(() => {
+      if (cancelled) return;
 
-      const lookup = new Map<string, CardEntry>(
-        (cardsData as CardEntry[]).map((c) => [c.nftTokenId, c]),
-      );
+      try {
+        if (resolvedCardsRef.current && resolvedTokenIdsRef.current) {
+          setSeries(resolvedSeriesRef.current);
+          setCards(resolvedCardsRef.current);
 
-      const resolved: RevealCard[] = tokenIds.map((id) => {
-        const entry = lookup.get(String(id));
-        if (entry) {
+          if (!inventorySavedRef.current) {
+            inventorySavedRef.current = true;
+            addPulledCards(
+              resolvedTokenIdsRef.current,
+              initialInventoryAddressRef.current,
+            );
+          }
+          return;
+        }
+
+        const raw = sessionStorage.getItem("packResult");
+        if (!raw) {
+          setNoData(true);
+          return;
+        }
+
+        const { tokenIds, series: storedSeries } = JSON.parse(raw) as {
+          tokenIds: number[];
+          series?: PackSeries;
+        };
+        if (!tokenIds || tokenIds.length === 0) {
+          setNoData(true);
+          return;
+        }
+
+        sessionStorage.removeItem("packResult");
+
+        const resolvedSeries = storedSeries ?? "naruto";
+        const lookup = new Map<string, CardEntry>(
+          (cardsData as CardEntry[]).map((c) => [c.nftTokenId, c]),
+        );
+
+        const resolved: RevealCard[] = tokenIds.map((id) => {
+          const entry = lookup.get(String(id));
+          if (entry) {
+            return {
+              tokenId: id,
+              name: entry.name,
+              subtitle: entry.subtitle,
+              rarity: entry.rarity,
+              anime: entry.anime,
+              imageUrl: entry.imageUrl,
+            };
+          }
           return {
             tokenId: id,
-            name: entry.name,
-            subtitle: entry.subtitle,
-            rarity: entry.rarity,
-            anime: entry.anime,
-            imageUrl: entry.imageUrl,
+            name: `Card #${id}`,
+            subtitle: "",
+            rarity: "Common",
+            anime: "Unknown",
+            imageUrl: "",
           };
+        });
+
+        resolvedCardsRef.current = resolved;
+        resolvedTokenIdsRef.current = tokenIds;
+        resolvedSeriesRef.current = resolvedSeries;
+
+        setSeries(resolvedSeries);
+        setCards(resolved);
+
+        if (!inventorySavedRef.current) {
+          inventorySavedRef.current = true;
+          addPulledCards(tokenIds, initialInventoryAddressRef.current);
         }
-        return {
-          tokenId: id,
-          name: `Card #${id}`,
-          subtitle: "",
-          rarity: "Common",
-          anime: "Unknown",
-          imageUrl: "",
-        };
-      });
+      } catch {
+        if (!cancelled) setNoData(true);
+      }
+    });
 
-      setCards(resolved);
-
-      // Save pulled cards to this wallet's inventory
-      addPulledCards(tokenIds, wallet?.address ?? "anonymous");
-    } catch {
-      setNoData(true);
-    }
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [addPulledCards]);
 
   const allDone = revealedCount >= cards.length && cards.length > 0;
   const isLastCard = cards.length > 0 && revealedCount === cards.length - 1;
@@ -189,10 +227,10 @@ export default function CardReveal() {
   return (
     <PageBackground>
       {/* Hidden preload images — fetched immediately, ready when user taps Next */}
-      {preloadCards.map((c) =>
+      {preloadCards.map((c, index) =>
         c.imageUrl ? (
           <Image
-            key={`pre-${c.tokenId}`}
+            key={`pre-${revealedCount + 1 + index}-${c.tokenId}`}
             src={c.imageUrl}
             alt=""
             width={736}

@@ -23,6 +23,18 @@ const TRANSFER_BATCH_TOPIC =
 const ZERO_TOPIC =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 const INDEX_LOOKUP_ATTEMPTS = 12;
+const FRONTIER_GAS = {
+  type: 0,
+  gasPrice: BigInt("10000000000"),
+  gasLimit: BigInt("10000000000"),
+} as const;
+const GENERIC_ERROR_SNIPPETS = [
+  "could not coalesce error",
+  "internal json-rpc error",
+  "missing revert data",
+  "[object object]",
+  "[unknown error]",
+];
 
 function isSimulationMode(): boolean {
   const addr = GACHA_PACK_ADDRESS;
@@ -35,6 +47,110 @@ function isSimulationMode(): boolean {
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+function decodePackError(errorData: string, packInterface: ethers.Interface): string | null {
+  try {
+    const parsed = packInterface.parseError(errorData);
+    if (!parsed) return null;
+
+    if (parsed.name === "InsufficientPayment") {
+      const sent = parsed.args[0] as bigint;
+      const required = parsed.args[1] as bigint;
+      return `Insufficient payment: sent ${ethers.formatEther(sent)} WND, requires ${ethers.formatEther(required)} WND.`;
+    }
+
+    if (parsed.name === "InvalidSeries") {
+      return `Invalid pack series: ${String(parsed.args[0])}.`;
+    }
+
+    return parsed.name;
+  } catch {
+    return null;
+  }
+}
+
+function collectErrorMessages(
+  value: unknown,
+  bucket: Set<string>,
+  seen: WeakSet<object>,
+): void {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed) bucket.add(trimmed);
+    return;
+  }
+
+  if (!value || typeof value !== "object") return;
+  if (seen.has(value)) return;
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    for (const item of value) collectErrorMessages(item, bucket, seen);
+    return;
+  }
+
+  const obj = value as Record<string, unknown>;
+  for (const key of ["shortMessage", "reason", "message", "details"]) {
+    const entry = obj[key];
+    if (typeof entry === "string" && entry.trim()) {
+      bucket.add(entry.trim());
+    }
+  }
+
+  for (const key of ["error", "info", "cause", "data", "payload", "value"]) {
+    if (key in obj) collectErrorMessages(obj[key], bucket, seen);
+  }
+}
+
+function collectErrorData(
+  value: unknown,
+  bucket: Set<string>,
+  seen: WeakSet<object>,
+): void {
+  if (typeof value === "string") {
+    if (/^0x[0-9a-fA-F]{8,}$/.test(value)) bucket.add(value);
+    return;
+  }
+
+  if (!value || typeof value !== "object") return;
+  if (seen.has(value)) return;
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    for (const item of value) collectErrorData(item, bucket, seen);
+    return;
+  }
+
+  const obj = value as Record<string, unknown>;
+  for (const key of ["data", "error", "info", "cause"]) {
+    if (key in obj) collectErrorData(obj[key], bucket, seen);
+  }
+}
+
+function extractMsg(error: unknown, packInterface: ethers.Interface): string {
+  const dataBucket = new Set<string>();
+  collectErrorData(error, dataBucket, new WeakSet<object>());
+  for (const errorData of dataBucket) {
+    const decoded = decodePackError(errorData, packInterface);
+    if (decoded) return decoded;
+  }
+
+  const messageBucket = new Set<string>();
+  collectErrorMessages(error, messageBucket, new WeakSet<object>());
+  const messages = [...messageBucket];
+  const nonGeneric = messages.find((message) => {
+    const lowered = message.toLowerCase();
+    return !GENERIC_ERROR_SNIPPETS.some((snippet) => lowered.includes(snippet));
+  });
+  if (nonGeneric) return nonGeneric;
+  if (messages.length > 0) return messages[0];
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return "[unknown error]";
+  }
+}
 
 export interface PackResult {
   tokenIds: number[];
@@ -184,6 +300,7 @@ export function usePackOpening() {
     setIsOpening(true);
     setError(null);
     setResult(null);
+    const packInterface = new ethers.Interface(GACHA_PACK_ABI);
 
     try {
       if (!simMode) {
@@ -200,15 +317,8 @@ export function usePackOpening() {
         const signerAddress = await signer.getAddress();
         const readProvider = new ethers.JsonRpcProvider(WESTEND_READ_RPC);
         const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
-        const packInterface = new ethers.Interface(GACHA_PACK_ABI);
         const cfg = PACK_CONFIG[packType];
         const startBlock = await readProvider.getBlockNumber();
-
-        const FRONTIER_GAS = {
-          maxFeePerGas: BigInt("200000000"),
-          maxPriorityFeePerGas: BigInt("100000000"),
-          gasLimit: BigInt("10000000000"),
-        };
 
         const seriesIndex = series === "onepiece" ? 1 : 0;
         const tx = await contract[cfg.method](seriesIndex, {
@@ -291,31 +401,7 @@ export function usePackOpening() {
       });
     } catch (err: unknown) {
       console.error("[GachaPack] raw error:", err);
-
-      const extractMsg = (e: unknown): string => {
-        if (!e || typeof e !== "object") return String(e);
-        const obj = e as Record<string, unknown>;
-        if (typeof obj.shortMessage === "string") return obj.shortMessage;
-        if (typeof obj.reason === "string") return obj.reason;
-        if (typeof obj.message === "string") return obj.message;
-        if (obj.info && typeof obj.info === "object") {
-          const infoError = (obj.info as Record<string, unknown>).error;
-          if (
-            infoError &&
-            typeof infoError === "object" &&
-            typeof (infoError as Record<string, unknown>).message === "string"
-          ) {
-            return (infoError as Record<string, string>).message;
-          }
-        }
-        try {
-          return JSON.stringify(e);
-        } catch {
-          return "[unknown error]";
-        }
-      };
-
-      const msg = extractMsg(err);
+      const msg = extractMsg(err, packInterface);
       if (
         msg.includes("user rejected") ||
         msg.includes("User denied") ||
