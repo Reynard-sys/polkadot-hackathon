@@ -1,0 +1,29 @@
+﻿===========================================
+  Anime Gacha TCG ΓÇö Contract Deployment
+===========================================
+Deployer:  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+Network:   localhost (chainId 31337)
+Balance:   9999.994788065 WND
+Confirms:  1
+
+1. Deploying CardRegistry...
+   Γ£à CardRegistry: 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
+2. Deploying GachaNFT...
+   Γ£à GachaNFT:     0x5FC8d32690cc91D4c39d9d3abcBD16989F875707
+3. Deploying GachaPack...
+   Γ£à GachaPack:    0x0165878A594ca255338adfa4d48449f69242Eb8F
+4. Authorising GachaPack as minter...
+   Γ£à Minter authorised
+
+===========================================
+  Deployment Complete Γ£à
+===========================================
+  CARD_REGISTRY_ADDRESS=0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
+  NEXT_PUBLIC_GACHA_NFT_ADDRESS=0x5FC8d32690cc91D4c39d9d3abcBD16989F875707
+  NEXT_PUBLIC_GACHA_PACK_ADDRESS=0x0165878A594ca255338adfa4d48449f69242Eb8F
+
+≡ƒæë Next steps:
+  1. Set CARD_REGISTRY_ADDRESS in contracts/.env
+  2. npx hardhat run scripts/seedCards.ts --network <network>
+  3. Copy NEXT_PUBLIC_* into gacha/.env.local
+  4. npm run dev

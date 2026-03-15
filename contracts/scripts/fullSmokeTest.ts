@@ -7,7 +7,11 @@ import cardsJson from "../../src/data/cards.json";
  * No environment variables needed — addresses are passed in-memory.
  *
  * Usage:
- *   npx hardhat run scripts/fullSmokeTest.ts --network localhost
+ *   npx hardhat run scripts/fullSmokeTest.ts --network westend_assethub
+ *
+ * NOTE: GAS_OVERRIDES are required for Westend AssetHub's Frontier EVM node.
+ * eth_estimateGas returns "Metadata error" on this node, so we bypass it by
+ * supplying explicit gasPrice + gasLimit on all contract calls.
  */
 
 const RARITY_MAP: Record<string, number> = {
@@ -15,6 +19,12 @@ const RARITY_MAP: Record<string, number> = {
 };
 const ANIME_MAP: Record<string, number> = {
   Naruto: 0, OnePiece: 1, Pokemon: 2,
+};
+
+// Explicit gas overrides — bypass eth_estimateGas on Frontier
+const GAS_OVERRIDES = {
+  gasPrice: 1_000_000_000n, // 1 gwei
+  gasLimit: 12_000_000n,
 };
 
 async function main() {
@@ -32,7 +42,7 @@ async function main() {
   // ─── 1. Deploy CardRegistry ───────────────────────────────────────────────
   console.log("1. Deploying CardRegistry...");
   const CardRegistryFactory = await ethers.getContractFactory("CardRegistry");
-  const registry = await CardRegistryFactory.deploy();
+  const registry = await CardRegistryFactory.deploy(GAS_OVERRIDES);
   await registry.waitForDeployment();
   const registryAddr = await registry.getAddress();
   console.log("   ✅ CardRegistry:", registryAddr);
@@ -44,7 +54,11 @@ async function main() {
     caps[parseInt(card.nftTokenId, 10) - 1] = BigInt(card.maxSupply);
   }
   const GachaNFTFactory = await ethers.getContractFactory("GachaNFT");
-  const gachaNFT = await GachaNFTFactory.deploy(baseUri, caps as [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]);
+  const gachaNFT = await GachaNFTFactory.deploy(
+    baseUri,
+    caps as [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint],
+    GAS_OVERRIDES,
+  );
   await gachaNFT.waitForDeployment();
   const nftAddr = await gachaNFT.getAddress();
   console.log("   ✅ GachaNFT:    ", nftAddr);
@@ -52,14 +66,15 @@ async function main() {
   // ─── 3. Deploy GachaPack ─────────────────────────────────────────────────
   console.log("3. Deploying GachaPack...");
   const GachaPackFactory = await ethers.getContractFactory("GachaPack");
-  const gachaPack = await GachaPackFactory.deploy(nftAddr, registryAddr);
+  const gachaPack = await GachaPackFactory.deploy(nftAddr, registryAddr, GAS_OVERRIDES);
   await gachaPack.waitForDeployment();
   const packAddr = await gachaPack.getAddress();
   console.log("   ✅ GachaPack:   ", packAddr);
 
   // ─── 4. Authorise GachaPack as minter ────────────────────────────────────
   console.log("4. Authorising GachaPack as minter...");
-  await (await (gachaNFT as any).setMinter(packAddr, true)).wait();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (await (gachaNFT as any).setMinter(packAddr, true, GAS_OVERRIDES)).wait();
   console.log("   ✅ Minter set");
 
   // ─── 5. Seed cards ────────────────────────────────────────────────────────
@@ -74,9 +89,11 @@ async function main() {
     animes.push(ANIME_MAP[card.anime]);
     maxSupplies.push(BigInt(card.maxSupply));
   }
-  await (await (registry as any).registerCards(tokenIds, rarities, animes, maxSupplies)).wait();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (await (registry as any).registerCards(tokenIds, rarities, animes, maxSupplies, GAS_OVERRIDES)).wait();
   console.log("   ✅ All 48 cards registered");
   for (const [name, id] of [["Common",0],["Rare",1],["Legendary",2],["Mythic",3]]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pool = await (registry as any).getCardsByRarity(id);
     console.log(`      ${name} pool: ${pool.length} cards`);
   }
@@ -93,7 +110,11 @@ async function main() {
     ["Ultra    (x30)", "openUltraPack",    "0.0025"],
   ] as const) {
     process.stdout.write(`   Opening ${packName}... `);
-    const tx = await (gachaPack as any)[method]({ value: ethers.parseEther(price) });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tx = await (gachaPack as any)[method]({
+      value: ethers.parseEther(price),
+      ...GAS_OVERRIDES,
+    });
     const receipt = await tx.wait();
     for (const log of receipt.logs ?? []) {
       try {
@@ -111,9 +132,9 @@ async function main() {
   console.log("  Smoke Test PASSED ✅");
   console.log("===========================================");
   console.log(`  CARD_REGISTRY_ADDRESS=${registryAddr}`);
-  console.log(`  GACHA_NFT_ADDRESS=${nftAddr}`);
-  console.log(`  GACHA_PACK_ADDRESS=${packAddr}`);
-  console.log("\nAdd these to contracts/.env for future scripts.");
+  console.log(`  NEXT_PUBLIC_GACHA_NFT_ADDRESS=${nftAddr}`);
+  console.log(`  NEXT_PUBLIC_GACHA_PACK_ADDRESS=${packAddr}`);
+  console.log("\n👉 Add the NEXT_PUBLIC_* values to gacha/.env.local then run: npm run dev");
 }
 
 main().catch((err) => { console.error(err); process.exitCode = 1; });
