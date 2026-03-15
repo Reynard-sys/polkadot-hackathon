@@ -68,7 +68,16 @@ export function usePackOpening() {
           value: ethers.parseEther(cfg.price),
           ...FRONTIER_GAS,
         });
-        const receipt = await tx.wait();
+        const receipt = await tx.wait(1);
+
+        // Westend Frontier returns receipt before logs are indexed.
+        // Re-fetch after a delay to get the fully populated receipt.
+        const delayMs = packType === "ultra" ? 5000 : packType === "premium" ? 4000 : 2000;
+        await new Promise(r => setTimeout(r, delayMs));
+
+        // Re-fetch the receipt directly from the RPC — this has the logs
+        const fullReceipt = await provider.getTransactionReceipt(receipt!.hash);
+        const logsToSearch = fullReceipt?.logs ?? receipt?.logs ?? [];
 
         // Frontier EVM doesn't support ethers parseLog reliably.
         // Instead: match the known TransferBatch topic hash manually, then
@@ -84,12 +93,12 @@ export function usePackOpening() {
           "0x0000000000000000000000000000000000000000000000000000000000000000";
 
         const tokenIds: number[] = [];
-        for (const log of receipt?.logs ?? []) {
+        for (const log of logsToSearch) {
           try {
             const topics = (log as { topics?: string[] }).topics ?? [];
             if (
               topics[0]?.toLowerCase() === TRANSFER_BATCH_TOPIC &&
-              topics[2] === ZERO_TOPIC   // from == address(0) → this is a mint
+              topics[2] === ZERO_TOPIC
             ) {
               const [ids] = ethers.AbiCoder.defaultAbiCoder().decode(
                 ["uint256[]", "uint256[]"],
