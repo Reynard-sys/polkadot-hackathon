@@ -70,14 +70,30 @@ export function usePackOpening() {
         });
         const receipt = await tx.wait(1);
 
-        // Westend Frontier returns receipt before logs are indexed.
-        // Re-fetch after a delay to get the fully populated receipt.
-        const delayMs = packType === "ultra" ? 5000 : packType === "premium" ? 4000 : 2000;
-        await new Promise(r => setTimeout(r, delayMs));
+        // Westend Frontier sometimes doesn't index logs immediately for larger packs.
+        // Retry fetching the receipt until logs appear (max 10 attempts, 2s apart).
+        let logsToSearch = receipt?.logs ?? [];
 
-        // Re-fetch the receipt directly from the RPC — this has the logs
-        const fullReceipt = await provider.getTransactionReceipt(receipt!.hash);
-        const logsToSearch = fullReceipt?.logs ?? receipt?.logs ?? [];
+        if (logsToSearch.length === 0 && packType !== "standard") {
+          const MAX_ATTEMPTS = 10;
+          const POLL_INTERVAL = 2000;
+
+          for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            await new Promise(r => setTimeout(r, POLL_INTERVAL));
+            
+            try {
+              const refetched = await provider.getTransactionReceipt(receipt!.hash);
+              console.log(`[GachaPack] receipt refetch attempt ${attempt}, logs:`, refetched?.logs?.length ?? 0);
+              
+              if (refetched && refetched.logs.length > 0) {
+                logsToSearch = refetched.logs;
+                break;
+              }
+            } catch (e) {
+              console.warn(`[GachaPack] refetch attempt ${attempt} failed:`, e);
+            }
+          }
+        }
 
         // Frontier EVM doesn't support ethers parseLog reliably.
         // Instead: match the known TransferBatch topic hash manually, then
