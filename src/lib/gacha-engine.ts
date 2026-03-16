@@ -16,6 +16,7 @@
  * Card pools (from cards.json):
  *   naruto   → token IDs 1–16
  *   onepiece → token IDs 17–32
+ *   pokemon  → token IDs 33–48
  *
  * Pool size is 16 per series. Packs of 20 and 30 exceed the unique pool,
  * so duplicate picks are allowed after the pool is exhausted (weighted by
