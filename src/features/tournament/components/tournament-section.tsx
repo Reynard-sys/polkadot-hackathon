@@ -95,19 +95,16 @@ export default function TournamentFeature() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto p-4 pb-2 lg:p-0 lg:py-12">
         {/* Navigation Tabs */}
-        <div className="flex justify-center gap-2 lg:gap-5 w-full bg-gradient-to-b from-[#0144BD] to-[#192871] rounded-2xl p-2 mb-3lg:mb-8 lg:max-w-6xl lg:mx-auto">
+        <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-gradient-to-b from-[#0144BD] to-[#192871] p-2 lg:gap-4 lg:max-w-6xl lg:mx-auto">
           {TABS.map((tab) => {
             const isActive = activeTab === tab;
-            const isOnsite = tab === "Practice";
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`
-                                    
-                                    ${isOnsite ? "lg:mr-25": ""}
-                                    lg:py-3 text-sm lg:text-lg font-bold rounded-xl
-                                    transition-all duration-300 px-5 lg:px-20 cursor-pointer
+                                    flex min-h-[58px] w-full items-center justify-center rounded-xl px-3 py-3 text-center text-sm font-bold transition-all duration-300 cursor-pointer
+                                    lg:min-h-[60px] lg:px-4 lg:text-lg
                                     ${
                                       isActive
                                         ? "bg-white text-[#0f2d71] shadow-md"
