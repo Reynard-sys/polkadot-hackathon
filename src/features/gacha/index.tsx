@@ -28,7 +28,7 @@ export default function Gacha() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.25 }}
-          className="flex flex-col gap-3"
+          className="flex flex-col gap-3 mb-20"
         >
           <Pack
             imageSrc="/assets/packs/naruto-pack.svg"
@@ -48,6 +48,15 @@ export default function Gacha() {
             variant="mobile"
             href="/open-packs?series=onepiece"
           />
+          <Pack
+            imageSrc="/assets/packs/pokemon-pack.svg"
+            imageAlt="Pokemon Pack"
+            packName="Pokemon Pack"
+            packInfo="Premium · 0.25 WND · 20 cards"
+            packDesc="16 unique Pokemon cards. Premium packs guarantee at least 1 Legendary!"
+            variant="mobile"
+            href="/open-packs?series=pokemon"
+          />
         </motion.div>
       </div>
 
@@ -64,8 +73,8 @@ export default function Gacha() {
               Open a Pack
             </h1>
             <p className="text-white text-base mt-3 max-w-xl mx-auto leading-relaxed">
-              Collect 32 unique anime NFT cards across Naruto & One Piece sets.
-              Every pull uses provably fair randomness.
+              Collect 48 unique anime NFT cards across Naruto, One Piece, and
+              Pokemon sets. Every pull uses provably fair randomness.
             </p>
           </div>
         </motion.div>
@@ -85,7 +94,7 @@ export default function Gacha() {
         </motion.div>
 
         <motion.div
-          className="flex w-full max-w-2xl mt-20 gap-6 justify-center"
+          className="flex w-full max-w-6xl flex-wrap justify-center gap-6 mt-20 xl:flex-nowrap"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
@@ -107,6 +116,15 @@ export default function Gacha() {
             packDesc="16 unique One Piece cards. Premium packs guarantee 1 Legendary or higher."
             variant="desktop"
             href="/open-packs?series=onepiece"
+          />
+          <Pack
+            imageSrc="/assets/packs/pokemon-pack.svg"
+            imageAlt="Pokemon Pack"
+            packName="Pokemon Pack"
+            packInfo="Premium · 0.0018 WND"
+            packDesc="16 unique Pokemon cards. Premium packs guarantee 1 Legendary or higher."
+            variant="desktop"
+            href="/open-packs?series=pokemon"
           />
         </motion.div>
       </div>

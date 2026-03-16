@@ -102,6 +102,7 @@ const ANIME_FILTERS: Array<{ id: "all" | CardAnime; label: string }> = [
   { id: "all", label: "ALL" },
   { id: "Naruto", label: "Naruto" },
   { id: "OnePiece", label: "One Piece" },
+  { id: "Pokemon", label: "Pokemon" },
 ];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────

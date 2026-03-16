@@ -58,6 +58,8 @@ contract GachaPack is Ownable, ReentrancyGuard {
     uint256 private constant NARUTO_MAX   = 16;
     uint256 private constant ONEPIECE_MIN = 17;
     uint256 private constant ONEPIECE_MAX = 32;
+    uint256 private constant POKEMON_MIN  = 33;
+    uint256 private constant POKEMON_MAX  = 48;
 
     // ── State ──────────────────────────────────────────────────────────────
     GachaNFT     public immutable nft;
@@ -93,7 +95,7 @@ contract GachaPack is Ownable, ReentrancyGuard {
     // ── Core logic ────────────────────────────────────────────────────────
 
     function _openPack(PackType packType, uint8 series) internal {
-        if (series > 1) revert InvalidSeries(series);
+        if (series > 2) revert InvalidSeries(series);
         PackConfig storage cfg = packConfigs[packType];
         uint256 packPrice = cfg.price;
         uint8 packSize = cfg.size;
@@ -155,8 +157,19 @@ contract GachaPack is Ownable, ReentrancyGuard {
         uint8 series
     ) internal view returns (uint256[] memory) {
         uint256[] memory full = registry.getCardsByRarity(rarity);
-        uint256 minId = series == 0 ? NARUTO_MIN : ONEPIECE_MIN;
-        uint256 maxId = series == 0 ? NARUTO_MAX : ONEPIECE_MAX;
+        uint256 minId;
+        uint256 maxId;
+
+        if (series == 0) {
+            minId = NARUTO_MIN;
+            maxId = NARUTO_MAX;
+        } else if (series == 1) {
+            minId = ONEPIECE_MIN;
+            maxId = ONEPIECE_MAX;
+        } else {
+            minId = POKEMON_MIN;
+            maxId = POKEMON_MAX;
+        }
 
         uint256 count = 0;
         for (uint256 i = 0; i < full.length; i++) {

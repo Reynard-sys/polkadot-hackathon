@@ -50,7 +50,7 @@ async function main() {
   console.log("✅ Wrote contracts/.env");
 
   // ── 2. Write root .env.local (Next.js frontend) ─────────────────────────
-  const frontendEnvPath = path.resolve(__dirname, "../../../.env.local");
+  const frontendEnvPath = path.resolve(__dirname, "../../.env.local");
   const frontendEnv =
     `NEXT_PUBLIC_GACHA_NFT_ADDRESS=${nftAddr}\n` +
     `NEXT_PUBLIC_GACHA_PACK_ADDRESS=${packAddr}\n`;

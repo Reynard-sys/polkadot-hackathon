@@ -5,7 +5,7 @@ import cardsData from "@/data/cards.json";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type CardRarity = "Common" | "Rare" | "Legendary" | "Mythic";
-export type CardAnime  = "Naruto" | "OnePiece";
+export type CardAnime  = "Naruto" | "OnePiece" | "Pokemon";
 
 export interface OwnedCard {
   tokenId:             number;

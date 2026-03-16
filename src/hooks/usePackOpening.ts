@@ -3,9 +3,9 @@
 import { useRef, useState } from "react";
 import { ethers } from "ethers";
 import { useWallet } from "@/context/wallet-context";
-import { GACHA_PACK_ADDRESS, GACHA_PACK_ABI } from "@/lib/contracts";
-import { switchToWestend } from "@/lib/switchToWestend";
+import { GACHA_PACK_ABI, GACHA_PACK_ADDRESS } from "@/lib/contracts";
 import { simulatePack, PackSeries } from "@/lib/gacha-engine";
+import { switchToWestend } from "@/lib/switchToWestend";
 
 export type PackType = "standard" | "premium" | "ultra";
 export type { PackSeries };
@@ -35,6 +35,15 @@ const GENERIC_ERROR_SNIPPETS = [
   "[object object]",
   "[unknown error]",
 ];
+const PENDING_TX_SNIPPETS = [
+  "already imported",
+  "already known",
+  "priority is too low",
+  "replacement transaction underpriced",
+  "too low priority to replace another transaction already in the pool",
+  "nonce too low",
+  "invalid transaction",
+];
 
 function isSimulationMode(): boolean {
   const addr = GACHA_PACK_ADDRESS;
@@ -48,7 +57,10 @@ function isSimulationMode(): boolean {
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-function decodePackError(errorData: string, packInterface: ethers.Interface): string | null {
+function decodePackError(
+  errorData: string,
+  packInterface: ethers.Interface,
+): string | null {
   try {
     const parsed = packInterface.parseError(errorData);
     if (!parsed) return null;
@@ -175,7 +187,7 @@ function extractTokenIdsFromLogs(
       if (eventPlayer !== playerAddress.toLowerCase()) continue;
       return (parsed.args[3] as bigint[]).map(Number);
     } catch {
-      // Ignore non-GachaPack logs and continue to fallbacks.
+      // Ignore non-GachaPack logs and continue to the fallback decoders.
     }
   }
 
@@ -210,7 +222,7 @@ async function waitForIndexedReceipt(
   let receipt = initialReceipt;
   if (receipt?.logs?.length) return receipt;
 
-  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt++) {
+  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt += 1) {
     await sleep(delayMs);
     receipt = await provider.getTransactionReceipt(txHash);
     if (receipt?.logs?.length) return receipt;
@@ -227,7 +239,7 @@ async function findPackOpenedTokenIds(
 ): Promise<number[]> {
   const paddedPlayer = ethers.zeroPadValue(playerAddress, 32);
 
-  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt++) {
+  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt += 1) {
     if (attempt > 0) await sleep(1500);
 
     try {
@@ -257,7 +269,7 @@ async function findPackOpenedTokenIdsByTx(
   const paddedPlayer = ethers.zeroPadValue(playerAddress, 32);
   const fromBlock = Math.max(startBlock - 2, 0);
 
-  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt++) {
+  for (let attempt = 0; attempt < INDEX_LOOKUP_ATTEMPTS; attempt += 1) {
     if (attempt > 0) await sleep(2000);
 
     try {
@@ -284,6 +296,22 @@ async function findPackOpenedTokenIdsByTx(
   }
 
   return [];
+}
+
+async function getPendingNonceGap(
+  provider: ethers.JsonRpcProvider,
+  address: string,
+): Promise<{ latest: number; pending: number; hasGap: boolean }> {
+  const [latest, pending] = await Promise.all([
+    provider.getTransactionCount(address, "latest"),
+    provider.getTransactionCount(address, "pending"),
+  ]);
+
+  return {
+    latest,
+    pending,
+    hasGap: pending > latest,
+  };
 }
 
 export function usePackOpening() {
@@ -316,17 +344,44 @@ export function usePackOpening() {
         const signer = await provider.getSigner();
         const signerAddress = await signer.getAddress();
         const readProvider = new ethers.JsonRpcProvider(WESTEND_READ_RPC);
-        const contract = new ethers.Contract(GACHA_PACK_ADDRESS, GACHA_PACK_ABI, signer);
+        const contract = new ethers.Contract(
+          GACHA_PACK_ADDRESS,
+          GACHA_PACK_ABI,
+          signer,
+        );
         const cfg = PACK_CONFIG[packType];
+        const txValue = ethers.parseEther(cfg.price);
         const startBlock = await readProvider.getBlockNumber();
+        const nonceState = await getPendingNonceGap(readProvider, signerAddress);
 
-        const seriesIndex = series === "onepiece" ? 1 : 0;
+        if (nonceState.hasGap) {
+          setError(
+            `Westend still has a pending transaction for this wallet nonce. Wait for it to settle, or clear the wallet's pending activity before opening another pack.`,
+          );
+          return;
+        }
+
+        const seriesIndex =
+          series === "onepiece" ? 1 : series === "pokemon" ? 2 : 0;
+
         const tx = await contract[cfg.method](seriesIndex, {
-          value: ethers.parseEther(cfg.price),
+          value: txValue,
           ...FRONTIER_GAS,
         });
 
-        const minedReceipt = await readProvider.waitForTransaction(tx.hash, 1, 60_000);
+        const minedReceipt = await readProvider.waitForTransaction(
+          tx.hash,
+          1,
+          60_000,
+        );
+
+        if (minedReceipt && minedReceipt.status === 0) {
+          setError(
+            "Transaction reverted on-chain. The deployed GachaPack contract likely does not support this pack series yet.",
+          );
+          return;
+        }
+
         const delayMs =
           packType === "ultra" ? 2500 : packType === "premium" ? 2000 : 1500;
         const indexedReceipt = await waitForIndexedReceipt(
@@ -353,7 +408,8 @@ export function usePackOpening() {
         }
 
         if (tokenIds.length === 0) {
-          const blockNumber = indexedReceipt?.blockNumber ?? minedReceipt?.blockNumber;
+          const blockNumber =
+            indexedReceipt?.blockNumber ?? minedReceipt?.blockNumber;
           if (typeof blockNumber === "number") {
             tokenIds = await findPackOpenedTokenIds(
               readProvider,
@@ -370,7 +426,9 @@ export function usePackOpening() {
             minedLogs: minedReceipt?.logs ?? [],
             indexedLogs: indexedReceipt?.logs ?? [],
           });
-          setError("Transaction confirmed but could not read card IDs. Check your inventory.");
+          setError(
+            "Transaction confirmed but could not read card IDs. Check your inventory.",
+          );
           return;
         }
 
@@ -400,26 +458,25 @@ export function usePackOpening() {
         series,
       });
     } catch (err: unknown) {
-      console.error("[GachaPack] raw error:", err);
       const msg = extractMsg(err, packInterface);
+      const normalizedMsg = msg.toLowerCase();
+
       if (
-        msg.includes("user rejected") ||
-        msg.includes("User denied") ||
-        msg.includes("ACTION_REJECTED")
+        normalizedMsg.includes("user rejected") ||
+        normalizedMsg.includes("user denied") ||
+        normalizedMsg.includes("action_rejected")
       ) {
         setError("Transaction cancelled.");
-      } else if (msg.includes("Already Imported")) {
-        setError("A pack-open transaction is already pending in MetaMask. Wait for it to settle, then try again.");
       } else if (
-        msg.includes("Priority is too low") ||
-        msg.includes("too low priority to replace another transaction already in the pool")
+        PENDING_TX_SNIPPETS.some((snippet) => normalizedMsg.includes(snippet))
       ) {
         setError(
-          "Westend still sees a stale transaction for this nonce, even if MetaMask Activity is empty.",
+          "A previous pack-open transaction is still pending on Westend for this wallet. Wait for it to settle, then try again.",
         );
-      } else if (msg.includes("insufficient funds")) {
+      } else if (normalizedMsg.includes("insufficient funds")) {
         setError("Insufficient WND balance.");
       } else {
+        console.error("[GachaPack] unexpected error:", err);
         setError(`Failed: ${msg.slice(0, 200)}`);
       }
     } finally {
