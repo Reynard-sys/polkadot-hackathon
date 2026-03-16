@@ -1547,6 +1547,10 @@
     "hp": 3,
     "element": "Earth",
     "zone": "Frontline",
+    "zones": [
+      "Frontline",
+      "Backline"
+    ],
     "leaderEligible": false,
     "keywords": [
       "OnSummon",
@@ -1566,6 +1570,7 @@
       "Pokemon",
       "Common",
       "Frontline",
+      "Backline",
       "Adaptive",
       "Flexible",
       "Utility"

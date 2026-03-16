@@ -38,6 +38,7 @@ type CardItem = {
   rarity: OwnedCard["rarity"];
   anime: OwnedCard["anime"];
   zone: CardZone | null;
+  zones: CardZone[];
   subtitle: string;
   traits: string[];
   abilityDescription: string;
@@ -212,20 +213,48 @@ const DECK_LIST_DROP_ID = "deck-list";
 type CatalogCard = {
   nftTokenId: string;
   zone?: string;
+  zones?: string[];
+  traits?: string[];
 };
 
 function isCardZone(value: string): value is CardZone {
   return value === "Frontline" || value === "Backline" || value === "Reserve";
 }
 
-const CARD_ZONE_LOOKUP = new Map<number, CardZone>(
+function getCatalogCardZones(card: Pick<CatalogCard, "zone" | "zones">) {
+  return [...new Set([...(card.zones ?? []), ...(card.zone ? [card.zone] : [])])]
+    .filter(isCardZone);
+}
+
+function getEffectiveCardZones(card: Pick<CardItem, "zone" | "zones">) {
+  return [...new Set([...(card.zones ?? []), ...(card.zone ? [card.zone] : [])])]
+    .filter(isCardZone);
+}
+
+const CARD_ZONE_LOOKUP = new Map<number, CardZone[]>(
   (cardsData as CatalogCard[]).flatMap((card) => {
     const tokenId = Number.parseInt(card.nftTokenId, 10);
-    if (!Number.isInteger(tokenId) || !card.zone || !isCardZone(card.zone)) {
+    if (!Number.isInteger(tokenId)) {
       return [];
     }
 
-    return [[tokenId, card.zone]];
+    const zones = getCatalogCardZones(card);
+    if (zones.length === 0) {
+      return [];
+    }
+
+    return [[tokenId, zones]];
+  }),
+);
+
+const CARD_TRAITS_LOOKUP = new Map<number, string[]>(
+  (cardsData as CatalogCard[]).flatMap((card) => {
+    const tokenId = Number.parseInt(card.nftTokenId, 10);
+    if (!Number.isInteger(tokenId) || !Array.isArray(card.traits)) {
+      return [];
+    }
+
+    return [[tokenId, card.traits]];
   }),
 );
 
@@ -243,6 +272,7 @@ type DragData =
 function mapOwnedCardToCardItem(card: OwnedCard): CardItem {
   const variant = RARITY_TO_VARIANT[card.rarity];
   const preset = CARD_VARIANT_PRESETS[variant];
+  const zones = CARD_ZONE_LOOKUP.get(card.tokenId) ?? [];
 
   return {
     id: card.tokenId,
@@ -250,9 +280,10 @@ function mapOwnedCardToCardItem(card: OwnedCard): CardItem {
     faction: card.anime === "OnePiece" ? "One Piece" : card.anime,
     rarity: card.rarity,
     anime: card.anime,
-    zone: CARD_ZONE_LOOKUP.get(card.tokenId) ?? null,
+    zone: zones[0] ?? null,
+    zones,
     subtitle: card.subtitle,
-    traits: card.traits ?? [],
+    traits: CARD_TRAITS_LOOKUP.get(card.tokenId) ?? card.traits ?? [],
     abilityDescription: card.abilityDescription,
     leaderEligible: card.leaderEligible ?? false,
     leaderDescription: card.leaderDescription ?? null,
@@ -329,7 +360,16 @@ function canCardOccupySlot(card: CardItem, slotIndex: number) {
     return card.leaderEligible;
   }
 
-  return card.zone === slotRole;
+  return getEffectiveCardZones(card).includes(slotRole);
+}
+
+function getCardZoneLabel(card: Pick<CardItem, "zone" | "zones">) {
+  const zones = getEffectiveCardZones(card);
+  if (zones.length > 0) {
+    return zones.join(" / ");
+  }
+
+  return card.zone;
 }
 
 function findCompatibleEmptySlot(
@@ -633,6 +673,32 @@ function deckStorageKey(address: string) {
   return `deck_builder_${address.toLowerCase()}`;
 }
 
+function hydratePersistedCard(card: unknown): CardItem | null {
+  if (!card || typeof card !== "object") {
+    return null;
+  }
+
+  const parsedCard = card as Partial<CardItem>;
+  if (typeof parsedCard.id !== "number" || !Number.isFinite(parsedCard.id)) {
+    return null;
+  }
+
+  const zones =
+    CARD_ZONE_LOOKUP.get(parsedCard.id) ??
+    getEffectiveCardZones({
+      zone: parsedCard.zone ?? null,
+      zones: parsedCard.zones ?? [],
+    });
+  const traits = CARD_TRAITS_LOOKUP.get(parsedCard.id) ?? parsedCard.traits ?? [];
+
+  return {
+    ...(parsedCard as CardItem),
+    zone: zones[0] ?? null,
+    zones,
+    traits,
+  };
+}
+
 function loadPersistedDeckState(address: string | null): PersistedDeckState {
   if (!address || typeof window === "undefined") {
     return {
@@ -657,6 +723,9 @@ function loadPersistedDeckState(address: string | null): PersistedDeckState {
           name: sanitizeDeckName(
             typeof deck.name === "string" ? deck.name : "",
           ),
+          cards: Array.isArray(deck.cards)
+            ? deck.cards.map((card) => hydratePersistedCard(card))
+            : emptySlots(),
         }))
       : [];
     const nextDeckId =
@@ -2188,7 +2257,7 @@ function getCardDetailTraits(card: CardItem) {
     return card.traits;
   }
 
-  return [card.faction, card.zone].filter((value): value is string =>
+  return [card.faction, getCardZoneLabel(card)].filter((value): value is string =>
     Boolean(value),
   );
 }
@@ -2899,11 +2968,14 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     return remainingInventoryCards.filter(
       (card) =>
         (desktopRarity === "all" || card.rarity === desktopRarity) &&
-        (desktopZone === "all" || card.zone === desktopZone) &&
+        (desktopZone === "all" ||
+          getEffectiveCardZones(card).includes(desktopZone)) &&
         (q.length === 0 ||
           card.name.toLowerCase().includes(q) ||
           card.faction.toLowerCase().includes(q) ||
-          (card.zone ?? "").toLowerCase().includes(q)),
+          getEffectiveCardZones(card).some((zone) =>
+            zone.toLowerCase().includes(q),
+          )),
     );
   }, [desktopRarity, desktopSearch, desktopZone, remainingInventoryCards]);
   const mobileAvailableTotalPages = Math.max(
