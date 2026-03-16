@@ -42,7 +42,15 @@ export const TOURNAMENTS = [
 
 const TABS = ["Online Tournaments", "Onsite Events", "Practice"];
 
-export default function TournamentFeature() {
+type TournamentFeatureProps = {
+  pageTitle?: string;
+  showTabs?: boolean;
+};
+
+export default function TournamentFeature({
+  pageTitle = "Tournament",
+  showTabs = true,
+}: TournamentFeatureProps) {
   const [activeTab, setActiveTab] = useState("Online Tournaments");
 
   const [viewingRankingsFor, setViewingRankingsFor] = useState<number | null>(
@@ -64,7 +72,7 @@ export default function TournamentFeature() {
       <div className="lg:hidden relative w-full p-4 pt-18">
         <Image
           src="/assets/mobile-game-features/mobile-tournaments.svg"
-          alt="Tournament"
+          alt={pageTitle}
           width={350}
           height={78}
           className="w-full h-auto pointer-events-none"
@@ -75,7 +83,7 @@ export default function TournamentFeature() {
       {/* Desktop Header */}
       <div className="hidden lg:block bg-transparent pt-30 pb-0 w-full">
         <h1 className="text-7xl font-bold text-white text-center mb-4">
-          Tournament
+          {pageTitle}
         </h1>
         <p className="text-center text-gray-400 text-sm max-w-xl mx-auto mb-8">
           Lorem ipsum dolor sit amet consectetur. Vitus vitae augue risus
@@ -96,14 +104,15 @@ export default function TournamentFeature() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto p-4 pb-2 lg:p-0 lg:py-12">
         {/* Navigation Tabs */}
-        <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-gradient-to-b from-[#0144BD] to-[#192871] p-2 lg:gap-4 lg:max-w-6xl lg:mx-auto">
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`
+        {showTabs && (
+          <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-gradient-to-b from-[#0144BD] to-[#192871] p-2 lg:gap-4 lg:max-w-6xl lg:mx-auto">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`
                                     flex min-h-[58px] w-full items-center justify-center rounded-xl px-3 py-3 text-center text-sm font-bold transition-all duration-300 cursor-pointer
                                     lg:min-h-[60px] lg:px-4 lg:text-lg
                                     ${
@@ -112,35 +121,37 @@ export default function TournamentFeature() {
                                         : "text-white/80 hover:text-white hover:bg-white/10"
                                     }
                                 `}
-              >
-                {tab === "Online Tournaments" ? (
-                  <>
-                    <span className="lg:hidden">
-                      Online
-                      <br />
-                      Tournaments
-                    </span>
-                    <span className="hidden lg:inline">Online Tournaments</span>
-                  </>
-                ) : tab === "Onsite Events" ? (
-                  <>
-                    <span className="lg:hidden">
-                      Onsite
-                      <br />
-                      Events
-                    </span>
-                    <span className="hidden lg:inline">Onsite Events</span>
-                  </>
-                ) : (
-                  tab
-                )}
-              </button>
-            );
-          })}
-        </div>
-
+                >
+                  {tab === "Online Tournaments" ? (
+                    <>
+                      <span className="lg:hidden">
+                        Online
+                        <br />
+                        Tournaments
+                      </span>
+                      <span className="hidden lg:inline">
+                        Online Tournaments
+                      </span>
+                    </>
+                  ) : tab === "Onsite Events" ? (
+                    <>
+                      <span className="lg:hidden">
+                        Onsite
+                        <br />
+                        Events
+                      </span>
+                      <span className="hidden lg:inline">Onsite Events</span>
+                    </>
+                  ) : (
+                    tab
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
         {/* Cards or Empty State */}
-        {activeTab === "Online Tournaments" ? (
+        {!showTabs || activeTab === "Online Tournaments" ? (
           <div className="flex flex-col space-y-3 lg:space-y-6 lg:max-w-6xl lg:mx-auto">
             {TOURNAMENTS.map((tournament) => (
               <TournamentCard
@@ -176,7 +187,7 @@ export default function TournamentFeature() {
             <p className="max-w-xs text-sm text-white/50">
               Train your deck. Master your strategy. No stakes, just skill.
             </p>
-            <Link href="/deck" className="mt-2 block w-full max-w-[250px]">
+            <Link href="/practice" className="mt-2 block w-full max-w-[250px]">
               <Image
                 src="/assets/tournament-page/start_practice.svg"
                 alt="Start Practice"

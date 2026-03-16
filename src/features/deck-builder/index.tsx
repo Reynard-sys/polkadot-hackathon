@@ -81,7 +81,18 @@ const DECK_POWER_BY_RARITY: Record<OwnedCard["rarity"], number> = {
   Legendary: 3,
   Mythic: 4,
 };
-const DECK_TUTORIAL_PAGES = [
+type DeckTutorialPage = {
+  eyebrow: string;
+  title: string;
+  imageSrc?: string;
+  imageAlt?: string;
+  description: string;
+  bullets: string[];
+  placeholderTitle: string;
+  placeholderHint: string;
+};
+
+const DECK_TUTORIAL_PAGES: readonly DeckTutorialPage[] = [
   {
     eyebrow: "Card Guide",
     title: "How to read a card",
@@ -2181,6 +2192,7 @@ function DeckBuilderTutorialModal({
   const tutorialPage = DECK_TUTORIAL_PAGES[page];
   const isFirstPage = page === 0;
   const isLastPage = page === DECK_TUTORIAL_PAGES.length - 1;
+  const tutorialImageAlt = tutorialPage.imageAlt ?? tutorialPage.title;
 
   return (
     <div className="fixed inset-x-0 top-[72px] bottom-[76px] z-[98] overflow-y-auto bg-black/70 px-4 py-3 md:inset-0 md:p-6">
@@ -2222,7 +2234,7 @@ function DeckBuilderTutorialModal({
                   <div className="relative h-[220px] overflow-hidden rounded-[14px] border border-white/8 bg-[radial-gradient(circle_at_top,#1f3d79_0%,#111827_55%,#0a0f1c_100%)] md:h-[320px]">
                     <Image
                       src={tutorialPage.imageSrc}
-                      alt={tutorialPage.imageAlt}
+                      alt={tutorialImageAlt}
                       fill
                       className="object-contain p-2"
                       sizes="(max-width: 768px) 100vw, 60vw"
