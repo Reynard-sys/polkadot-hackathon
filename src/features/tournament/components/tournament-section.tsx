@@ -95,21 +95,22 @@ export default function TournamentFeature() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto p-4 pb-2 lg:p-0 lg:py-12">
         {/* Navigation Tabs */}
-        <div className="grid grid-cols-4 gap-2 lg:gap-5 w-full bg-gradient-to-b from-[#0144BD] to-[#192871] rounded-2xl p-2 mb-3 lg:mb-8 lg:max-w-6xl lg:mx-auto">
+        <div className="flex justify-center gap-2 lg:gap-5 w-full bg-gradient-to-b from-[#0144BD] to-[#192871] rounded-2xl p-2 mb-3lg:mb-8 lg:max-w-6xl lg:mx-auto">
           {TABS.map((tab) => {
             const isActive = activeTab === tab;
-            const isWide = tab === "Online Tournaments";
+            const isOnsite = tab === "Practice";
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`
-                                    ${isWide ? "col-span-2" : "col-span-1"}
+                                    
+                                    ${isOnsite ? "lg:mr-25": ""}
                                     lg:py-3 text-sm lg:text-lg font-bold rounded-xl
-                                    transition-all duration-300
+                                    transition-all duration-300 px-5 lg:px-20 cursor-pointer
                                     ${
                                       isActive
-                                        ? "bg-white text-[#0f2d71] shadow-md mx-1 md:mx-2 lg:mx-7"
+                                        ? "bg-white text-[#0f2d71] shadow-md"
                                         : "text-white/80 hover:text-white hover:bg-white/10"
                                     }
                                 `}
@@ -159,7 +160,7 @@ export default function TournamentFeature() {
           <div
             className="flex flex-col items-center justify-center
                                     bg-[linear-gradient(to_top,#120C35_8%,#143C87_45%,#13245E_98%)]
-                                    rounded-2xl border border-[#8085BD] py-16 px-8 space-y-3 text-center"
+                                    rounded-2xl border border-[#8085BD] py-16 px-8 mt-10 space-y-3 text-center"
           >
             <div>
               <Image
