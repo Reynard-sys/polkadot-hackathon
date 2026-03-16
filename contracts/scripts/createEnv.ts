@@ -26,6 +26,11 @@ async function main() {
   const registryAddr  = process.env.CARD_REGISTRY_ADDRESS;
   const nftAddr       = process.env.NEXT_PUBLIC_GACHA_NFT_ADDRESS;
   const packAddr      = process.env.NEXT_PUBLIC_GACHA_PACK_ADDRESS;
+  const westendRpcUrl =
+    process.env.WESTEND_RPC_URL ?? "https://westend-asset-hub-eth-rpc.polkadot.io";
+  const baseUri =
+    process.env.BASE_URI ??
+    "https://ipfs.io/ipfs/bafybeigaosmk75u5pefapg5ar243m4rgyuajlwgbzdebi5odogm4vv6cka/";
 
   const missing: string[] = [];
   if (!registryAddr)  missing.push("CARD_REGISTRY_ADDRESS");
@@ -42,6 +47,8 @@ async function main() {
   const contractsEnvPath = path.resolve(__dirname, "../.env");
   const contractsEnv =
     `PRIVATE_KEY=${process.env.PRIVATE_KEY ?? "<your-private-key-here>"}\n` +
+    `WESTEND_RPC_URL=${westendRpcUrl}\n` +
+    `BASE_URI=${baseUri}\n` +
     `CARD_REGISTRY_ADDRESS=${registryAddr}\n` +
     `NEXT_PUBLIC_GACHA_NFT_ADDRESS=${nftAddr}\n` +
     `NEXT_PUBLIC_GACHA_PACK_ADDRESS=${packAddr}\n`;

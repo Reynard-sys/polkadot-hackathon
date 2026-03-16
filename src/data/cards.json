@@ -8,7 +8,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 3,
-    "hp": 3,
+    "hp": 6,
     "element": "Air",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -38,7 +38,7 @@
       "Clone"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_naruto_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_naruto_01.png"
   },
   {
     "id": "naruto_common_sakura_01",
@@ -49,7 +49,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 4,
+    "hp": 8,
     "element": "Earth",
     "zone": "Backline",
     "leaderEligible": false,
@@ -75,7 +75,7 @@
       "Healer"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_sakura_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_sakura_01.png"
   },
   {
     "id": "naruto_common_lee_01",
@@ -86,7 +86,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 4,
-    "hp": 4,
+    "hp": 8,
     "element": "Earth",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -113,7 +113,7 @@
       "Taijutsu"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_lee_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_lee_01.png"
   },
   {
     "id": "naruto_common_shikamaru_01",
@@ -124,7 +124,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 2,
-    "hp": 4,
+    "hp": 8,
     "element": "Air",
     "zone": "Backline",
     "leaderEligible": false,
@@ -151,7 +151,7 @@
       "Tactician"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_shikamaru_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_shikamaru_01.png"
   },
   {
     "id": "naruto_common_hinata_01",
@@ -162,7 +162,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 3,
-    "hp": 3,
+    "hp": 6,
     "element": "Water",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -189,7 +189,7 @@
       "Hyuga"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_hinata_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_hinata_01.png"
   },
   {
     "id": "naruto_common_kiba_01",
@@ -200,7 +200,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 3,
-    "hp": 4,
+    "hp": 8,
     "element": "Earth",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -227,7 +227,7 @@
       "Beast"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_kiba_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_kiba_01.png"
   },
   {
     "id": "naruto_common_tenten_01",
@@ -238,7 +238,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 3,
+    "hp": 6,
     "element": "Air",
     "zone": "Backline",
     "leaderEligible": false,
@@ -265,7 +265,7 @@
       "Weapons"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_tenten_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_tenten_01.png"
   },
   {
     "id": "naruto_common_iruka_01",
@@ -276,7 +276,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 1,
-    "hp": 4,
+    "hp": 8,
     "element": "Earth",
     "zone": "Reserve",
     "leaderEligible": false,
@@ -303,7 +303,7 @@
       "Mentor"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_iruka_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_iruka_01.png"
   },
   {
     "id": "naruto_common_konohamaru_01",
@@ -314,7 +314,7 @@
     "rarity": "Common",
     "mana": 1,
     "power": 2,
-    "hp": 2,
+    "hp": 4,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -341,7 +341,7 @@
       "Student"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_konohamaru_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_konohamaru_01.png"
   },
   {
     "id": "naruto_common_scroll_01",
@@ -352,7 +352,7 @@
     "rarity": "Common",
     "mana": 1,
     "power": 0,
-    "hp": 2,
+    "hp": 4,
     "element": "Air",
     "zone": "Reserve",
     "leaderEligible": false,
@@ -379,7 +379,7 @@
       "Technique"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_common_scroll_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_common_scroll_01.png"
   },
   {
     "id": "naruto_rare_kakashi_01",
@@ -390,7 +390,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 4,
-    "hp": 5,
+    "hp": 10,
     "element": "Air",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -417,7 +417,7 @@
       "Sharingan"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_rare_kakashi_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_rare_kakashi_01.png"
   },
   {
     "id": "naruto_rare_gaara_01",
@@ -428,7 +428,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 4,
-    "hp": 6,
+    "hp": 12,
     "element": "Earth",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -455,7 +455,7 @@
       "Sand"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_rare_gaara_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_rare_gaara_01.png"
   },
   {
     "id": "naruto_rare_neji_01",
@@ -466,7 +466,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 4,
-    "hp": 5,
+    "hp": 10,
     "element": "Air",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -493,7 +493,7 @@
       "Hyuga"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_rare_neji_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_rare_neji_01.png"
   },
   {
     "id": "naruto_legendary_itachi_01",
@@ -504,7 +504,7 @@
     "rarity": "Legendary",
     "mana": 5,
     "power": 5,
-    "hp": 6,
+    "hp": 12,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -538,7 +538,7 @@
       "Leader-Eligible"
     ],
     "maxSupply": 500,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_legendary_itachi_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_legendary_itachi_01.png"
   },
   {
     "id": "naruto_legendary_jiraiya_01",
@@ -549,7 +549,7 @@
     "rarity": "Legendary",
     "mana": 5,
     "power": 5,
-    "hp": 6,
+    "hp": 12,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -587,7 +587,7 @@
       "Leader-Eligible"
     ],
     "maxSupply": 500,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_legendary_jiraiya_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_legendary_jiraiya_01.png"
   },
   {
     "id": "naruto_mythic_naruto_01",
@@ -598,7 +598,7 @@
     "rarity": "Mythic",
     "mana": 6,
     "power": 6,
-    "hp": 7,
+    "hp": 14,
     "element": "Air",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -632,7 +632,7 @@
       "Leader-Eligible"
     ],
     "maxSupply": 30,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/naruto_mythic_naruto_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/naruto_mythic_naruto_01.png"
   },
   {
     "id": "onepiece_common_luffy_01",
@@ -643,7 +643,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 3,
-    "hp": 3,
+    "hp": 6,
     "element": "Air",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -670,7 +670,7 @@
       "Captain"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_luffy_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_luffy_01.png"
   },
   {
     "id": "onepiece_common_zoro_01",
@@ -681,7 +681,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 4,
-    "hp": 4,
+    "hp": 8,
     "element": "Earth",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -708,7 +708,7 @@
       "Burst"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_zoro_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_zoro_01.png"
   },
   {
     "id": "onepiece_common_nami_01",
@@ -719,7 +719,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 3,
+    "hp": 6,
     "element": "Air",
     "zone": "Backline",
     "leaderEligible": false,
@@ -746,7 +746,7 @@
       "Navigator"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_nami_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_nami_01.png"
   },
   {
     "id": "onepiece_common_ussop_01",
@@ -757,7 +757,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 3,
-    "hp": 2,
+    "hp": 4,
     "element": "Air",
     "zone": "Backline",
     "leaderEligible": false,
@@ -784,7 +784,7 @@
       "Aggro"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_ussop_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_ussop_01.png"
   },
   {
     "id": "onepiece_common_sanji_01",
@@ -795,7 +795,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 4,
-    "hp": 4,
+    "hp": 8,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -822,7 +822,7 @@
       "MartialArtist"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_sanji_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_sanji_01.png"
   },
   {
     "id": "onepiece_common_chopper_01",
@@ -833,7 +833,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 1,
-    "hp": 3,
+    "hp": 6,
     "element": "Earth",
     "zone": "Reserve",
     "leaderEligible": false,
@@ -860,7 +860,7 @@
       "Beast"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_chopper_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_chopper_01.png"
   },
   {
     "id": "onepiece_common_robin_01",
@@ -871,7 +871,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 3,
-    "hp": 4,
+    "hp": 8,
     "element": "Earth",
     "zone": "Backline",
     "leaderEligible": false,
@@ -898,7 +898,7 @@
       "Scholar"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_robin_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_robin_01.png"
   },
   {
     "id": "onepiece_common_franky_01",
@@ -909,7 +909,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 3,
-    "hp": 5,
+    "hp": 10,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -936,7 +936,7 @@
       "Cyborg"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_franky_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_franky_01.png"
   },
   {
     "id": "onepiece_common_brook_01",
@@ -947,7 +947,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 3,
+    "hp": 6,
     "element": "Air",
     "zone": "Reserve",
     "leaderEligible": false,
@@ -974,7 +974,7 @@
       "Undead"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_brook_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_brook_01.png"
   },
   {
     "id": "onepiece_common_jinbe_01",
@@ -985,7 +985,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 4,
-    "hp": 4,
+    "hp": 8,
     "element": "Water",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1012,7 +1012,7 @@
       "Water"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_common_jinbe_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_common_jinbe_01.png"
   },
   {
     "id": "onepiece_rare_law_01",
@@ -1023,7 +1023,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 4,
-    "hp": 5,
+    "hp": 10,
     "element": "Air",
     "zone": "Backline",
     "leaderEligible": false,
@@ -1050,7 +1050,7 @@
       "Surgeon"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_rare_law_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_rare_law_01.png"
   },
   {
     "id": "onepiece_rare_doflamigo_01",
@@ -1061,7 +1061,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 5,
-    "hp": 5,
+    "hp": 10,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1088,7 +1088,7 @@
       "Villain"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_rare_doflamigo_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_rare_doflamigo_01.png"
   },
   {
     "id": "onepiece_rare_hancock_01",
@@ -1099,7 +1099,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 4,
-    "hp": 5,
+    "hp": 10,
     "element": "Fire",
     "zone": "Backline",
     "leaderEligible": false,
@@ -1125,7 +1125,7 @@
       "Stun"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_rare_hancock_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_rare_hancock_01.png"
   },
   {
     "id": "onepiece_legendary_whitebeard_01",
@@ -1136,7 +1136,7 @@
     "rarity": "Legendary",
     "mana": 5,
     "power": 6,
-    "hp": 7,
+    "hp": 14,
     "element": "Earth",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -1170,7 +1170,7 @@
       "Leader-Eligible"
     ],
     "maxSupply": 500,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_legendary_whitebeard_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_legendary_whitebeard_01.png"
   },
   {
     "id": "onepiece_legendary_shanks_01",
@@ -1181,7 +1181,7 @@
     "rarity": "Legendary",
     "mana": 5,
     "power": 5,
-    "hp": 6,
+    "hp": 12,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -1215,7 +1215,7 @@
       "Leader-Eligible"
     ],
     "maxSupply": 500,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_legendary_shanks_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_legendary_shanks_01.png"
   },
   {
     "id": "onepiece_mythic_roger_01",
@@ -1226,7 +1226,7 @@
     "rarity": "Mythic",
     "mana": 6,
     "power": 7,
-    "hp": 7,
+    "hp": 14,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -1260,7 +1260,7 @@
       "Leader-Eligible"
     ],
     "maxSupply": 30,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/onepiece_mythic_roger_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/onepiece_mythic_roger_01.png"
   },
   {
     "id": "pokemon_common_charmander_01",
@@ -1271,7 +1271,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 3,
-    "hp": 3,
+    "hp": 6,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1298,7 +1298,7 @@
       "Fire"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_charmander_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_charmander_01.png"
   },
   {
     "id": "pokemon_common_squirtle_01",
@@ -1309,7 +1309,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 4,
+    "hp": 8,
     "element": "Water",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1336,7 +1336,7 @@
       "Water"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_squirtle_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_squirtle_01.png"
   },
   {
     "id": "pokemon_common_bulbasaur_01",
@@ -1347,7 +1347,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 4,
+    "hp": 8,
     "element": "Earth",
     "zone": "Reserve",
     "leaderEligible": false,
@@ -1374,7 +1374,7 @@
       "Earth"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_bulbasaur_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_bulbasaur_01.png"
   },
   {
     "id": "pokemon_common_pikachu_01",
@@ -1385,7 +1385,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 3,
-    "hp": 3,
+    "hp": 6,
     "element": "Air",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1412,7 +1412,7 @@
       "Electric"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_pikachu_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_pikachu_01.png"
   },
   {
     "id": "pokemon_common_pidgeotto_01",
@@ -1423,7 +1423,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 3,
+    "hp": 6,
     "element": "Air",
     "zone": "Backline",
     "leaderEligible": false,
@@ -1450,7 +1450,7 @@
       "Air"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_pidgeotto_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_pidgeotto_01.png"
   },
   {
     "id": "pokemon_common_geodude_01",
@@ -1461,7 +1461,7 @@
     "rarity": "Common",
     "mana": 3,
     "power": 3,
-    "hp": 5,
+    "hp": 10,
     "element": "Earth",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1490,7 +1490,7 @@
       "Earth"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_geodude_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_geodude_01.png"
   },
   {
     "id": "pokemon_common_magikarp_01",
@@ -1501,7 +1501,7 @@
     "rarity": "Common",
     "mana": 1,
     "power": 1,
-    "hp": 2,
+    "hp": 4,
     "element": "Water",
     "zone": "Reserve",
     "leaderEligible": false,
@@ -1533,7 +1533,7 @@
       "Patience"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_magikarp_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_magikarp_01.png"
   },
   {
     "id": "pokemon_common_eevee_01",
@@ -1544,7 +1544,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 3,
+    "hp": 6,
     "element": "Earth",
     "zone": "Frontline",
     "zones": [
@@ -1576,7 +1576,7 @@
       "Utility"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_eevee_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_eevee_01.png"
   },
   {
     "id": "pokemon_common_psyduck_01",
@@ -1587,7 +1587,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 3,
-    "hp": 3,
+    "hp": 6,
     "element": "Water",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1636,7 +1636,7 @@
       "Psychic"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_psyduck_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_psyduck_01.png"
   },
   {
     "id": "pokemon_common_oddfish_01",
@@ -1647,7 +1647,7 @@
     "rarity": "Common",
     "mana": 2,
     "power": 2,
-    "hp": 3,
+    "hp": 6,
     "element": "Earth",
     "zone": "Reserve",
     "leaderEligible": false,
@@ -1674,7 +1674,7 @@
       "Earth"
     ],
     "maxSupply": 10000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_common_oddfish_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_common_oddfish_01.png"
   },
   {
     "id": "pokemon_rare_charmeleon_01",
@@ -1685,7 +1685,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 5,
-    "hp": 5,
+    "hp": 10,
     "element": "Fire",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1719,7 +1719,7 @@
       "Fire"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_rare_charmeleon_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_rare_charmeleon_01.png"
   },
   {
     "id": "pokemon_rare_wartortle_01",
@@ -1730,7 +1730,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 3,
-    "hp": 6,
+    "hp": 12,
     "element": "Water",
     "zone": "Frontline",
     "leaderEligible": false,
@@ -1757,7 +1757,7 @@
       "Water"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_rare_wartortle_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_rare_wartortle_01.png"
   },
   {
     "id": "pokemon_rare_ivysaur_01",
@@ -1768,7 +1768,7 @@
     "rarity": "Rare",
     "mana": 4,
     "power": 3,
-    "hp": 5,
+    "hp": 10,
     "element": "Earth",
     "zone": "Backline",
     "leaderEligible": false,
@@ -1795,7 +1795,7 @@
       "Growth"
     ],
     "maxSupply": 3000,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_rare_ivysaur_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_rare_ivysaur_01.png"
   },
   {
     "id": "pokemon_legendary_gyarados_01",
@@ -1806,7 +1806,7 @@
     "rarity": "Legendary",
     "mana": 5,
     "power": 6,
-    "hp": 6,
+    "hp": 12,
     "element": "Water",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -1840,7 +1840,7 @@
       "Leader-Eligible"
     ],
     "maxSupply": 500,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_legendary_gyarados_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_legendary_gyarados_01.png"
   },
   {
     "id": "pokemon_legendary_dragonite_01",
@@ -1851,7 +1851,7 @@
     "rarity": "Legendary",
     "mana": 5,
     "power": 5,
-    "hp": 6,
+    "hp": 12,
     "element": "Air",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -1886,7 +1886,7 @@
       "Leader-Eligible"
     ],
     "maxSupply": 500,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_legendary_dragonite_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_legendary_dragonite_01.png"
   },
   {
     "id": "pokemon_mythic_mewto_01",
@@ -1897,7 +1897,7 @@
     "rarity": "Mythic",
     "mana": 6,
     "power": 6,
-    "hp": 7,
+    "hp": 14,
     "element": "Air",
     "zone": "Frontline",
     "leaderEligible": true,
@@ -1931,6 +1931,6 @@
       "Leader-Eligible"
     ],
     "maxSupply": 30,
-    "imageUrl": "https://ipfs.io/ipfs/bafybeih6gujvu3s4whivzqesp2hczty4pkyrxvxefvn4d4azys2gxrmu6e/pokemon_mythic_mewto_01.png"
+    "imageUrl": "https://ipfs.io/ipfs/bafybeidpl2or3diaq3ruollpejkcok2z6dpltrvsdil423h5ehqietoona/pokemon_mythic_mewto_01.png"
   }
 ]

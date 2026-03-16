@@ -3,6 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import TournamentCard from "./tournament-card";
 import RankingsPage from "./rankings";
+import {
+  PRACTICE_TUTORIAL_PAGES,
+  PracticeTutorialButton,
+  PracticeTutorialModal,
+} from "@/features/practice/practice-page";
 
 // Mock data array
 export const TOURNAMENTS = [
@@ -52,6 +57,8 @@ export default function TournamentFeature({
   showTabs = true,
 }: TournamentFeatureProps) {
   const [activeTab, setActiveTab] = useState("Online Tournaments");
+  const [practiceTutorialPage, setPracticeTutorialPage] = useState(0);
+  const [showPracticeTutorial, setShowPracticeTutorial] = useState(false);
 
   const [viewingRankingsFor, setViewingRankingsFor] = useState<number | null>(
     null,
@@ -167,10 +174,19 @@ export default function TournamentFeature({
           </div>
         ) : activeTab === "Practice" ? (
           <div
-            className="flex flex-col items-center justify-center
+            className="relative flex flex-col items-center justify-center
                                     bg-[linear-gradient(to_top,#120C35_8%,#143C87_45%,#13245E_98%)]
                                     rounded-2xl border border-[#8085BD] py-16 px-8 mt-10 space-y-3 text-center"
           >
+            <div className="absolute right-4 top-4">
+              <PracticeTutorialButton
+                compact
+                onClick={() => {
+                  setPracticeTutorialPage(0);
+                  setShowPracticeTutorial(true);
+                }}
+              />
+            </div>
             <div>
               <Image
                 src="/assets/tournament-page/play_icon.svg"
@@ -217,6 +233,25 @@ export default function TournamentFeature({
             <p className="text-white/50 text-sm">Stay tuned for this feature</p>
           </div>
         )}
+        <PracticeTutorialModal
+          open={showPracticeTutorial}
+          pageIndex={practiceTutorialPage}
+          onClose={() => setShowPracticeTutorial(false)}
+          onBack={() =>
+            setPracticeTutorialPage((current) => Math.max(current - 1, 0))
+          }
+          onNext={() => {
+            if (practiceTutorialPage === PRACTICE_TUTORIAL_PAGES.length - 1) {
+              setShowPracticeTutorial(false);
+              return;
+            }
+
+            setPracticeTutorialPage((current) =>
+              Math.min(current + 1, PRACTICE_TUTORIAL_PAGES.length - 1),
+            );
+          }}
+          onSelectPage={setPracticeTutorialPage}
+        />
       </div>
     </div>
   );

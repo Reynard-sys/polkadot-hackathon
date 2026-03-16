@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 import { motion } from "motion/react";
 import Pack from "./components/pack";
@@ -7,8 +8,7 @@ import PageBackground from "@/components/page-background";
 export default function Gacha() {
   return (
     <PageBackground>
-      {/* ── Mobile layout ── */}
-      <div className="flex flex-col lg:hidden max-w-sm mx-auto pt-24 px-4 gap-3">
+      <div className="mx-auto flex max-w-sm flex-col gap-3 px-4 pt-24 lg:hidden">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -19,7 +19,7 @@ export default function Gacha() {
             alt="Mobile Tournaments"
             width={375}
             height={113}
-            className="w-full h-auto pointer-events-none"
+            className="pointer-events-none h-auto w-full"
             draggable={false}
           />
         </motion.div>
@@ -28,14 +28,14 @@ export default function Gacha() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.25 }}
-          className="flex flex-col gap-3 mb-20"
+          className="flex flex-col gap-3"
         >
           <Pack
             imageSrc="/assets/packs/naruto-pack.svg"
             imageAlt="Naruto Pack"
             packName="Naruto Pack"
-            packInfo="Standard · 0.1 WND · 10 cards"
-            packDesc="16 unique Naruto cards — Common, Rare, Legendary & Mythic. Collect them all!"
+            packInfo="Standard - 0.001 WND - 10 cards"
+            packDesc="16 unique Naruto cards across Common, Rare, Legendary, and Mythic."
             variant="mobile"
             href="/open-packs?series=naruto"
           />
@@ -43,8 +43,8 @@ export default function Gacha() {
             imageSrc="/assets/packs/one-piece-pack.svg"
             imageAlt="One Piece Pack"
             packName="One Piece Pack"
-            packInfo="Premium · 0.25 WND · 20 cards"
-            packDesc="16 unique One Piece cards. Premium packs guarantee at least 1 Legendary!"
+            packInfo="Premium - 0.0018 WND - 20 cards"
+            packDesc="16 unique One Piece cards. Premium packs guarantee at least 1 Legendary."
             variant="mobile"
             href="/open-packs?series=onepiece"
           />
@@ -52,32 +52,32 @@ export default function Gacha() {
             imageSrc="/assets/packs/pokemon-pack.svg"
             imageAlt="Pokemon Pack"
             packName="Pokemon Pack"
-            packInfo="Premium · 0.25 WND · 20 cards"
-            packDesc="16 unique Pokemon cards. Premium packs guarantee at least 1 Legendary!"
+            packInfo="Ultra - 0.0025 WND - 30 cards"
+            packDesc="16 unique Pokemon cards. Ultra packs give the biggest opening and best chase odds."
             variant="mobile"
             href="/open-packs?series=pokemon"
           />
         </motion.div>
       </div>
 
-      {/* ── Desktop layout ── */}
-      <div className="hidden lg:flex lg:flex-col lg:items-center lg:pt-28 lg:px-8 lg:gap-6">
+      <div className="hidden flex-col items-center gap-6 px-8 pt-28 lg:flex">
         <motion.div
-          className="flex flex-col items-center gap-6 w-full"
+          className="flex w-full flex-col items-center gap-6"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
         >
           <div className="text-center">
-            <h1 className="text-white font-bold text-7xl leading-tight">
+            <h1 className="text-7xl font-bold leading-tight text-white">
               Open a Pack
             </h1>
-            <p className="text-white text-base mt-3 max-w-xl mx-auto leading-relaxed">
+            <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-white">
               Collect 48 unique anime NFT cards across Naruto, One Piece, and
               Pokemon sets. Every pull uses provably fair randomness.
             </p>
           </div>
         </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -88,13 +88,13 @@ export default function Gacha() {
             alt="Divider"
             width={1440}
             height={80}
-            className="hidden lg:block h-auto w-[90%] mx-auto pointer-events-none"
+            className="mx-auto hidden h-auto w-[90%] pointer-events-none lg:block"
             draggable={false}
           />
         </motion.div>
 
         <motion.div
-          className="flex w-full max-w-6xl flex-wrap justify-center gap-6 mt-20 xl:flex-nowrap"
+          className="mt-20 flex w-full max-w-5xl flex-wrap justify-center gap-6"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
@@ -103,8 +103,8 @@ export default function Gacha() {
             imageSrc="/assets/packs/naruto-pack.svg"
             imageAlt="Naruto Pack"
             packName="Naruto Pack"
-            packInfo="Standard · 0.001 WND"
-            packDesc="16 unique Naruto cards. Common → Mythic rarities. Fair rolls, no duplicates."
+            packInfo="Standard - 0.001 WND"
+            packDesc="16 unique Naruto cards. Common through Mythic rarities with fair rolls."
             variant="desktop"
             href="/open-packs?series=naruto"
           />
@@ -112,7 +112,7 @@ export default function Gacha() {
             imageSrc="/assets/packs/one-piece-pack.svg"
             imageAlt="One Piece Pack"
             packName="One Piece Pack"
-            packInfo="Premium · 0.0018 WND"
+            packInfo="Premium - 0.0018 WND"
             packDesc="16 unique One Piece cards. Premium packs guarantee 1 Legendary or higher."
             variant="desktop"
             href="/open-packs?series=onepiece"
@@ -121,8 +121,8 @@ export default function Gacha() {
             imageSrc="/assets/packs/pokemon-pack.svg"
             imageAlt="Pokemon Pack"
             packName="Pokemon Pack"
-            packInfo="Premium · 0.0018 WND"
-            packDesc="16 unique Pokemon cards. Premium packs guarantee 1 Legendary or higher."
+            packInfo="Ultra - 0.0025 WND"
+            packDesc="16 unique Pokemon cards. Ultra packs give the biggest pull size and best chase odds."
             variant="desktop"
             href="/open-packs?series=pokemon"
           />

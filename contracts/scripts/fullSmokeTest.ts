@@ -29,7 +29,7 @@ const GAS_OVERRIDES = {
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const baseUri = process.env.BASE_URI ?? "https://ipfs.io/ipfs/bafybeiccbcahhjafae4vqgylzb57u64ac4ukjgmt2kpwugfi7rdwzrduvu/";
+  const baseUri = process.env.BASE_URI ?? "https://ipfs.io/ipfs/bafybeigaosmk75u5pefapg5ar243m4rgyuajlwgbzdebi5odogm4vv6cka/";
 
   console.log("===========================================");
   console.log("  Anime Gacha TCG — Full Smoke Test");

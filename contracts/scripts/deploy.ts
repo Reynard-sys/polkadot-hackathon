@@ -30,7 +30,7 @@ async function main() {
   const PAUSE       = isLocal ? 0 : 5000; // no sleep needed locally
 
   const baseUri = process.env.BASE_URI ??
-    "https://ipfs.io/ipfs/bafybeiccbcahhjafae4vqgylzb57u64ac4ukjgmt2kpwugfi7rdwzrduvu/";
+    "https://ipfs.io/ipfs/bafybeigaosmk75u5pefapg5ar243m4rgyuajlwgbzdebi5odogm4vv6cka/";
 
   console.log("===========================================");
   console.log("  Anime Gacha TCG — Contract Deployment");
