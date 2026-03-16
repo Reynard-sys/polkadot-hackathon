@@ -114,7 +114,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     ],
     visual: "card",
     imageSrc: "/assets/tutorial/card_tutorial.svg",
-    imageAlt: "Reading a card tutorial",
+    imageAlt: "Reading a Card",
   },
   {
     title: "The Board",
@@ -134,7 +134,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     ],
     visual: "leader",
     imageSrc: "/assets/tutorial/leader_tutorial.svg",
-    imageAlt: "Leader card tutorial",
+    imageAlt: "Your Leader Card",
   },
   {
     title: "How a Turn Works",
@@ -145,7 +145,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     ],
     visual: "turns",
     imageSrc: "/assets/tutorial/turns_tutorial.svg",
-    imageAlt: "Turn flow tutorial",
+    imageAlt: "How a Turn Works",
   },
   {
     title: "Activating Abilities",
@@ -156,7 +156,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     ],
     visual: "abilities",
     imageSrc: "/assets/tutorial/abilities_tutorial.svg",
-    imageAlt: "Abilities tutorial",
+    imageAlt: "Activating Abilities",
   },
   {
     title: "Attacking",
@@ -168,7 +168,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     ],
     visual: "attack",
     imageSrc: "/assets/tutorial/attack_tutorial.svg",
-    imageAlt: "Attacking tutorial",
+    imageAlt: "Attacking",
   },
   {
     title: "The Element System",
@@ -179,7 +179,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     ],
     visual: "elements",
     imageSrc: "/assets/tutorial/elements_tutorial.svg",
-    imageAlt: "Element system tutorial",
+    imageAlt: "The Element System",
   },
   {
     title: "Status Effects",
@@ -199,7 +199,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     ],
     visual: "end",
     imageSrc: "/assets/tutorial/end_tutorial.svg",
-    imageAlt: "Win and lose conditions tutorial",
+    imageAlt: "Winning and Losing",
   },
   {
     title: "Quick Tips Before You Play",
@@ -210,7 +210,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     ],
     visual: "tips",
     imageSrc: "/assets/tutorial/tips_tutorial.svg",
-    imageAlt: "Practice tips tutorial",
+    imageAlt: "Quick Tips Before You Play",
   },
 ];
 
@@ -408,20 +408,6 @@ function MobileDetailBackButton({ onBack }: { onBack: () => void }) {
 function TutorialVisual({ page }: { page: PracticeTutorialPage }) {
   const pikachuCard = getPracticeCardById(36);
 
-  if (page.imageSrc) {
-    return (
-      <div className="relative mx-auto aspect-[16/10] w-full overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
-        <Image
-          src={page.imageSrc}
-          alt={page.imageAlt ?? page.title}
-          fill
-          className="object-contain"
-          unoptimized
-        />
-      </div>
-    );
-  }
-
   if (page.visual === "card" && pikachuCard) {
     return (
       <div className="grid gap-4 md:grid-cols-[180px_1fr]">
@@ -505,6 +491,20 @@ function TutorialVisual({ page }: { page: PracticeTutorialPage }) {
             {"Water -> Fire +1"}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (page.imageSrc) {
+    return (
+      <div className="relative mx-auto aspect-[16/10] w-full overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
+        <Image
+          src={page.imageSrc}
+          alt={page.imageAlt ?? page.title}
+          fill
+          className="object-contain"
+          unoptimized
+        />
       </div>
     );
   }
@@ -3302,7 +3302,7 @@ export default function PracticePageContent() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-[2rem] font-bold text-white">
-                Practice Match
+                Training Grounds
               </h1>
               <p className="mt-3 text-sm text-white/55">
                 Choose a saved deck, learn the battle flow, then pressure the
@@ -3317,7 +3317,7 @@ export default function PracticePageContent() {
           <div className="mx-auto flex max-w-6xl items-start justify-between gap-6 px-4">
             <div className="mx-auto text-center">
               <h1 className="mb-4 text-7xl font-bold text-white">
-                Practice Match
+                Training Grounds
               </h1>
               <p className="mx-auto mb-8 max-w-xl text-center text-sm text-gray-400">
                 Build pressure, manage tempo, and test your lineup against a
