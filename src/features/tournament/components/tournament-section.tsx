@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import TournamentCard from "./tournament-card";
 import RankingsPage from "./rankings";
 
@@ -152,6 +153,38 @@ export default function TournamentFeature() {
                 onViewRankings={() => setViewingRankingsFor(tournament.id)}
               />
             ))}
+          </div>
+        ) : activeTab === "Practice" ? (
+          <div
+            className="flex flex-col items-center justify-center
+                                    bg-[linear-gradient(to_top,#120C35_8%,#143C87_45%,#13245E_98%)]
+                                    rounded-2xl border border-[#8085BD] py-16 px-8 mt-10 space-y-3 text-center"
+          >
+            <div>
+              <Image
+                src="/assets/tournament-page/play_icon.svg"
+                alt=""
+                width={100}
+                height={120}
+                className="max-w-sm pointer-events-none"
+                aria-hidden="true"
+              />
+            </div>
+            <h3 className="mb-2 text-lg font-bold text-white">
+              Training Grounds
+            </h3>
+            <p className="max-w-xs text-sm text-white/50">
+              Train your deck. Master your strategy. No stakes, just skill.
+            </p>
+            <Link href="/deck" className="mt-2 block w-full max-w-[250px]">
+              <Image
+                src="/assets/tournament-page/start_practice.svg"
+                alt="Start Practice"
+                width={250}
+                height={60}
+                className="h-auto w-full"
+              />
+            </Link>
           </div>
         ) : (
           <div
