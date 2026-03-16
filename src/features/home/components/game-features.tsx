@@ -2,20 +2,20 @@ import Image from "next/image";
 
 const mobileFeatures = [
   {
-    src: "/assets/mobile-game-features/mobile-deck-builder.svg",
-    alt: "Deck Builder",
-  },
-  {
     src: "/assets/mobile-game-features/mobile-gacha-system.svg",
     alt: "Gacha System",
   },
   {
-    src: "/assets/mobile-game-features/mobile-inventory.svg",
-    alt: "Inventory",
+    src: "/assets/mobile-game-features/mobile-deck-builder.svg",
+    alt: "Deck Builder",
   },
   {
     src: "/assets/mobile-game-features/mobile-marketplace.svg",
     alt: "Marketplace",
+  },
+  {
+    src: "/assets/mobile-game-features/mobile-inventory.svg",
+    alt: "Inventory",
   },
   {
     src: "/assets/mobile-game-features/mobile-ownership.svg",
