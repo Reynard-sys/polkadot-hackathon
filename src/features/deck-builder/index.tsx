@@ -69,11 +69,12 @@ const SAVED_DECK_COLLAPSED_COUNT = 4;
 const MAX_DECK_NAME_LENGTH = 20;
 const SAVED_DECK_CARD_ASPECT_RATIO = "144.989 / 204.193";
 const BATTLE_DECK_SLOT_COUNT = 8;
-const BATTLE_DECK_RARITY_LIMITS: Partial<Record<OwnedCard["rarity"], number>> = {
-  Mythic: 1,
-  Legendary: 2,
-  Rare: 2,
-};
+const BATTLE_DECK_RARITY_LIMITS: Partial<Record<OwnedCard["rarity"], number>> =
+  {
+    Mythic: 1,
+    Legendary: 2,
+    Rare: 2,
+  };
 const DECK_POWER_BY_RARITY: Record<OwnedCard["rarity"], number> = {
   Common: 1,
   Rare: 2,
@@ -84,6 +85,8 @@ const DECK_TUTORIAL_PAGES = [
   {
     eyebrow: "Card Guide",
     title: "How to read a card",
+    imageSrc: "/assets/tutorial/card_tutorial.svg",
+    imageAlt: "Annotated tutorial showing how to read a card",
     description:
       "Use the annotated card image to quickly understand what each area of the card means during deck building.",
     bullets: [
@@ -93,11 +96,14 @@ const DECK_TUTORIAL_PAGES = [
       "Traits and description explain the role of the card.",
     ],
     placeholderTitle: "Annotated card image",
-    placeholderHint: "Placeholder image until the final card callout graphic is provided.",
+    placeholderHint:
+      "Placeholder image until the final card callout graphic is provided.",
   },
   {
     eyebrow: "Card Guide",
     title: "Rarity and frame colors",
+    imageSrc: "/assets/tutorial/rarity_tutorial.svg",
+    imageAlt: "Rarity and frame color legend",
     description:
       "Card frame color is the fastest way to identify rarity while building your deck.",
     bullets: [
@@ -113,6 +119,8 @@ const DECK_TUTORIAL_PAGES = [
   {
     eyebrow: "Deck Rules",
     title: "Deck building matchups",
+    imageSrc: "/assets/tutorial/elements_tutorial.svg",
+    imageAlt: "Element matchup tutorial chart",
     description:
       "Element advantage is a clean bonus system. Hitting into a stronger element has no penalty, so only the winning side gets rewarded.",
     bullets: [
@@ -123,11 +131,14 @@ const DECK_TUTORIAL_PAGES = [
       "There is no penalty for attacking into a stronger element.",
     ],
     placeholderTitle: "Element matchup guide",
-    placeholderHint: "Placeholder image for the element matchup loop and attack examples.",
+    placeholderHint:
+      "Placeholder image for the element matchup loop and attack examples.",
   },
   {
     eyebrow: "Deck Rules",
     title: "Battle deck limits",
+    imageSrc: "/assets/tutorial/deck_limits_tutorial.svg",
+    imageAlt: "Battle deck layout and rarity limits",
     description:
       "The first 8 slots are the battle deck: Leader, Frontline, and Backline. Reserve slots stay flexible.",
     bullets: [
@@ -138,11 +149,14 @@ const DECK_TUTORIAL_PAGES = [
       "Reserve slots do not use these rarity caps.",
     ],
     placeholderTitle: "Battle deck layout",
-    placeholderHint: "Placeholder image for the battle deck and reserve slot guide.",
+    placeholderHint:
+      "Placeholder image for the battle deck and reserve slot guide.",
   },
   {
     eyebrow: "Power Rating",
     title: "Deck power rating",
+    imageSrc: "/assets/tutorial/power_tutorial.svg",
+    imageAlt: "Power rating tutorial chart",
     description:
       "Power rating is the sum of the rarity values of all selected cards in the current deck.",
     bullets: [
@@ -222,13 +236,15 @@ function isCardZone(value: string): value is CardZone {
 }
 
 function getCatalogCardZones(card: Pick<CatalogCard, "zone" | "zones">) {
-  return [...new Set([...(card.zones ?? []), ...(card.zone ? [card.zone] : [])])]
-    .filter(isCardZone);
+  return [
+    ...new Set([...(card.zones ?? []), ...(card.zone ? [card.zone] : [])]),
+  ].filter(isCardZone);
 }
 
 function getEffectiveCardZones(card: Pick<CardItem, "zone" | "zones">) {
-  return [...new Set([...(card.zones ?? []), ...(card.zone ? [card.zone] : [])])]
-    .filter(isCardZone);
+  return [
+    ...new Set([...(card.zones ?? []), ...(card.zone ? [card.zone] : [])]),
+  ].filter(isCardZone);
 }
 
 const CARD_ZONE_LOOKUP = new Map<number, CardZone[]>(
@@ -501,6 +517,24 @@ type BattleDeckLimitViolation = {
   limit: number;
 };
 
+function getBattleDeckCompletion(cards: Array<CardItem | null>) {
+  return {
+    leader: cards[0] ? 1 : 0,
+    frontline: cards.slice(1, 4).filter((card) => card !== null).length,
+    backline: cards.slice(4, 8).filter((card) => card !== null).length,
+  };
+}
+
+function getBattleDeckCompletionMessage(cards: Array<CardItem | null>) {
+  const { leader, frontline, backline } = getBattleDeckCompletion(cards);
+
+  if (leader === 1 && frontline === 3 && backline === 4) {
+    return null;
+  }
+
+  return `Complete the battle deck before saving: Leader ${leader}/1, Frontline ${frontline}/3, Backline ${backline}/4.`;
+}
+
 function getBattleDeckLimitViolation(cards: Array<CardItem | null>) {
   const counts = new Map<OwnedCard["rarity"], number>();
 
@@ -689,7 +723,8 @@ function hydratePersistedCard(card: unknown): CardItem | null {
       zone: parsedCard.zone ?? null,
       zones: parsedCard.zones ?? [],
     });
-  const traits = CARD_TRAITS_LOOKUP.get(parsedCard.id) ?? parsedCard.traits ?? [];
+  const traits =
+    CARD_TRAITS_LOOKUP.get(parsedCard.id) ?? parsedCard.traits ?? [];
 
   return {
     ...(parsedCard as CardItem),
@@ -2183,16 +2218,28 @@ function DeckBuilderTutorialModal({
           <div className="flex-1 overflow-y-auto p-5 md:p-6">
             <div className="grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:gap-8">
               <div className="rounded-[18px] border border-dashed border-white/15 bg-[linear-gradient(180deg,#21283a_0%,#0f1320_100%)] p-4">
-                <div className="flex h-[220px] items-center justify-center rounded-[14px] border border-white/8 bg-[radial-gradient(circle_at_top,#1f3d79_0%,#111827_55%,#0a0f1c_100%)] text-center md:h-[320px]">
-                  <div className="px-6">
-                    <p className="text-[15px] font-bold text-white">
-                      {tutorialPage.placeholderTitle}
-                    </p>
-                    <p className="mt-2 text-[13px] leading-[20px] text-[#99a1af]">
-                      {tutorialPage.placeholderHint}
-                    </p>
+                {tutorialPage.imageSrc ? (
+                  <div className="relative h-[220px] overflow-hidden rounded-[14px] border border-white/8 bg-[radial-gradient(circle_at_top,#1f3d79_0%,#111827_55%,#0a0f1c_100%)] md:h-[320px]">
+                    <Image
+                      src={tutorialPage.imageSrc}
+                      alt={tutorialPage.imageAlt}
+                      fill
+                      className="object-contain p-2"
+                      sizes="(max-width: 768px) 100vw, 60vw"
+                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="flex h-[220px] items-center justify-center rounded-[14px] border border-white/8 bg-[radial-gradient(circle_at_top,#1f3d79_0%,#111827_55%,#0a0f1c_100%)] text-center md:h-[320px]">
+                    <div className="px-6">
+                      <p className="text-[15px] font-bold text-white">
+                        {tutorialPage.placeholderTitle}
+                      </p>
+                      <p className="mt-2 text-[13px] leading-[20px] text-[#99a1af]">
+                        {tutorialPage.placeholderHint}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="rounded-[18px] border border-white/8 bg-[#0f1329] p-5">
@@ -2257,8 +2304,8 @@ function getCardDetailTraits(card: CardItem) {
     return card.traits;
   }
 
-  return [card.faction, getCardZoneLabel(card)].filter((value): value is string =>
-    Boolean(value),
+  return [card.faction, getCardZoneLabel(card)].filter(
+    (value): value is string => Boolean(value),
   );
 }
 
@@ -3023,7 +3070,10 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     () => deckSlots.filter((slot): slot is CardItem => slot !== null),
     [deckSlots],
   );
-  const deckPowerRating = useMemo(() => getDeckPowerRating(deckSlots), [deckSlots]);
+  const deckPowerRating = useMemo(
+    () => getDeckPowerRating(deckSlots),
+    [deckSlots],
+  );
 
   const completionRate = Math.round((selectedCards.length / TOTAL_SLOTS) * 100);
   const showFigmaEmptyState = !isEditing && savedDecks.length === 0;
@@ -3178,10 +3228,18 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
         ? trimmedName
         : sanitizeDeckName(`Deck ${nextDeckId}`);
     const normalizedDeckSlots = normalizeDeckCards(deckSlots);
-    const battleDeckViolation = getBattleDeckLimitViolation(normalizedDeckSlots);
+    const battleDeckCompletionMessage =
+      getBattleDeckCompletionMessage(normalizedDeckSlots);
+    const battleDeckViolation =
+      getBattleDeckLimitViolation(normalizedDeckSlots);
 
     if (normalizedDeckSlots[0] === null) {
       setShowLeaderRequiredModal(true);
+      return;
+    }
+
+    if (battleDeckCompletionMessage) {
+      setDeckRuleMessage(battleDeckCompletionMessage);
       return;
     }
 
@@ -3895,7 +3953,9 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
           <DeckBuilderTutorialModal
             page={tutorialPage}
             onClose={() => setShowTutorialModal(false)}
-            onPrev={() => setTutorialPage((current) => Math.max(current - 1, 0))}
+            onPrev={() =>
+              setTutorialPage((current) => Math.max(current - 1, 0))
+            }
             onNext={() =>
               setTutorialPage((current) =>
                 Math.min(current + 1, DECK_TUTORIAL_PAGES.length - 1),
