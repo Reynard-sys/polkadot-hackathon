@@ -20,9 +20,9 @@ export default function Footer() {
           <Image
             src="/logo.svg"
             alt="AniVerse Nexus Logo"
-            width={177}
+            width={200}
             height={65}
-            className="pointer-events-none w-auto"
+            className="pointer-events-none w-max-content mx-8"
             draggable={false}
           />
         </div>
