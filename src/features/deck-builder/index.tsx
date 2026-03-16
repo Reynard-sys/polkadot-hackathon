@@ -67,6 +67,93 @@ const AVAILABLE_CARDS_PAGE_SIZE = 12;
 const SAVED_DECK_COLLAPSED_COUNT = 4;
 const MAX_DECK_NAME_LENGTH = 20;
 const SAVED_DECK_CARD_ASPECT_RATIO = "144.989 / 204.193";
+const BATTLE_DECK_SLOT_COUNT = 8;
+const BATTLE_DECK_RARITY_LIMITS: Partial<Record<OwnedCard["rarity"], number>> = {
+  Mythic: 1,
+  Legendary: 2,
+  Rare: 2,
+};
+const DECK_POWER_BY_RARITY: Record<OwnedCard["rarity"], number> = {
+  Common: 1,
+  Rare: 2,
+  Legendary: 3,
+  Mythic: 4,
+};
+const DECK_TUTORIAL_PAGES = [
+  {
+    eyebrow: "Card Guide",
+    title: "How to read a card",
+    description:
+      "Use the annotated card image to quickly understand what each area of the card means during deck building.",
+    bullets: [
+      "Name and subtitle identify the unit.",
+      "Rarity affects battle deck limits and power rating.",
+      "Zone shows where the card can be placed.",
+      "Traits and description explain the role of the card.",
+    ],
+    placeholderTitle: "Annotated card image",
+    placeholderHint: "Placeholder image until the final card callout graphic is provided.",
+  },
+  {
+    eyebrow: "Card Guide",
+    title: "Rarity and frame colors",
+    description:
+      "Card frame color is the fastest way to identify rarity while building your deck.",
+    bullets: [
+      "Gray frame = Common",
+      "Green frame = Rare",
+      "Gold frame = Legendary",
+      "Rainbow frame = Mythic",
+    ],
+    placeholderTitle: "Rarity frame guide",
+    placeholderHint:
+      "Placeholder image for the frame color legend and sample card rarities.",
+  },
+  {
+    eyebrow: "Deck Rules",
+    title: "Deck building matchups",
+    description:
+      "Element advantage is a clean bonus system. Hitting into a stronger element has no penalty, so only the winning side gets rewarded.",
+    bullets: [
+      "Fire beats Air: +1",
+      "Air beats Earth: +1",
+      "Earth beats Water: +1",
+      "Water beats Fire: +1",
+      "There is no penalty for attacking into a stronger element.",
+    ],
+    placeholderTitle: "Element matchup guide",
+    placeholderHint: "Placeholder image for the element matchup loop and attack examples.",
+  },
+  {
+    eyebrow: "Deck Rules",
+    title: "Battle deck limits",
+    description:
+      "The first 8 slots are the battle deck: Leader, Frontline, and Backline. Reserve slots stay flexible.",
+    bullets: [
+      "Select exactly 1 leader in the first slot.",
+      "Mythic cards in battle deck: max 1.",
+      "Legendary cards in battle deck: max 2.",
+      "Rare cards in battle deck: max 2.",
+      "Reserve slots do not use these rarity caps.",
+    ],
+    placeholderTitle: "Battle deck layout",
+    placeholderHint: "Placeholder image for the battle deck and reserve slot guide.",
+  },
+  {
+    eyebrow: "Power Rating",
+    title: "Deck power rating",
+    description:
+      "Power rating is the sum of the rarity values of all selected cards in the current deck.",
+    bullets: [
+      "Common = 1 point",
+      "Rare = 2 points",
+      "Legendary = 3 points",
+      "Mythic = 4 points",
+    ],
+    placeholderTitle: "Power rating example",
+    placeholderHint: "Placeholder image for a sample power rating breakdown.",
+  },
+] as const;
 
 const CARD_VARIANT_PRESETS: Record<
   CardVariant,
@@ -363,6 +450,183 @@ function buildSavedDeckSlots(cards: Array<CardItem | null>) {
     slots.push(null);
   }
   return slots.slice(0, TOTAL_SLOTS);
+}
+
+function isBattleDeckSlot(slotIndex: number) {
+  return slotIndex >= 0 && slotIndex < BATTLE_DECK_SLOT_COUNT;
+}
+
+type BattleDeckLimitViolation = {
+  rarity: OwnedCard["rarity"];
+  limit: number;
+};
+
+function getBattleDeckLimitViolation(cards: Array<CardItem | null>) {
+  const counts = new Map<OwnedCard["rarity"], number>();
+
+  for (let slotIndex = 0; slotIndex < cards.length; slotIndex += 1) {
+    if (!isBattleDeckSlot(slotIndex)) {
+      break;
+    }
+
+    const card = cards[slotIndex];
+    if (!card) {
+      continue;
+    }
+
+    const limit = BATTLE_DECK_RARITY_LIMITS[card.rarity];
+    if (typeof limit !== "number") {
+      continue;
+    }
+
+    const nextCount = (counts.get(card.rarity) ?? 0) + 1;
+    counts.set(card.rarity, nextCount);
+
+    if (nextCount > limit) {
+      return {
+        rarity: card.rarity,
+        limit,
+      } satisfies BattleDeckLimitViolation;
+    }
+  }
+
+  return null;
+}
+
+function getBattleDeckLimitMessage(violation: BattleDeckLimitViolation) {
+  return `${violation.rarity} cards are limited to ${violation.limit} in Leader, Frontline, and Backline slots. Reserve slots do not use this cap.`;
+}
+
+function getDeckPowerRating(cards: Array<CardItem | null>) {
+  return cards.reduce((total, card) => {
+    if (!card) {
+      return total;
+    }
+
+    return total + DECK_POWER_BY_RARITY[card.rarity];
+  }, 0);
+}
+
+function resolveDeckSlotsAfterAdd(
+  currentSlots: Array<CardItem | null>,
+  card: CardItem,
+  ownedCount: number,
+  preferredSlotIndex?: number,
+) {
+  const alreadyInDeck = currentSlots.some((slot) => slot?.id === card.id);
+  if (ownedCount < 1 || alreadyInDeck) {
+    return {
+      nextSlots: null,
+      ruleMessage: null,
+    };
+  }
+
+  const next = [...currentSlots];
+
+  if (typeof preferredSlotIndex === "number") {
+    if (!canCardOccupySlot(card, preferredSlotIndex)) {
+      return {
+        nextSlots: null,
+        ruleMessage: null,
+      };
+    }
+
+    if (next[preferredSlotIndex] === null) {
+      next[preferredSlotIndex] = card;
+    } else {
+      const displacedCard = next[preferredSlotIndex];
+      if (!displacedCard) {
+        return {
+          nextSlots: null,
+          ruleMessage: null,
+        };
+      }
+
+      const nextEmptyIndex = findCompatibleEmptySlot(
+        next,
+        displacedCard,
+        preferredSlotIndex,
+      );
+      if (nextEmptyIndex < 0) {
+        return {
+          nextSlots: null,
+          ruleMessage: null,
+        };
+      }
+
+      next[nextEmptyIndex] = displacedCard;
+      next[preferredSlotIndex] = card;
+    }
+  } else {
+    const nextEmptyIndex = findCompatibleEmptySlot(next, card);
+    if (nextEmptyIndex < 0) {
+      return {
+        nextSlots: null,
+        ruleMessage: null,
+      };
+    }
+
+    next[nextEmptyIndex] = card;
+  }
+
+  const violation = getBattleDeckLimitViolation(next);
+  if (violation) {
+    return {
+      nextSlots: null,
+      ruleMessage: getBattleDeckLimitMessage(violation),
+    };
+  }
+
+  return {
+    nextSlots: next,
+    ruleMessage: null,
+  };
+}
+
+function resolveDeckSlotsAfterMove(
+  currentSlots: Array<CardItem | null>,
+  fromIndex: number,
+  toIndex: number,
+) {
+  if (fromIndex === toIndex) {
+    return {
+      nextSlots: null,
+      ruleMessage: null,
+    };
+  }
+
+  const next = [...currentSlots];
+  const source = next[fromIndex];
+  if (!source || !canCardOccupySlot(source, toIndex)) {
+    return {
+      nextSlots: null,
+      ruleMessage: null,
+    };
+  }
+
+  const target = next[toIndex];
+  if (target && !canCardOccupySlot(target, fromIndex)) {
+    return {
+      nextSlots: null,
+      ruleMessage: null,
+    };
+  }
+
+  next[toIndex] = source;
+  next[fromIndex] = target;
+
+  const violation = getBattleDeckLimitViolation(next);
+  if (violation) {
+    return {
+      nextSlots: null,
+      ruleMessage: getBattleDeckLimitMessage(violation),
+    };
+  }
+
+  return {
+    nextSlots: next,
+    ruleMessage: null,
+  };
 }
 
 function deckStorageKey(address: string) {
@@ -898,6 +1162,33 @@ function DeckExpandToggleIcon({
   );
 }
 
+function DeckTutorialButton({
+  onClick,
+  compact = false,
+}: {
+  onClick: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/15 bg-white/5 font-bold text-white transition-colors hover:bg-white/10 ${
+        compact ? "h-[36px] px-3 text-[12px]" : "h-[42px] px-4 text-[14px]"
+      }`}
+    >
+      <Image
+        src="/assets/tutorial.svg"
+        alt=""
+        width={18}
+        height={18}
+        className={compact ? "h-[16px] w-[16px]" : "h-[18px] w-[18px]"}
+      />
+      <span>{compact ? "Guide" : "Tutorial"}</span>
+    </button>
+  );
+}
+
 function FigmaSavedDeckCard({
   deck,
   onEdit,
@@ -919,10 +1210,11 @@ function FigmaSavedDeckCard({
     (card): card is CardItem => card !== null,
   ).length;
   const savedDeckCompletion = Math.round((filledSlots / TOTAL_SLOTS) * 100);
+  const savedDeckPower = getDeckPowerRating(slots);
 
   return (
-    <article className="rounded-[16px] border border-[#8085bd] bg-[linear-gradient(180deg,#2d3548_0%,#030a30_100%)] p-[1.735px]">
-      <div className="flex flex-col items-center gap-[11.983px] px-[15.995px] pt-[15.995px] pb-[11.983px]">
+    <article className="w-full rounded-[16px] border border-[#8085bd] bg-[linear-gradient(180deg,#2d3548_0%,#030a30_100%)] p-[1.735px]">
+      <div className="flex flex-col items-stretch gap-[11.983px] px-[15.995px] pt-[15.995px] pb-[11.983px]">
         <div className="flex w-full items-start justify-between gap-[12px]">
           <div className="min-w-0 flex-1 pr-[12px]">
             <h3
@@ -933,7 +1225,7 @@ function FigmaSavedDeckCard({
             </h3>
             <p className="mt-[4px] text-[12px] leading-[16px] font-normal text-[#d2d2d2]">
               {filledSlots}/{TOTAL_SLOTS} cards &bull; Completion rate{" "}
-              {savedDeckCompletion}%
+              {savedDeckCompletion}% &bull; Power {savedDeckPower}
             </p>
           </div>
 
@@ -949,7 +1241,7 @@ function FigmaSavedDeckCard({
           </div>
         </div>
 
-        <div className="w-[352px] max-w-full rounded-[10px]">
+        <div className="w-full rounded-[10px]">
           <div className="grid grid-cols-4 justify-items-center gap-[8px] px-[6.81px] pt-[7.97px] pb-[7.97px]">
             {previewSlots.map((card, index) => (
               <div
@@ -974,7 +1266,7 @@ function FigmaSavedDeckCard({
         <button
           type="button"
           onClick={onToggleExpand}
-          className="flex h-[32px] w-[32px] items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10"
+          className="flex h-[32px] w-[32px] self-center items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10"
           aria-label={`${isExpanded ? "Collapse" : "Expand"} ${deck.name}`}
           aria-expanded={isExpanded}
         >
@@ -984,7 +1276,7 @@ function FigmaSavedDeckCard({
         <button
           type="button"
           onClick={onEdit}
-          className="relative w-full max-w-[348.459px] overflow-hidden self-center"
+          className="relative w-full overflow-hidden"
           style={{ aspectRatio: "348.459 / 47.957" }}
         >
           <Image
@@ -1769,6 +2061,128 @@ function DeckBuilderFilterModal({
   );
 }
 
+function DeckBuilderTutorialModal({
+  page,
+  onClose,
+  onPrev,
+  onNext,
+  onSelectPage,
+}: {
+  page: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onSelectPage: (page: number) => void;
+}) {
+  const tutorialPage = DECK_TUTORIAL_PAGES[page];
+  const isFirstPage = page === 0;
+  const isLastPage = page === DECK_TUTORIAL_PAGES.length - 1;
+
+  return (
+    <div className="fixed inset-x-0 top-[72px] bottom-[76px] z-[98] overflow-y-auto bg-black/70 px-4 py-3 md:inset-0 md:p-6">
+      <button
+        type="button"
+        className="absolute inset-0"
+        onClick={onClose}
+        aria-label="Close tutorial"
+      />
+      <div className="relative z-10 mx-auto flex min-h-full items-start justify-center md:items-center">
+        <div className="relative flex w-full max-w-[920px] max-h-full flex-col overflow-hidden rounded-[20px] border border-[#1f2540] bg-[#151932] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.35)] md:max-h-[calc(100dvh-2rem)]">
+          <div className="shrink-0 border-b border-white/8 p-5 md:p-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10"
+              aria-label="Close modal"
+            >
+              <CloseIcon />
+            </button>
+
+            <div className="pr-10">
+              <p className="text-[14px] font-bold tracking-[0.14em] text-[#6ea8ff] uppercase">
+                {tutorialPage.eyebrow}
+              </p>
+              <h2 className="mt-3 text-[24px] leading-[32px] font-bold text-white md:text-[28px] md:leading-[38px]">
+                {tutorialPage.title}
+              </h2>
+              <p className="mt-3 max-w-[620px] text-[15px] leading-[24px] text-[#99a1af]">
+                {tutorialPage.description}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-5 md:p-6">
+            <div className="grid gap-6 md:grid-cols-[1.15fr_0.85fr] md:gap-8">
+              <div className="rounded-[18px] border border-dashed border-white/15 bg-[linear-gradient(180deg,#21283a_0%,#0f1320_100%)] p-4">
+                <div className="flex h-[220px] items-center justify-center rounded-[14px] border border-white/8 bg-[radial-gradient(circle_at_top,#1f3d79_0%,#111827_55%,#0a0f1c_100%)] text-center md:h-[320px]">
+                  <div className="px-6">
+                    <p className="text-[15px] font-bold text-white">
+                      {tutorialPage.placeholderTitle}
+                    </p>
+                    <p className="mt-2 text-[13px] leading-[20px] text-[#99a1af]">
+                      {tutorialPage.placeholderHint}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[18px] border border-white/8 bg-[#0f1329] p-5">
+                <p className="text-[14px] font-semibold text-white">
+                  Quick notes
+                </p>
+                <ul className="mt-4 space-y-3 text-[14px] leading-[22px] text-[#d2d2d2]">
+                  {tutorialPage.bullets.map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#6ea8ff]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0 border-t border-white/8 p-5 md:p-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-2">
+                {DECK_TUTORIAL_PAGES.map((tutorialItem, index) => (
+                  <button
+                    key={tutorialItem.title}
+                    type="button"
+                    onClick={() => onSelectPage(index)}
+                    className={`h-2.5 rounded-full transition-all ${
+                      page === index ? "w-8 bg-[#6ea8ff]" : "w-2.5 bg-white/20"
+                    }`}
+                    aria-label={`Go to tutorial page ${index + 1}`}
+                  />
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={onPrev}
+                  disabled={isFirstPage}
+                  className="inline-flex h-[44px] items-center justify-center rounded-[10px] border border-white/10 bg-white/5 px-4 text-[14px] font-bold text-white disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={isLastPage ? onClose : onNext}
+                  className="inline-flex h-[44px] items-center justify-center rounded-[10px] bg-[linear-gradient(180deg,#0144BD_0%,#192871_100%)] px-5 text-[14px] font-bold text-white"
+                >
+                  {isLastPage ? "Finish" : "Next"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function getCardDetailTraits(card: CardItem) {
   if (card.traits.length > 0) {
     return card.traits;
@@ -2052,6 +2466,53 @@ function DeckBuilderLeaderRequiredModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+function DeckBuilderRuleModal({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[99] flex items-center justify-center bg-black/60 p-4 md:p-6">
+      <button
+        type="button"
+        className="absolute inset-0"
+        onClick={onClose}
+        aria-label="Close overlay"
+      />
+      <div className="relative z-10 w-full max-w-[560px] rounded-[16px] border border-[#1f2540] bg-[#151932] p-5 md:p-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10"
+          aria-label="Close modal"
+        >
+          <CloseIcon />
+        </button>
+        <div className="pr-10">
+          <p className="text-[14px] font-bold tracking-[0.14em] text-[#facc15] uppercase">
+            Deck Rule
+          </p>
+          <h2 className="mt-3 text-[24px] leading-[32px] font-bold text-white">
+            This card breaks the current battle deck limit.
+          </h2>
+          <p className="mt-3 text-[15px] leading-[24px] text-[#99a1af]">
+            {message}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-6 inline-flex h-[48px] w-full items-center justify-center rounded-[10px] bg-[linear-gradient(180deg,#0144BD_0%,#192871_100%)] text-[14px] font-bold text-white"
+        >
+          Continue Editing
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DeckBuilderDeleteDeckModal({
   deckName,
   onClose,
@@ -2282,6 +2743,7 @@ function DeckDesktopSavedDeckCard({
     (card): card is CardItem => card !== null,
   ).length;
   const savedDeckCompletion = Math.round((filledSlots / TOTAL_SLOTS) * 100);
+  const savedDeckPower = getDeckPowerRating(slots);
 
   return (
     <article className="w-full rounded-[16px] border border-[#3a3e4f] bg-[linear-gradient(180deg,#2a2e3f_0%,#1e2230_100%)] p-[24px]">
@@ -2293,9 +2755,9 @@ function DeckDesktopSavedDeckCard({
           >
             {deck.name}
           </h3>
-          <p className="whitespace-nowrap text-[22px] leading-[33px] font-bold text-[#9ca3af]">
+          <p className="text-[22px] leading-[33px] font-bold text-[#9ca3af]">
             {filledSlots}/{TOTAL_SLOTS} cards &bull; Completion rate{" "}
-            {savedDeckCompletion}%
+            {savedDeckCompletion}% &bull; Power {savedDeckPower}
           </p>
         </div>
 
@@ -2375,6 +2837,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     null,
   );
   const [showLeaderRequiredModal, setShowLeaderRequiredModal] = useState(false);
+  const [deckRuleMessage, setDeckRuleMessage] = useState<string | null>(null);
   const [shakingCardId, setShakingCardId] = useState<number | null>(null);
   const [mobileAvailablePage, setMobileAvailablePage] = useState(1);
   const [desktopAvailablePage, setDesktopAvailablePage] = useState(1);
@@ -2388,6 +2851,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   );
   const [draftZone, setDraftZone] = useState<"all" | CardZone>("all");
   const [desktopFilterOpen, setDesktopFilterOpen] = useState(false);
+  const [showTutorialModal, setShowTutorialModal] = useState(false);
+  const [tutorialPage, setTutorialPage] = useState(0);
   const [expandedSavedDeckIds, setExpandedSavedDeckIds] = useState<Set<number>>(
     () => new Set(),
   );
@@ -2486,6 +2951,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     () => deckSlots.filter((slot): slot is CardItem => slot !== null),
     [deckSlots],
   );
+  const deckPowerRating = useMemo(() => getDeckPowerRating(deckSlots), [deckSlots]);
 
   const completionRate = Math.round((selectedCards.length / TOTAL_SLOTS) * 100);
   const showFigmaEmptyState = !isEditing && savedDecks.length === 0;
@@ -2523,65 +2989,35 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     }, 360);
   };
 
+  const openTutorialModal = () => {
+    setTutorialPage(0);
+    setShowTutorialModal(true);
+  };
+
   const handleQuickAdd = (card: CardItem) => {
-    const ownedCount = ownedCountById.get(card.id) ?? 0;
-    const alreadyInDeck = deckSlots.some((slot) => slot?.id === card.id);
-    const nextEmptyIndex = findCompatibleEmptySlot(deckSlots, card);
-
-    if (ownedCount < 1 || alreadyInDeck || nextEmptyIndex < 0) {
+    if (!addCardToDeck(card)) {
       triggerCardShake(card.id);
-      return;
     }
-
-    addCardToDeck(card);
   };
 
   const addCardToDeck = (card: CardItem, preferredSlotIndex?: number) => {
-    setDeckSlots((prev) => {
-      const ownedCount = ownedCountById.get(card.id) ?? 0;
-      const alreadyInDeck = prev.some((slot) => slot?.id === card.id);
-      if (ownedCount < 1 || alreadyInDeck) {
-        return prev;
+    const ownedCount = ownedCountById.get(card.id) ?? 0;
+    const result = resolveDeckSlotsAfterAdd(
+      deckSlots,
+      card,
+      ownedCount,
+      preferredSlotIndex,
+    );
+
+    if (!result.nextSlots) {
+      if (result.ruleMessage) {
+        setDeckRuleMessage(result.ruleMessage);
       }
+      return false;
+    }
 
-      const next = [...prev];
-      if (typeof preferredSlotIndex === "number") {
-        if (!canCardOccupySlot(card, preferredSlotIndex)) {
-          return prev;
-        }
-
-        if (next[preferredSlotIndex] === null) {
-          next[preferredSlotIndex] = card;
-          return next;
-        }
-
-        const displacedCard = next[preferredSlotIndex];
-        if (!displacedCard) {
-          return prev;
-        }
-
-        const nextEmptyIndex = findCompatibleEmptySlot(
-          next,
-          displacedCard,
-          preferredSlotIndex,
-        );
-        if (nextEmptyIndex < 0) {
-          return prev;
-        }
-
-        next[nextEmptyIndex] = displacedCard;
-        next[preferredSlotIndex] = card;
-        return next;
-      }
-
-      const nextEmptyIndex = findCompatibleEmptySlot(next, card);
-      if (nextEmptyIndex < 0) {
-        return prev;
-      }
-
-      next[nextEmptyIndex] = card;
-      return next;
-    });
+    setDeckSlots(result.nextSlots);
+    return true;
   };
 
   const removeCardFromDeck = (slotIndex: number) => {
@@ -2597,24 +3033,16 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   };
 
   const moveDeckCard = (fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex) return;
-
-    setDeckSlots((prev) => {
-      const next = [...prev];
-      const source = next[fromIndex];
-      if (!source || !canCardOccupySlot(source, toIndex)) {
-        return prev;
+    const result = resolveDeckSlotsAfterMove(deckSlots, fromIndex, toIndex);
+    if (!result.nextSlots) {
+      if (result.ruleMessage) {
+        setDeckRuleMessage(result.ruleMessage);
       }
+      return false;
+    }
 
-      const target = next[toIndex];
-      if (target && !canCardOccupySlot(target, fromIndex)) {
-        return prev;
-      }
-
-      next[toIndex] = source;
-      next[fromIndex] = target;
-      return next;
-    });
+    setDeckSlots(result.nextSlots);
+    return true;
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -2635,12 +3063,16 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
 
     if (dragData.type === "available-card") {
       if (overId === DECK_LIST_DROP_ID) {
-        addCardToDeck(dragData.card);
+        if (!addCardToDeck(dragData.card)) {
+          triggerCardShake(dragData.card.id);
+        }
         return;
       }
 
       if (overSlotIndex !== null) {
-        addCardToDeck(dragData.card, overSlotIndex);
+        if (!addCardToDeck(dragData.card, overSlotIndex)) {
+          triggerCardShake(dragData.card.id);
+        }
       }
       return;
     }
@@ -2674,9 +3106,15 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
         ? trimmedName
         : sanitizeDeckName(`Deck ${nextDeckId}`);
     const normalizedDeckSlots = normalizeDeckCards(deckSlots);
+    const battleDeckViolation = getBattleDeckLimitViolation(normalizedDeckSlots);
 
     if (normalizedDeckSlots[0] === null) {
       setShowLeaderRequiredModal(true);
+      return;
+    }
+
+    if (battleDeckViolation) {
+      setDeckRuleMessage(getBattleDeckLimitMessage(battleDeckViolation));
       return;
     }
 
@@ -2869,10 +3307,10 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                           </div>
                           <div>
                             <p className="text-[12px] leading-[16px] font-bold text-[#d2d2d2]">
-                              [Deck Stats]
+                              Power Rating
                             </p>
                             <p className="text-[18px] leading-[28px] font-bold text-white">
-                              {selectedCards.length}
+                              {deckPowerRating}
                             </p>
                           </div>
                           <div>
@@ -2920,9 +3358,12 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                       className="min-w-0 flex-1 rounded-[12px] border border-[#8085bd] bg-[linear-gradient(180deg,#2d3548_0%,#030a30_100%)] px-[24px] pt-[24px] pb-[16px]"
                       activeClassName="ring-2 ring-[#6ea8ff]"
                     >
-                      <h2 className="text-[22px] leading-[33px] font-bold text-white">
-                        Available Cards
-                      </h2>
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <h2 className="text-[22px] leading-[33px] font-bold text-white">
+                          Available Cards
+                        </h2>
+                        <DeckTutorialButton onClick={openTutorialModal} />
+                      </div>
                       <div className="mt-[16px] flex items-center gap-4">
                         <label className="relative flex h-[57px] flex-1 items-center rounded-[10px] border border-[#1f2540] bg-[#151932] pl-12 pr-4">
                           <span className="pointer-events-none absolute left-4">
@@ -3151,10 +3592,10 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                           </div>
                           <div className="text-center">
                             <p className="text-[12px] leading-[16px] font-bold text-[#d2d2d2]">
-                              [Deck Stats]
+                              Power Rating
                             </p>
                             <p className="text-[18px] leading-[28px] font-bold text-white">
-                              {selectedCards.length}
+                              {deckPowerRating}
                             </p>
                           </div>
                           <div className="text-center">
@@ -3183,7 +3624,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                       <button
                         type="button"
                         onClick={saveDeck}
-                        className="relative mt-[16px] h-[47.957px] w-[348.459px] self-center shadow-[0px_5.184782px_12.961955px_0px_rgba(0,0,0,0.25)]"
+                        className="relative mt-[16px] w-full overflow-hidden self-center shadow-[0px_5.184782px_12.961955px_0px_rgba(0,0,0,0.25)]"
+                        style={{ aspectRatio: "348.459 / 47.957" }}
                       >
                         <div className="absolute inset-0">
                           <Image
@@ -3212,9 +3654,15 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                       className="rounded-[12px] border border-[#8085bd] bg-[linear-gradient(180deg,#2d3548_0%,#030a30_100%)] p-[12px]"
                       activeClassName="ring-2 ring-[#6ea8ff]"
                     >
-                      <h2 className="mb-[12px] h-[35.975px] text-[18px] leading-[28px] font-bold text-white">
-                        Available Cards
-                      </h2>
+                      <div className="mb-[12px] flex items-center justify-between gap-3">
+                        <h2 className="text-[18px] leading-[28px] font-bold text-white">
+                          Available Cards
+                        </h2>
+                        <DeckTutorialButton
+                          onClick={openTutorialModal}
+                          compact
+                        />
+                      </div>
                       {remainingInventoryCards.length === 0 ? (
                         <AvailableCardsEmptyState
                           mode={
@@ -3371,9 +3819,28 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
             }}
           />
         )}
+        {showTutorialModal && (
+          <DeckBuilderTutorialModal
+            page={tutorialPage}
+            onClose={() => setShowTutorialModal(false)}
+            onPrev={() => setTutorialPage((current) => Math.max(current - 1, 0))}
+            onNext={() =>
+              setTutorialPage((current) =>
+                Math.min(current + 1, DECK_TUTORIAL_PAGES.length - 1),
+              )
+            }
+            onSelectPage={setTutorialPage}
+          />
+        )}
         {showLeaderRequiredModal && (
           <DeckBuilderLeaderRequiredModal
             onClose={() => setShowLeaderRequiredModal(false)}
+          />
+        )}
+        {deckRuleMessage && (
+          <DeckBuilderRuleModal
+            message={deckRuleMessage}
+            onClose={() => setDeckRuleMessage(null)}
           />
         )}
         {pendingDeleteDeck && (

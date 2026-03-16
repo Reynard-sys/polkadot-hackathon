@@ -55,6 +55,14 @@ function CardBackFallback() {
   );
 }
 
+function RevealProgressBadge({ label }: { label: string }) {
+  return (
+    <div className="absolute right-4 top-4 z-10 rounded-full border border-white/12 bg-black/55 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm lg:text-xs">
+      {label}
+    </div>
+  );
+}
+
 export default function CardReveal() {
   const [cards, setCards] = useState<RevealCard[]>([]);
   const [series, setSeries] = useState<PackSeries>("naruto");
@@ -185,6 +193,7 @@ export default function CardReveal() {
   const showGrid = revealedAll || allDone;
   const currentCard = cards[revealedCount];
   const theme = SERIES_THEME[series];
+  const revealProgressLabel = `${Math.min(revealedCount + 1, cards.length)} / ${cards.length}`;
 
   // Cards to preload (next 2 in queue)
   const preloadCards = cards.slice(
@@ -256,19 +265,14 @@ export default function CardReveal() {
           </p>
         </motion.div>
 
-        {/* Card count indicator */}
-        {!showGrid && (
-          <p className="text-white/40 text-xs text-center">
-            {revealedCount + 1} / {cards.length}
-          </p>
-        )}
-
         {!showGrid ? (
-          <div
-            className="relative w-full aspect-[1440/2028] cursor-pointer"
-            onClick={showingCard ? advanceToNext : revealNext}
-          >
-            {showingCard && currentCard ? (
+          <div className="relative rounded-2xl border border-white/10 bg-linear-to-b from-[#2D3548] to-[#030A30] p-3 shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
+            <RevealProgressBadge label={revealProgressLabel} />
+            <div
+              className="relative w-full aspect-[1440/2028] cursor-pointer"
+              onClick={showingCard ? advanceToNext : revealNext}
+            >
+              {showingCard && currentCard ? (
               /* ── Revealed NFT card ── */
               <motion.div
                 className="relative w-full h-full"
@@ -301,7 +305,8 @@ export default function CardReveal() {
                 draggable={false}
                 priority
               />
-            )}
+              )}
+            </div>
           </div>
         ) : (
           <motion.div
@@ -417,11 +422,12 @@ export default function CardReveal() {
           <>
             {/* Glass panel with card */}
             <motion.div
-              className=" border border-white/10 bg-linear-to-b from-[#2D3548] to-[#030A30] rounded-2xl p-8 flex flex-col items-center w-full"
+              className="relative border border-white/10 bg-linear-to-b from-[#2D3548] to-[#030A30] rounded-2xl p-8 flex flex-col items-center w-full"
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
+              <RevealProgressBadge label={revealProgressLabel} />
               <div
                 className="w-full max-w-sm aspect-[1440/2028] cursor-pointer"
                 onClick={showingCard ? advanceToNext : revealNext}
