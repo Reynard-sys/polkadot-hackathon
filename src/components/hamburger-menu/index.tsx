@@ -71,7 +71,9 @@ export function MobileHamburgerMenu({ onClose }: { onClose: () => void }) {
                             label={item.label}
                             href={item.href}
                             onClick={item.href ? onClose : undefined}
-                            className="flex h-[38px] w-[251px] items-center justify-center text-center text-[16px] leading-6 font-normal text-white/80"
+                            className={`flex h-[38px] w-[251px] items-center justify-center text-center text-[16px] leading-6 font-normal text-white/80 ${
+                                item.href ? "hover:text-white hover:bg-white/10 rounded-md transition-colors" : ""
+                            }`}
                         />
                     ))}
                 </div>
@@ -89,7 +91,9 @@ export function DesktopHamburgerMenu({ onClose }: { onClose: () => void }) {
                     label={item.label}
                     href={item.href}
                     onClick={item.href ? onClose : undefined}
-                    className="flex h-[38px] w-[251px] items-center justify-center text-center text-[18px] leading-[27px] font-bold text-white/80"
+                    className={`flex h-[38px] w-[251px] items-center justify-center text-center text-[18px] leading-[27px] font-bold text-white/80 ${
+                        item.href ? "hover:text-white hover:bg-white/10 rounded-md transition-colors" : "cursor-default"
+                    }`}
                 />
             ))}
         </div>
