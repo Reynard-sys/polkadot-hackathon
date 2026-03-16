@@ -64,6 +64,9 @@ type PersistedDeckState = {
 
 const TOTAL_SLOTS = 12;
 const AVAILABLE_CARDS_PAGE_SIZE = 12;
+const SAVED_DECK_COLLAPSED_COUNT = 4;
+const MAX_DECK_NAME_LENGTH = 20;
+const SAVED_DECK_CARD_ASPECT_RATIO = "144.989 / 204.193";
 
 const CARD_VARIANT_PRESETS: Record<
   CardVariant,
@@ -350,6 +353,18 @@ function emptySlots() {
   ) as Array<CardItem | null>;
 }
 
+function sanitizeDeckName(value: string) {
+  return value.replace(/[\r\n]+/g, " ").slice(0, MAX_DECK_NAME_LENGTH);
+}
+
+function buildSavedDeckSlots(cards: Array<CardItem | null>) {
+  const slots = [...normalizeDeckCards(cards)];
+  while (slots.length < TOTAL_SLOTS) {
+    slots.push(null);
+  }
+  return slots.slice(0, TOTAL_SLOTS);
+}
+
 function deckStorageKey(address: string) {
   return `deck_builder_${address.toLowerCase()}`;
 }
@@ -373,7 +388,12 @@ function loadPersistedDeckState(address: string | null): PersistedDeckState {
 
     const parsed = JSON.parse(raw) as Partial<PersistedDeckState>;
     const savedDecks = Array.isArray(parsed.savedDecks)
-      ? parsed.savedDecks
+      ? parsed.savedDecks.map((deck) => ({
+          ...deck,
+          name: sanitizeDeckName(
+            typeof deck.name === "string" ? deck.name : "",
+          ),
+        }))
       : [];
     const nextDeckId =
       typeof parsed.nextDeckId === "number" &&
@@ -486,13 +506,13 @@ function BottomNavIcon({
 
 function DeckDesktopEmptyState({ onCreateDeck }: { onCreateDeck: () => void }) {
   return (
-    <section className="relative z-10 mx-auto flex w-full max-w-[1257px] flex-col items-center gap-[60px] pt-[149px] pb-20">
-      <div className="flex w-full flex-col items-center gap-[52px]">
+    <section className="relative z-10 mx-auto flex w-full max-w-[1257px] flex-col items-center gap-10 px-6 pb-20 pt-[120px] lg:gap-[60px] lg:px-8 lg:pt-[149px] xl:px-0">
+      <div className="flex w-full flex-col items-center gap-8 lg:gap-[52px]">
         <div className="w-full text-center">
-          <h1 className="text-[68px] leading-[102px] font-bold text-white">
+          <h1 className="text-[48px] leading-[58px] font-bold text-white lg:text-[68px] lg:leading-[102px]">
             Deck Builder
           </h1>
-          <p className="mx-auto mt-[8px] w-[719px] text-[18px] leading-[27px] font-bold text-white/80">
+          <p className="mx-auto mt-2 max-w-[719px] text-[16px] leading-[24px] font-bold text-white/80 lg:mt-[8px] lg:text-[18px] lg:leading-[27px]">
             Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris penatibus
             varius sagittis mi diam eget penatibus. Ut praesent ut auctor turpis
             cursus id.
@@ -503,11 +523,11 @@ function DeckDesktopEmptyState({ onCreateDeck }: { onCreateDeck: () => void }) {
           alt=""
           width={1257}
           height={74.86}
-          className="h-[74.86px] w-[1257px] object-fill mix-blend-plus-lighter"
+          className="h-auto w-full max-w-[1257px] object-fill mix-blend-plus-lighter"
         />
       </div>
 
-      <article className="flex h-[491px] w-[1113px] flex-col items-center gap-[52px] rounded-[16px] border border-[#8085bd] bg-[linear-gradient(3.395deg,#120c35_11.336%,#143c87_57.519%,#13245e_112.14%)] px-[61px] py-[32px]">
+      <article className="flex w-full max-w-[1113px] flex-col items-center gap-10 rounded-[16px] border border-[#8085bd] bg-[linear-gradient(3.395deg,#120c35_11.336%,#143c87_57.519%,#13245e_112.14%)] px-6 py-10 lg:gap-[52px] lg:px-[61px] lg:py-[32px]">
         <div className="flex h-[150.86px] w-[150.86px] items-center justify-center rounded-full bg-[linear-gradient(178.123deg,rgba(20,60,135,0)_32.053%,#020c7b_95.528%)]">
           <Image
             src="/assets/deck-builder/web/empty-center-icon.svg"
@@ -691,21 +711,20 @@ function FigmaWideCreateButton({ onCreateDeck }: { onCreateDeck: () => void }) {
     <button
       type="button"
       onClick={onCreateDeck}
-      className="relative h-[47.246px] w-full cursor-pointer"
+      className="relative mx-auto w-full max-w-[375px] cursor-pointer overflow-hidden"
+      style={{ aspectRatio: "375 / 47.111" }}
     >
       <Image
         src="/assets/deck-builder/v2/create-deck-union.svg"
         alt=""
-        width={371.63}
-        height={46.981}
-        className="pointer-events-none absolute left-[3.37px] top-[0.26px] h-[46.98px] w-[371.63px] max-w-none"
+        fill
+        className="pointer-events-none object-fill"
       />
       <Image
         src="/assets/deck-builder/v2/create-deck-frame.svg"
         alt=""
-        width={375}
-        height={47.111}
-        className="pointer-events-none absolute left-0 top-0 h-[47.111px] w-[375px] max-w-none"
+        fill
+        className="pointer-events-none object-fill"
       />
       <span className="absolute inset-0 flex items-center justify-center gap-[5px]">
         <Image
@@ -731,30 +750,30 @@ function DeckDesktopWideCreateButton({
     <button
       type="button"
       onClick={onCreateDeck}
-      className="relative h-[54.027px] w-[1257px] cursor-pointer"
+      className="relative w-full max-w-[1257px] cursor-pointer overflow-hidden"
+      style={{ aspectRatio: "1257 / 54.027" }}
     >
       <Image
         src="/assets/deck-builder/web/create-deck-531-union.svg"
         alt=""
-        width={1256.998}
-        height={53.731}
-        className="pointer-events-none absolute left-0 top-[0.3px] h-[53.731px] w-[1256.998px] max-w-none"
+        fill
+        className="pointer-events-none object-fill"
       />
       <Image
         src="/assets/deck-builder/web/create-deck-531-frame.svg"
         alt=""
-        width={1257}
-        height={54.027}
-        className="pointer-events-none absolute left-0 top-0 h-[54.027px] w-[1257px] max-w-none"
+        fill
+        className="pointer-events-none object-fill"
       />
-      <span className="absolute left-1/2 top-1/2 flex h-[26px] -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-[5px] pt-[7px]">
+      <span className="absolute inset-0 flex items-center justify-center gap-2">
         <Image
           src="/assets/deck-builder/web/create-deck-531-icon.svg"
           alt=""
           width={16.905}
           height={16.905}
+          className="h-[12px] w-[12px] lg:h-[14px] lg:w-[14px] xl:h-[16.905px] xl:w-[16.905px]"
         />
-        <span className="whitespace-nowrap text-[18px] leading-[27px] font-bold text-white">
+        <span className="whitespace-nowrap text-[12px] leading-none font-bold text-white lg:text-[14px] xl:text-[18px]">
           Create Deck
         </span>
       </span>
@@ -800,33 +819,6 @@ function FigmaDeckSeparator() {
             className="object-fill"
           />
         </div>
-      </div>
-    </div>
-  );
-}
-
-function DeckCopyIcon({
-  className = "h-[15.995px] w-[15.995px]",
-}: {
-  className?: string;
-}) {
-  return (
-    <div className={`relative overflow-hidden ${className}`}>
-      <div className="absolute inset-[33.33%_8.33%_8.33%_33.33%]">
-        <Image
-          src="/assets/deck-builder/v2/deck-copy-1.svg"
-          alt=""
-          fill
-          className="object-fill"
-        />
-      </div>
-      <div className="absolute inset-[8.33%_33.33%_33.33%_8.33%]">
-        <Image
-          src="/assets/deck-builder/v2/deck-copy-2.svg"
-          alt=""
-          fill
-          className="object-fill"
-        />
       </div>
     </div>
   );
@@ -883,21 +875,47 @@ function DeckDeleteIcon({
   );
 }
 
+function DeckExpandToggleIcon({
+  expanded,
+  className = "h-5 w-5",
+}: {
+  expanded: boolean;
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.25"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={expanded ? "m6 15 6-6 6 6" : "m6 9 6 6 6-6"} />
+    </svg>
+  );
+}
+
 function FigmaSavedDeckCard({
   deck,
   onEdit,
   onDelete,
+  isExpanded,
+  onToggleExpand,
 }: {
   deck: SavedDeck;
   onEdit: () => void;
   onDelete: () => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
 }) {
-  const slots = [...normalizeDeckCards(deck.cards)];
-  while (slots.length < TOTAL_SLOTS) {
-    slots.push(null);
-  }
-  const visibleSlots = slots.slice(0, TOTAL_SLOTS);
-  const filledSlots = visibleSlots.filter(
+  const slots = buildSavedDeckSlots(deck.cards);
+  const previewSlots = isExpanded
+    ? slots
+    : slots.slice(0, SAVED_DECK_COLLAPSED_COUNT);
+  const filledSlots = slots.filter(
     (card): card is CardItem => card !== null,
   ).length;
   const savedDeckCompletion = Math.round((filledSlots / TOTAL_SLOTS) * 100);
@@ -905,26 +923,21 @@ function FigmaSavedDeckCard({
   return (
     <article className="rounded-[16px] border border-[#8085bd] bg-[linear-gradient(180deg,#2d3548_0%,#030a30_100%)] p-[1.735px]">
       <div className="flex flex-col items-center gap-[11.983px] px-[15.995px] pt-[15.995px] pb-[11.983px]">
-        <div className="flex h-[47.957px] w-full items-start justify-between">
-          <div className="h-[47.957px] w-[150.08px]">
-            <h3 className="text-[18px] leading-[28px] font-bold text-white">
+        <div className="flex w-full items-start justify-between gap-[12px]">
+          <div className="min-w-0 flex-1 pr-[12px]">
+            <h3
+              className="truncate whitespace-nowrap text-[18px] leading-[28px] font-bold text-white"
+              title={deck.name}
+            >
               {deck.name}
             </h3>
-            <p className="mt-[6px] whitespace-nowrap text-[14px] leading-[20px] font-normal text-[#d2d2d2]">
+            <p className="mt-[4px] text-[12px] leading-[16px] font-normal text-[#d2d2d2]">
               {filledSlots}/{TOTAL_SLOTS} cards &bull; Completion rate{" "}
               {savedDeckCompletion}%
             </p>
           </div>
 
-          <div className="flex h-[31.99px] w-[71.977px] items-start gap-[7.997px]">
-            <button
-              type="button"
-              onClick={onEdit}
-              className="flex h-[31.99px] w-[31.99px] items-center justify-center rounded-[10px] bg-[#010b7b]"
-              aria-label={`Copy ${deck.name}`}
-            >
-              <DeckCopyIcon />
-            </button>
+          <div className="flex h-[31.99px] w-[31.99px] shrink-0 items-start">
             <button
               type="button"
               onClick={onDelete}
@@ -937,11 +950,12 @@ function FigmaSavedDeckCard({
         </div>
 
         <div className="w-[352px] max-w-full rounded-[10px]">
-          <div className="grid grid-cols-4 gap-[8px] px-[6.81px] pt-[7.97px] pb-[7.97px]">
-            {visibleSlots.map((card, index) => (
+          <div className="grid grid-cols-4 justify-items-center gap-[8px] px-[6.81px] pt-[7.97px] pb-[7.97px]">
+            {previewSlots.map((card, index) => (
               <div
                 key={`${deck.id}-${card?.id ?? "empty"}-${index}`}
-                className="relative h-[47.063px] w-[35.297px] overflow-hidden rounded-[4px] border-[0.5px] border-[#b2b2b2] bg-[linear-gradient(180deg,#2d3548_0%,#1a1d2e_100%)]"
+                className="relative w-[52px] overflow-hidden rounded-[4px] border-[0.5px] border-[#b2b2b2] bg-[linear-gradient(180deg,#2d3548_0%,#1a1d2e_100%)]"
+                style={{ aspectRatio: SAVED_DECK_CARD_ASPECT_RATIO }}
               >
                 {card ? (
                   <Image
@@ -959,15 +973,25 @@ function FigmaSavedDeckCard({
 
         <button
           type="button"
+          onClick={onToggleExpand}
+          className="flex h-[32px] w-[32px] items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10"
+          aria-label={`${isExpanded ? "Collapse" : "Expand"} ${deck.name}`}
+          aria-expanded={isExpanded}
+        >
+          <DeckExpandToggleIcon expanded={isExpanded} />
+        </button>
+
+        <button
+          type="button"
           onClick={onEdit}
-          className="relative h-[47.957px] w-[348.459px] max-w-full"
+          className="relative w-full max-w-[348.459px] overflow-hidden self-center"
+          style={{ aspectRatio: "348.459 / 47.957" }}
         >
           <Image
             src="/assets/deck-builder/v2/edit-deck-union.svg"
             alt=""
-            width={374.383}
-            height={73.881}
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[73.881px] w-[374.383px] max-w-none -translate-x-1/2 -translate-y-1/2"
+            fill
+            className="pointer-events-none object-fill"
           />
           <span className="absolute inset-0 flex items-center justify-center gap-[5px]">
             <Image
@@ -2214,12 +2238,18 @@ function DroppableSection({
 function DeckDesktopSavedCardTile({ card }: { card: CardItem | null }) {
   if (!card) {
     return (
-      <div className="relative aspect-[144.989/204.193] w-full overflow-hidden rounded-[12px] border border-[#b2b2b2] bg-[linear-gradient(180deg,#2d3548_0%,#1a1d2e_100%)]" />
+      <div
+        className="relative w-full overflow-hidden rounded-[12px] border border-[#b2b2b2] bg-[linear-gradient(180deg,#2d3548_0%,#1a1d2e_100%)]"
+        style={{ aspectRatio: SAVED_DECK_CARD_ASPECT_RATIO }}
+      />
     );
   }
 
   return (
-    <div className="relative aspect-[144.989/204.193] w-full overflow-hidden rounded-[12px]">
+    <div
+      className="relative w-full overflow-hidden rounded-[12px]"
+      style={{ aspectRatio: SAVED_DECK_CARD_ASPECT_RATIO }}
+    >
       <Image
         src={card.art}
         alt={card.name}
@@ -2235,17 +2265,20 @@ function DeckDesktopSavedDeckCard({
   deck,
   onEdit,
   onDelete,
+  isExpanded,
+  onToggleExpand,
 }: {
   deck: SavedDeck;
   onEdit: () => void;
   onDelete: () => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
 }) {
-  const slots = [...normalizeDeckCards(deck.cards)];
-  while (slots.length < TOTAL_SLOTS) {
-    slots.push(null);
-  }
-  const visibleSlots = slots.slice(0, TOTAL_SLOTS);
-  const filledSlots = visibleSlots.filter(
+  const slots = buildSavedDeckSlots(deck.cards);
+  const previewSlots = isExpanded
+    ? slots
+    : slots.slice(0, SAVED_DECK_COLLAPSED_COUNT);
+  const filledSlots = slots.filter(
     (card): card is CardItem => card !== null,
   ).length;
   const savedDeckCompletion = Math.round((filledSlots / TOTAL_SLOTS) * 100);
@@ -2253,8 +2286,11 @@ function DeckDesktopSavedDeckCard({
   return (
     <article className="w-full rounded-[16px] border border-[#3a3e4f] bg-[linear-gradient(180deg,#2a2e3f_0%,#1e2230_100%)] p-[24px]">
       <div className="flex h-[69px] items-start justify-between">
-        <div className="h-[44px] w-[166px]">
-          <h3 className="text-[32px] leading-[48px] font-bold text-white">
+        <div className="min-w-0 flex-1 pr-[24px]">
+          <h3
+            className="truncate whitespace-nowrap text-[32px] leading-[48px] font-bold text-white"
+            title={deck.name}
+          >
             {deck.name}
           </h3>
           <p className="whitespace-nowrap text-[22px] leading-[33px] font-bold text-[#9ca3af]">
@@ -2263,15 +2299,7 @@ function DeckDesktopSavedDeckCard({
           </p>
         </div>
 
-        <div className="flex h-[53px] w-[119.25px] items-start gap-[13.25px]">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="flex h-[53px] w-[53px] items-center justify-center rounded-[16.563px] bg-[#1e3a8a]"
-            aria-label={`Copy ${deck.name}`}
-          >
-            <DeckCopyIcon className="h-[26.5px] w-[26.5px]" />
-          </button>
+        <div className="flex h-[53px] w-[53px] items-start">
           <button
             type="button"
             onClick={onDelete}
@@ -2284,12 +2312,24 @@ function DeckDesktopSavedDeckCard({
       </div>
 
       <div className="mt-[32px] grid grid-cols-4 gap-[8.086px]">
-        {visibleSlots.map((card, index) => (
+        {previewSlots.map((card, index) => (
           <DeckDesktopSavedCardTile
             key={`desktop-saved-card-${deck.id}-${index}-${card?.id ?? "empty"}`}
             card={card}
           />
         ))}
+      </div>
+
+      <div className="mt-[20px] flex justify-center">
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          className="flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition-colors hover:bg-white/10"
+          aria-label={`${isExpanded ? "Collapse" : "Expand"} ${deck.name}`}
+          aria-expanded={isExpanded}
+        >
+          <DeckExpandToggleIcon expanded={isExpanded} className="h-6 w-6" />
+        </button>
       </div>
 
       <button
@@ -2348,6 +2388,9 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   );
   const [draftZone, setDraftZone] = useState<"all" | CardZone>("all");
   const [desktopFilterOpen, setDesktopFilterOpen] = useState(false);
+  const [expandedSavedDeckIds, setExpandedSavedDeckIds] = useState<Set<number>>(
+    () => new Set(),
+  );
   const shakeTimeoutRef = useRef<number | null>(null);
 
   const sensors = useSensors(
@@ -2394,7 +2437,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
         (desktopZone === "all" || card.zone === desktopZone) &&
         (q.length === 0 ||
           card.name.toLowerCase().includes(q) ||
-        card.faction.toLowerCase().includes(q) ||
+          card.faction.toLowerCase().includes(q) ||
           (card.zone ?? "").toLowerCase().includes(q)),
     );
   }, [desktopRarity, desktopSearch, desktopZone, remainingInventoryCards]);
@@ -2404,9 +2447,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   );
   const desktopAvailableTotalPages = Math.max(
     1,
-    Math.ceil(
-      desktopVisibleInventoryCards.length / AVAILABLE_CARDS_PAGE_SIZE,
-    ),
+    Math.ceil(desktopVisibleInventoryCards.length / AVAILABLE_CARDS_PAGE_SIZE),
   );
   const resolvedMobileAvailablePage = Math.min(
     mobileAvailablePage,
@@ -2453,7 +2494,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     showFigmaEmptyState || isEditing || showDesktopSavedState;
 
   const startNewDeck = () => {
-    setDeckName(`Deck ${savedDecks.length + 1}`);
+    setDeckName(sanitizeDeckName(`Deck ${savedDecks.length + 1}`));
     setDeckSlots(emptySlots());
     setEditingDeckId(null);
     setMobileAvailablePage(1);
@@ -2627,9 +2668,11 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   };
 
   const saveDeck = () => {
-    const trimmedName = deckName.trim();
+    const trimmedName = sanitizeDeckName(deckName).trim();
     const resolvedName =
-      trimmedName.length > 0 ? trimmedName : `Deck ${nextDeckId}`;
+      trimmedName.length > 0
+        ? trimmedName
+        : sanitizeDeckName(`Deck ${nextDeckId}`);
     const normalizedDeckSlots = normalizeDeckCards(deckSlots);
 
     if (normalizedDeckSlots[0] === null) {
@@ -2668,7 +2711,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   };
 
   const editDeck = (deck: SavedDeck) => {
-    setDeckName(deck.name);
+    setDeckName(sanitizeDeckName(deck.name));
     setDeckSlots([...normalizeDeckCards(deck.cards)]);
     setEditingDeckId(deck.id);
     setMobileAvailablePage(1);
@@ -2683,9 +2726,26 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   const deleteDeck = (deckId: number) => {
     const nextSavedDecks = savedDecks.filter((deck) => deck.id !== deckId);
     setSavedDecks(nextSavedDecks);
+    setExpandedSavedDeckIds((current) => {
+      const next = new Set(current);
+      next.delete(deckId);
+      return next;
+    });
     persistDeckState(wallet?.address ?? null, {
       nextDeckId,
       savedDecks: nextSavedDecks,
+    });
+  };
+
+  const toggleSavedDeckExpansion = (deckId: number) => {
+    setExpandedSavedDeckIds((current) => {
+      const next = new Set(current);
+      if (next.has(deckId)) {
+        next.delete(deckId);
+      } else {
+        next.add(deckId);
+      }
+      return next;
     });
   };
 
@@ -2713,13 +2773,13 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
 
         {isEditing && (
           <section className="relative hidden min-h-screen md:block">
-            <div className="relative z-10 mx-auto w-full max-w-[1257px] pb-20 pt-[132.667px]">
+            <div className="relative z-10 mx-auto w-full max-w-[1257px] px-6 pb-20 pt-[120px] lg:px-8 lg:pt-[132.667px] xl:px-0">
               <div className="flex w-full flex-col items-center">
                 <div className="w-full text-center">
-                  <h1 className="text-[68px] leading-[102px] font-bold text-white">
+                  <h1 className="text-[48px] leading-[58px] font-bold text-white lg:text-[68px] lg:leading-[102px]">
                     Deck Builder
                   </h1>
-                  <p className="mx-auto mt-[8px] w-[719px] text-[18px] leading-[27px] font-bold text-white/80">
+                  <p className="mx-auto mt-2 max-w-[719px] text-[16px] leading-[24px] font-bold text-white/80 lg:mt-[8px] lg:text-[18px] lg:leading-[27px]">
                     Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris
                     penatibus varius sagittis mi diam eget penatibus. Ut
                     praesent ut auctor turpis cursus id.
@@ -2730,7 +2790,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                   alt=""
                   width={1257}
                   height={74.86}
-                  className="mt-[52px] h-[74.86px] w-[1257px] mix-blend-plus-lighter"
+                  className="mt-8 h-auto w-full max-w-[1257px] mix-blend-plus-lighter lg:mt-[52px]"
                 />
               </div>
 
@@ -2741,13 +2801,16 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                 onDragEnd={handleDragEnd}
                 onDragCancel={handleDragCancel}
               >
-                <section className="mt-[52.86px]">
+                <section className="mt-10 lg:mt-[52.86px]">
                   <div className="h-[84px] rounded-[12px] bg-[#1a1d2e] px-[15.995px] pt-[15.995px]">
                     <div className="flex h-[55px] items-center justify-between rounded-[10px] border-2 border-[#8c8c8c] bg-[#1a1d2e] px-[24px] py-[8px]">
                       <input
                         id="desktopDeckName"
                         value={deckName}
-                        onChange={(event) => setDeckName(event.target.value)}
+                        onChange={(event) =>
+                          setDeckName(sanitizeDeckName(event.target.value))
+                        }
+                        maxLength={MAX_DECK_NAME_LENGTH}
                         className="w-full bg-transparent text-[22px] leading-[33px] font-bold text-[#e8e8e8] outline-none"
                         placeholder="My Deck"
                       />
@@ -2766,10 +2829,10 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                     </div>
                   </div>
 
-                  <div className="mt-[24px] flex gap-[39px]">
+                  <div className="mt-[24px] flex flex-col gap-6 xl:flex-row xl:gap-[39px]">
                     <DroppableSection
                       id={DECK_LIST_DROP_ID}
-                      className="w-[526px] rounded-[12px] border border-[#8085bd] bg-[linear-gradient(180deg,#2d3548_0%,#030a30_100%)] px-[12px] py-[16px]"
+                      className="w-full rounded-[12px] border border-[#8085bd] bg-[linear-gradient(180deg,#2d3548_0%,#030a30_100%)] px-[12px] py-[16px] xl:w-[526px] xl:shrink-0"
                       activeClassName="ring-2 ring-[#6ea8ff]"
                     >
                       <div className="mb-[24px] flex h-[35.975px] items-center justify-between">
@@ -2955,13 +3018,13 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
 
         {showDesktopSavedState && (
           <section className="relative hidden min-h-screen md:block">
-            <div className="relative z-10 mx-auto w-full max-w-[1257px] pb-20 pt-[132.667px]">
+            <div className="relative z-10 mx-auto w-full max-w-[1257px] px-6 pb-20 pt-[120px] lg:px-8 lg:pt-[132.667px] xl:px-0">
               <div className="flex w-full flex-col items-center">
                 <div className="w-full text-center">
-                  <h1 className="text-[68px] leading-[102px] font-bold text-white">
+                  <h1 className="text-[48px] leading-[58px] font-bold text-white lg:text-[68px] lg:leading-[102px]">
                     Deck Builder
                   </h1>
-                  <p className="mx-auto mt-[8px] w-[719px] text-[18px] leading-[27px] font-bold text-white/80">
+                  <p className="mx-auto mt-2 max-w-[719px] text-[16px] leading-[24px] font-bold text-white/80 lg:mt-[8px] lg:text-[18px] lg:leading-[27px]">
                     Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris
                     penatibus varius sagittis mi diam eget penatibus. Ut
                     praesent ut auctor turpis cursus id.
@@ -2972,11 +3035,11 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                   alt=""
                   width={1257}
                   height={74.86}
-                  className="mt-[52px] h-[74.86px] w-[1257px] mix-blend-plus-lighter"
+                  className="mt-8 h-auto w-full max-w-[1257px] mix-blend-plus-lighter lg:mt-[52px]"
                 />
               </div>
 
-              <section className="mt-[60px] space-y-[20px]">
+              <section className="mt-10 space-y-[20px] lg:mt-[60px]">
                 <DeckDesktopWideCreateButton onCreateDeck={startNewDeck} />
                 {savedDecks.map((deck) => (
                   <DeckDesktopSavedDeckCard
@@ -2984,6 +3047,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                     deck={deck}
                     onEdit={() => editDeck(deck)}
                     onDelete={() => requestDeleteDeck(deck)}
+                    isExpanded={expandedSavedDeckIds.has(deck.id)}
+                    onToggleExpand={() => toggleSavedDeckExpansion(deck.id)}
                   />
                 ))}
               </section>
@@ -3025,7 +3090,10 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                         <input
                           id="deckName"
                           value={deckName}
-                          onChange={(event) => setDeckName(event.target.value)}
+                          onChange={(event) =>
+                            setDeckName(sanitizeDeckName(event.target.value))
+                          }
+                          maxLength={MAX_DECK_NAME_LENGTH}
                           className="h-[27px] w-full bg-transparent px-[24px] text-center text-[18px] leading-[27px] font-normal text-[#e8e8e8] outline-none"
                           placeholder="My Deck"
                         />
@@ -3221,6 +3289,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                         deck={deck}
                         onEdit={() => editDeck(deck)}
                         onDelete={() => requestDeleteDeck(deck)}
+                        isExpanded={expandedSavedDeckIds.has(deck.id)}
+                        onToggleExpand={() => toggleSavedDeckExpansion(deck.id)}
                       />
                     ))}
                   </div>
@@ -3293,13 +3363,13 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
               setDraftRarity("all");
               setDraftZone("all");
             }}
-          onApply={() => {
-            setDesktopRarity(draftRarity);
-            setDesktopZone(draftZone);
-            setDesktopAvailablePage(1);
-            setDesktopFilterOpen(false);
-          }}
-        />
+            onApply={() => {
+              setDesktopRarity(draftRarity);
+              setDesktopZone(draftZone);
+              setDesktopAvailablePage(1);
+              setDesktopFilterOpen(false);
+            }}
+          />
         )}
         {showLeaderRequiredModal && (
           <DeckBuilderLeaderRequiredModal

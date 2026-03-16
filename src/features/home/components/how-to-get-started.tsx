@@ -7,7 +7,7 @@ export default function HowToGetStarted() {
       <Image
         src="/assets/mobile-how-to-get-started.svg"
         alt="How to get started"
-        width={522}
+        width={922}
         height={700}
         className="w-full h-auto pointer-events-none lg:hidden"
         draggable={false}
