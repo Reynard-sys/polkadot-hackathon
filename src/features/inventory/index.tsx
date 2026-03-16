@@ -627,31 +627,45 @@ function DesktopFilterModal({
 function EmptyState({ walletConnected }: { walletConnected: boolean }) {
   return (
     <motion.div
-      className="flex flex-col items-center justify-center py-20 gap-4 text-center"
+      className="flex flex-col items-center justify-center bg-[linear-gradient(to_top,#120C35_8%,#143C87_45%,#13245E_98%)] rounded-2xl border border-[#8085BD] py-16 px-8 mt-10 space-y-3 text-center"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="text-6xl">📦</div>
+      <div>
+        <Image
+          src="/assets/inventory/web/empty-collection.svg"
+          alt=""
+          width={100}
+          height={120}
+          className="max-w-sm pointer-events-none"
+          aria-hidden="true"
+        />
+      </div>
+      
       <h2 className="text-white font-bold text-xl">No cards yet</h2>
+      
       {walletConnected ? (
         <p className="text-white/50 text-sm max-w-xs">
           Open some packs to start building your collection!
         </p>
       ) : (
         <p className="text-white/50 text-sm max-w-xs">
-          Connect your wallet to view your saved collection, or open packs to
-          get started.
+          Open packs to unlock collection
         </p>
       )}
+      
       <Link href="/gacha">
-        <motion.button
-          className="mt-2 px-6 py-2.5 rounded-xl bg-[#8855FF] text-white font-semibold text-sm"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.96 }}
-        >
-          Open Packs →
-        </motion.button>
+        <button>
+          <Image
+            src="/assets/inventory/web/inventory-button.svg"
+            alt=""
+            width={250}
+            height={300}
+            className="max-w-md cursor-pointer"
+            aria-hidden="true"
+          />
+        </button>
       </Link>
     </motion.div>
   );
