@@ -81,7 +81,7 @@ export default function MarketplaceCard({
                         </div>
                         {/* Action Buttons */}
                         <div className="flex gap-2 pt-5 lg:mt-10">
-                            <CardButton label="Buy" onClick={onBuy} variant="buy" />
+                            <CardButton label="Buy" onClick={onBuy} />
                         </div>
                     </div>
                 </div>
