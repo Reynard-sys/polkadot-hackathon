@@ -32,7 +32,7 @@ async function main() {
   const baseUri = process.env.BASE_URI ?? "https://ipfs.io/ipfs/bafybeigaosmk75u5pefapg5ar243m4rgyuajlwgbzdebi5odogm4vv6cka/";
 
   console.log("===========================================");
-  console.log("  Anime Gacha TCG — Full Smoke Test");
+  console.log("  Aniverse Nexus - Full Smoke Test");
   console.log("===========================================");
   console.log("Deployer: ", deployer.address);
   console.log("Network:  ", (await ethers.provider.getNetwork()).name);
@@ -138,3 +138,4 @@ async function main() {
 }
 
 main().catch((err) => { console.error(err); process.exitCode = 1; });
+

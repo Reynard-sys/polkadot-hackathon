@@ -97,7 +97,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
   {
     title: "Welcome to the Battle",
     body: [
-      "Anime Gacha TCG is a 1v1 fight where both boards start fully built from the deck builder.",
+      "Aniverse Nexus is a 1v1 fight where both boards start fully built from the deck builder.",
       "Your goal is to drop the enemy HP from 40 to 0 before they do the same to you.",
       "Every match starts with 3 Frontline, 4 Backline, 1 Leader, and up to 4 Reserve already placed.",
     ],
@@ -146,7 +146,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     title: "How a Turn Works",
     body: [
       "Each turn runs Start, Main, Battle, and End in order.",
-      "Each side starts at 2 mana. At the start of the next turn, you gain 1 mana every turn until you reach 7 mana.",
+      "Each side starts at 2 mana. At the start of your next turns, your current mana goes up by 1 until it reaches 7.",
       "Attacks are available from turn 1 once you move into Battle Phase.",
     ],
     visual: "turns",
@@ -3521,12 +3521,12 @@ export default function PracticePageContent() {
                         <ManaBattleStat
                           label="Player Mana"
                           currentMana={battleState?.players.player.mana ?? 2}
-                          manaMax={battleState?.players.player.manaMax ?? 2}
+                          manaMax={battleState?.players.player.manaMax ?? 7}
                         />
                         <ManaBattleStat
                           label="Bot Mana"
                           currentMana={battleState?.players.bot.mana ?? 2}
-                          manaMax={battleState?.players.bot.manaMax ?? 2}
+                          manaMax={battleState?.players.bot.manaMax ?? 7}
                         />
                         <BattleCardStat
                           label="Active"

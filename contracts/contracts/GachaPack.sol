@@ -8,7 +8,7 @@ import "./CardRegistry.sol";
 
 /**
  * @title GachaPack
- * @notice Gacha / pack-opening contract for Anime Gacha TCG.
+ * @notice Gacha / pack-opening contract for Aniverse Nexus.
  *
  * Key design decisions for Westend AssetHub (Frontier EVM):
  *  - Rarity pools are cached ONCE per pack (4 external calls total).
@@ -464,3 +464,4 @@ contract GachaPack is Ownable, ReentrancyGuard {
 
     receive() external payable {}
 }
+

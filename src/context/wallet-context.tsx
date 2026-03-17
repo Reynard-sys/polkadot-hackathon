@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback } from "react";
 
-export type WalletType = "metamask" | "polkadot";
+export type WalletType = "metamask";
 type EvmProviderPreference = "auto" | "metamask";
 
 type InjectedEvmProvider = {
@@ -14,7 +14,7 @@ type InjectedEvmProvider = {
 export interface ConnectedWallet {
     type: WalletType;
     address: string;
-    /** Display name — MetaMask uses "MetaMask", Polkadot uses the account meta name */
+    /** Display name shown in the shared wallet UI. */
     name: string;
     evmProviderPreference?: Exclude<EvmProviderPreference, "auto">;
 }
@@ -29,7 +29,6 @@ interface WalletContextValue {
     connectMetaMask: () => Promise<void>;
     disconnect: () => void;
     truncateAddress: (address: string) => string;
-    /** ethers BrowserProvider — only available when type === "metamask" */
     getEthersProvider: (
         preference?: EvmProviderPreference,
     ) => Promise<import("ethers").BrowserProvider | null>;

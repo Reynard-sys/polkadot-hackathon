@@ -455,7 +455,7 @@ export function usePackOpening() {
         if (provider) {
           const signer = await provider.getSigner();
           const addr = await signer.getAddress();
-          const msg = `Anime Gacha TCG - open ${packType} ${series} pack\nNonce: ${Date.now()}`;
+          const msg = `Aniverse Nexus - open ${packType} ${series} pack\nNonce: ${Date.now()}`;
           walletSignature = await signer.signMessage(msg);
           void addr;
         }
@@ -504,3 +504,4 @@ export function usePackOpening() {
 
   return { openPack, isOpening, result, error, reset, simMode };
 }
+

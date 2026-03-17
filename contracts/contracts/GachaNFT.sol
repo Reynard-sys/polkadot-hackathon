@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title GachaNFT
- * @notice ERC-1155 contract for Anime Gacha TCG cards.
+ * @notice ERC-1155 contract for Aniverse Nexus cards.
  *         Token IDs 1–48 map to the 48 unique cards in cards.json.
  *
  *  Supply caps (enforced per token ID):
@@ -180,3 +180,4 @@ contract GachaNFT is ERC1155, Ownable {
         if (rem < amount) revert SupplyCapExceeded(tokenId, amount, rem);
     }
 }
+

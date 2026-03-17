@@ -613,12 +613,12 @@ function cloneState(state: BattleState): BattleState {
   };
 }
 
-function getNextTurnManaMax(playerState: BattlePlayerState) {
+function getNextTurnManaValue(playerState: BattlePlayerState) {
   if (playerState.turnsStarted === 0) {
-    return 2;
+    return Math.min(playerState.mana, 7);
   }
 
-  return Math.min(playerState.manaMax + 1, 7);
+  return Math.min(playerState.mana + 1, 7);
 }
 
 function opponentOf(owner: Owner): Owner {
@@ -1044,7 +1044,10 @@ function healPlayer(state: BattleState, owner: Owner, value: number) {
 }
 
 function gainMana(state: BattleState, owner: Owner, value: number) {
-  state.players[owner].mana = Math.min(7, state.players[owner].mana + value);
+  state.players[owner].mana = Math.min(
+    state.players[owner].manaMax,
+    state.players[owner].mana + value,
+  );
 }
 
 function healUnit(unit: BattleUnit, value: number) {
@@ -2133,9 +2136,9 @@ function startTurn(state: BattleState, owner: Owner) {
   state.activePlayer = owner;
   state.phase = "Main";
   const playerState = state.players[owner];
-  playerState.manaMax = getNextTurnManaMax(playerState);
+  playerState.mana = getNextTurnManaValue(playerState);
   playerState.turnsStarted += 1;
-  playerState.mana = playerState.manaMax;
+  playerState.manaMax = 7;
   state.players[owner].attacksUsedThisTurn = 0;
   for (const { unit } of getAllLivingUnits(state, owner)) {
     unit.attacksThisTurn = 0;
@@ -3047,14 +3050,14 @@ export function initializeBattleState(
       player: {
         hp: MAX_PLAYER_HP,
         mana: 2,
-        manaMax: 2,
+        manaMax: 7,
         turnsStarted: 1,
         attacksUsedThisTurn: 0,
       },
       bot: {
         hp: MAX_PLAYER_HP,
         mana: 2,
-        manaMax: 2,
+        manaMax: 7,
         turnsStarted: 0,
         attacksUsedThisTurn: 0,
       },

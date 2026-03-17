@@ -121,7 +121,6 @@ export default function OpenPacks() {
 
   const walletConnected = !!wallet;
   const isEvmWallet = wallet?.type === "metamask";
-  const isPolkadotWallet = wallet?.type === "polkadot";
   const connectedWalletLabel = wallet?.name ?? "Wallet";
 
   return (
@@ -181,16 +180,6 @@ export default function OpenPacks() {
           {simMode && walletConnected && isEvmWallet && (
             <p className="text-green-400 text-xs mt-1">
               ✅ {connectedWalletLabel} connected — sign to seed your roll!
-            </p>
-          )}
-          {simMode && walletConnected && isPolkadotWallet && (
-            <p className="text-white/40 text-xs mt-1">
-              🎲 Simulation mode active. Connect MetaMask to sign your roll.
-            </p>
-          )}
-          {!simMode && walletConnected && isPolkadotWallet && (
-            <p className="text-yellow-400 text-xs mt-1">
-              ⚠️ Pack opening requires MetaMask.
             </p>
           )}
         </motion.div>

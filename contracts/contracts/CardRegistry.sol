@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title CardRegistry
- * @notice On-chain registry of all 48 Anime Gacha TCG cards.
+ * @notice On-chain registry of all 48 Aniverse Nexus cards.
  *         Stores each card's rarity and anime so GachaPack can build
  *         randomised rarity pools without off-chain input at open time.
  */
@@ -150,3 +150,4 @@ contract CardRegistry is Ownable {
         return cards[tokenId].rarity;
     }
 }
+

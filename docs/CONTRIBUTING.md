@@ -1,144 +1,198 @@
 # Contributing Guide
 
-Thank you for your interest in contributing to this project! Please read this guide carefully before you start.
+Thank you for contributing to Aniverse Nexus.
 
----
+This guide explains the team's branch strategy, contribution rules, local setup expectations, and pull request standards.
 
-## Table of Contents
+## 1. Branch Workflow
 
-1. [Branch Workflow](#branch-workflow)
-2. [Before You Contribute](#before-you-contribute)
-3. [Commit Conventions](#commit-conventions)
-4. [Submitting a Pull Request](#submitting-a-pull-request)
+The repository uses a simple staged flow:
 
----
-
-## Branch Workflow
-
-We follow a structured branching model:
-
-```
+```text
 main
- └── dev
-      └── <type>/description-#<issue-number>
+`-- dev
+    `-- <type>/<short-description>-#<issue-number>
 ```
+
+### Branch purposes
 
 | Branch | Purpose |
-|---|---|
-| `main` | Production-ready code. Only merged into via approved PRs from `dev`. Never commit directly. |
-| `dev` | Integration branch. All feature branches are merged here first. |
-| `<type>/description-#<issue>` | Short-lived branches for individual tasks, features, or fixes. |
+| --- | --- |
+| `main` | production-ready branch |
+| `dev` | integration branch for active feature work |
+| `feat/...`, `fix/...`, etc. | short-lived implementation branches |
 
-### Branch Naming
+### Rules
 
-Always branch off from `dev`. Use the following format:
+- do not commit directly to `main`
+- branch from `dev`
+- merge back into `dev` through a pull request
 
-```
+## 2. Branch Naming Convention
+
+Use:
+
+```text
 <type>/<short-description>-#<issue-number>
 ```
 
-**Types:**
+### Allowed types
 
-| Type | Use For |
-|---|---|
-| `feat` | New features |
-| `fix` | Bug fixes |
-| `docs` | Documentation changes |
-| `refactor` | Code restructuring without behavior change |
-| `style` | Formatting, whitespace, CSS-only changes |
-| `chore` | Tooling, config, dependency updates |
-| `test` | Adding or updating tests |
+| Type | Use for |
+| --- | --- |
+| `feat` | new features |
+| `fix` | bug fixes |
+| `docs` | documentation changes |
+| `refactor` | internal restructuring without behavior change |
+| `style` | styling-only or formatting-only changes |
+| `chore` | tooling or config updates |
+| `test` | tests and validation work |
 
-**Examples:**
+### Example
 
 ```bash
 git checkout dev
 git pull origin dev
-git checkout -b feat/wallet-connect-#12
+git checkout -b feat/practice-targeting-#31
 ```
 
----
+## 3. Before You Start
 
-## Before You Contribute
+Before implementing anything:
 
-1. **Fork or clone** the repository and ensure you are on the `dev` branch.
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-3. **Start the development server** and confirm the app runs locally:
-   ```bash
-   npm run dev
-   ```
-4. **Check for an existing issue** related to your contribution. If none exists, open one before starting work. This prevents duplicate effort and allows discussion before implementation.
-5. **Pull the latest changes** from `dev` before starting:
-   ```bash
-   git pull origin dev
-   ```
+1. pull the latest `dev`
+2. check whether there is already an issue or task for the work
+3. confirm whether your change affects:
+   - frontend UI
+   - gameplay logic
+   - contract code
+   - docs
+4. read the relevant documentation in `docs/`
 
----
+## 4. Local Setup Expectations
 
-## Commit Conventions
+### Frontend
 
-We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+From the repo root:
+
+```bash
+npm install
+npm run dev
+```
+
+### Contracts
+
+From `contracts/`:
+
+```bash
+npm install
+npm run compile
+```
+
+If your change affects deployment or pack logic, review:
+
+- `docs/SETUP_AND_DEPLOYMENT.md`
+- `docs/SMART_CONTRACTS.md`
+
+## 5. Coding Expectations
+
+### General expectations
+
+- keep changes scoped to the task
+- avoid unrelated refactors in the same pull request
+- preserve the current product direction and feature boundaries
+- document non-obvious behavior
+
+### Frontend expectations
+
+- keep mobile and desktop behavior in mind
+- do not break the shared wallet flow
+- keep game/tutorial copy consistent with the product language
+
+### Gameplay expectations
+
+- keep `cards.json` and battle logic aligned
+- update gameplay documentation when rules change
+- verify new states in both UI and battle engine where relevant
+
+### Contract expectations
+
+- keep deployment scripts in sync with contract changes
+- avoid changing pack economics silently
+- document any new events, env vars, or deployment steps
+
+## 6. Commit Conventions
+
+The repository follows Conventional Commits.
 
 ### Format
 
-```
+```text
 <type>(<optional scope>): <short description>
 ```
 
-- Use the **imperative mood** in the description (e.g., `add`, `fix`, `update` — not `added`, `fixed`, `updated`)
-- Keep the description **under 72 characters**
-- Do **not** end with a period
+### Good examples
 
-### Examples
-
-```
-feat(wallet): add Polkadot.js wallet connection
-fix(navbar): correct mobile menu overflow issue
-docs(contributing): add branch naming conventions
-refactor(home): extract blob components into separate file
-chore: update Next.js to v15.2
+```text
+feat(practice): add target highlighting for legal attacks
+fix(wallet): handle missing MetaMask provider gracefully
+docs(readme): add deployment and demo instructions
+refactor(deck): extract saved deck card component
 ```
 
-### Breaking Changes
+### Guidelines
 
-If your change introduces a breaking change, append a `!` after the type and add a footer:
+- use imperative mood
+- keep the summary short and clear
+- avoid ending the summary with a period
 
-```
-feat(api)!: change response shape for /tokens endpoint
+## 7. Pull Request Expectations
 
-BREAKING CHANGE: the `data` field is now a flat array instead of a paginated object.
-```
+Every pull request should contain:
 
----
+- a clear summary of what changed
+- why the change was needed
+- screenshots or recordings for UI changes
+- testing notes
+- linked issue or task if applicable
 
-## Submitting a Pull Request
+### Recommended PR checklist
 
-1. **Ensure your branch is up to date** with `dev` before opening a PR:
-   ```bash
-   git fetch origin
-   git rebase origin/dev
-   ```
+- [ ] rebased or updated from `origin/dev`
+- [ ] no unrelated files changed
+- [ ] lint/build/test status noted
+- [ ] screenshots included for visual changes
+- [ ] docs updated when behavior changed
 
-2. **Push your branch** to the remote:
-   ```bash
-   git push origin <your-branch-name>
-   ```
+## 8. Review Standards
 
-3. **Open a Pull Request** targeting the `dev` branch — **never directly to `main`**.
+Reviewers should focus on:
 
-4. **Fill in the PR template** with:
-   - A clear title following commit conventions (e.g., `feat(home): add hero section animation`)
-   - A description of what was changed and why
-   - Screenshots or recordings for UI changes
-   - A reference to the related issue (e.g., `Closes #12`)
+- correctness
+- regressions
+- rule consistency
+- responsive behavior
+- contract/frontend alignment
+- documentation accuracy
 
-5. **Request a review** from at least one team member.
+## 9. Documentation Rule
 
-6. **Address all review comments** before the PR is merged.
+If you change one of these areas, update the docs:
 
-7. Once approved, the PR will be **squash-merged into `dev`** by a maintainer.
+| Area | Required docs |
+| --- | --- |
+| setup or env | `README.md`, `docs/SETUP_AND_DEPLOYMENT.md` |
+| contracts | `docs/SMART_CONTRACTS.md` |
+| gameplay | `docs/PRACTICE_BATTLE_SYSTEM.md` |
+| product scope | `docs/HACKATHON_PROJECT_OVERVIEW.md` |
 
-> **Note:** PRs from `dev` into `main` are managed exclusively by maintainers and represent production releases.
+## 10. Release Flow
+
+The team flow should be:
+
+1. feature branches merge into `dev`
+2. `dev` is validated
+3. maintainers decide when `dev` is promoted to `main`
+
+Only maintainers should manage production release merges.
+
