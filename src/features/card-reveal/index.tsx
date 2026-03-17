@@ -64,6 +64,76 @@ function RevealProgressBadge({ label }: { label: string }) {
   );
 }
 
+function RevealFlipCard({
+  revealKey,
+  cardBackSrc,
+  card,
+  showingCard,
+  imgError,
+  onImageError,
+  faceClassName,
+}: {
+  revealKey: string;
+  cardBackSrc: string;
+  card: RevealCard | undefined;
+  showingCard: boolean;
+  imgError: boolean;
+  onImageError: () => void;
+  faceClassName: string;
+}) {
+  const backfaceHiddenStyle = {
+    backfaceVisibility: "hidden" as const,
+    WebkitBackfaceVisibility: "hidden" as const,
+  };
+
+  return (
+    <div className="relative h-full w-full [perspective:1800px]">
+      <motion.div
+        key={revealKey}
+        className="relative h-full w-full [transform-style:preserve-3d]"
+        initial={false}
+        animate={{ rotateY: showingCard ? 180 : 0 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+      >
+        <div className="absolute inset-0" style={backfaceHiddenStyle}>
+          <Image
+            src={cardBackSrc}
+            alt="Card Back"
+            width={1440}
+            height={2028}
+            className={faceClassName}
+            draggable={false}
+            priority
+          />
+        </div>
+
+        <div
+          className="absolute inset-0"
+          style={{
+            ...backfaceHiddenStyle,
+            transform: "rotateY(180deg)",
+          }}
+        >
+          {card?.imageUrl && !imgError ? (
+            <Image
+              src={card.imageUrl}
+              alt={card.name}
+              width={1440}
+              height={2028}
+              className={`${faceClassName} ${RARITY_GLOW[card.rarity] ?? ""}`}
+              draggable={false}
+              priority
+              onError={onImageError}
+            />
+          ) : (
+            <CardBackFallback />
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function CardReveal() {
   const [cards, setCards] = useState<RevealCard[]>([]);
   const [series, setSeries] = useState<PackSeries>("naruto");
@@ -273,40 +343,15 @@ export default function CardReveal() {
               className="relative w-full aspect-[1440/2028] cursor-pointer"
               onClick={showingCard ? advanceToNext : revealNext}
             >
-              {showingCard && currentCard ? (
-              /* ── Revealed NFT card ── */
-              <motion.div
-                className="relative w-full h-full"
-                initial={{ scale: 0.85, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-              >
-                {currentCard.imageUrl && !imgError ? (
-                  <Image
-                    src={currentCard.imageUrl}
-                    alt={currentCard.name}
-                    width={1440}
-                    height={2028}
-                    className={`w-full h-full object-contain ${RARITY_GLOW[currentCard.rarity] ?? ""}`}
-                    draggable={false}
-                    priority
-                    onError={() => setImgError(true)}
-                  />
-                ) : (
-                  <CardBackFallback />
-                )}
-              </motion.div>
-            ) : (
-              <Image
-                src={cardBackSrc}
-                alt="Card Back"
-                width={1440}
-                height={2028}
-                className="w-full h-full object-contain"
-                draggable={false}
-                priority
+              <RevealFlipCard
+                revealKey={`mobile-${revealedCount}-${currentCard?.tokenId ?? "card-back"}`}
+                cardBackSrc={cardBackSrc}
+                card={currentCard}
+                showingCard={showingCard}
+                imgError={imgError}
+                onImageError={() => setImgError(true)}
+                faceClassName="h-full w-full object-contain"
               />
-              )}
             </div>
           </div>
         ) : (
@@ -433,32 +478,15 @@ export default function CardReveal() {
                 className="w-full max-w-sm aspect-[1440/2028] cursor-pointer"
                 onClick={showingCard ? advanceToNext : revealNext}
               >
-                {showingCard && currentCard ? (
-                  currentCard.imageUrl && !imgError ? (
-                    <Image
-                      src={currentCard.imageUrl}
-                      alt={currentCard.name}
-                      width={1440}
-                      height={2028}
-                      className={`w-full h-full object-contain rounded-xl ${RARITY_GLOW[currentCard.rarity] ?? ""}`}
-                      draggable={false}
-                      priority
-                      onError={() => setImgError(true)}
-                    />
-                  ) : (
-                    <CardBackFallback />
-                  )
-                ) : (
-                  <Image
-                    src={cardBackSrc}
-                    alt="Card Back"
-                    width={1440}
-                    height={2028}
-                    className="w-full h-full object-contain rounded-xl"
-                    draggable={false}
-                    priority
-                  />
-                )}
+                <RevealFlipCard
+                  revealKey={`desktop-${revealedCount}-${currentCard?.tokenId ?? "card-back"}`}
+                  cardBackSrc={cardBackSrc}
+                  card={currentCard}
+                  showingCard={showingCard}
+                  imgError={imgError}
+                  onImageError={() => setImgError(true)}
+                  faceClassName="h-full w-full rounded-xl object-contain"
+                />
               </div>
             </motion.div>
 

@@ -15,11 +15,9 @@ interface MarketplaceCardProps {
 function CardButton({
     label,
     onClick,
-    variant = "buy",
 }: {
     label: string;
     onClick?: () => void;
-    variant?: "buy" | "sell";
 }) {
     return (
         <button
@@ -54,9 +52,7 @@ export default function MarketplaceCard({
     onBuy,
 }: MarketplaceCardProps) {
     return (
-        <div className="flex items-stretch w-100 max-[400]:w-85 lg:w-auto gap-5 bg-[linear-gradient(to_bottom,#2D3548_8%,#030A30_100%)]
-                        border border-[#1e3a6e]/60 rounded-xl px-4 py-3 hover:border-[#3B82F6]/40
-                        transition-all duration-200 group">
+        <div className="flex items-stretch w-100 max-[400]:w-85 lg:w-auto gap-5 rounded-xl border border-[#1e3a6e]/60 bg-[linear-gradient(to_bottom,#2D3548_8%,#030A30_100%)] px-4 py-3 transition-all duration-200 group hover:border-[#3B82F6]/40">
             {/* Card Image */}
             <div className="w-31 shrink-0 rounded-lg bg-[#1A1F2E] flex items-center justify-center overflow-hidden relative">
                 {CardImage ? (
