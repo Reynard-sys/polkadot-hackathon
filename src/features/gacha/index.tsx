@@ -8,15 +8,15 @@ import PageBackground from "@/components/page-background";
 export default function Gacha() {
   return (
     <PageBackground>
-      <div className="mx-auto flex max-w-sm flex-col gap-3 px-4 pt-24 lg:hidden">
+      <div className="mx-auto flex max-w-sm flex-col gap-3 px-4 pb-12 pt-24 lg:hidden">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.15 }}
         >
           <Image
-            src="/assets/mobile-game-features/mobile-tournaments.svg"
-            alt="Mobile Tournaments"
+            src="/assets/mobile-game-features/mobile-gacha-system.svg"
+            alt="Mobile Gacha System"
             width={375}
             height={113}
             className="pointer-events-none h-auto w-full"
@@ -60,7 +60,7 @@ export default function Gacha() {
         </motion.div>
       </div>
 
-      <div className="hidden flex-col items-center gap-6 px-8 pt-28 lg:flex">
+      <div className="hidden flex-col items-center gap-6 px-8 pb-20 pt-28 lg:flex">
         <motion.div
           className="flex w-full flex-col items-center gap-6"
           initial={{ opacity: 0, y: 30 }}

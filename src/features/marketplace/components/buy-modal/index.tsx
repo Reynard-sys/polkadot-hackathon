@@ -56,7 +56,8 @@ function UpcomingModal({ onClose }: { onClose: () => void }) {
         </div>
         <h2 className="text-white font-bold text-xl">Upcoming Feature</h2>
         <p className="text-[#8a9fc8] text-sm leading-relaxed">
-          Buying cards is coming soon! Stay tuned for updates.
+          Direct card purchases are not live yet. Marketplace buying will be
+          enabled in a future update.
         </p>
         <SvgButton onClick={onClose} className="w-full h-[60px] mt-2">
           Go back
@@ -160,10 +161,10 @@ export default function BuyModal({ isOpen, onClose, card }: SellModalProps) {
                 </div>
                 <div className="bg-[#0a1a4a]/80 rounded-lg p-2">
                   <p className="text-yellow-300 font-bold text-xs text-center">
-                    {card?.name || "Lorem Ipsum"}
+                    {card?.name || "Marketplace Preview"}
                   </p>
                   <p className="text-white/50 text-[9px] text-center truncate">
-                    Lorem ipsum dolor amet
+                    Listing details pending
                   </p>
                 </div>
               </div>
@@ -176,10 +177,10 @@ export default function BuyModal({ isOpen, onClose, card }: SellModalProps) {
           <div className="flex items-start justify-between gap-2">
             <div>
               <h2 className="text-white font-bold text-xl leading-tight">
-                {card?.name || "Card title"}
+                {card?.name || "Card Preview"}
               </h2>
               <p className="text-[#8a9fc8] text-sm">
-                {card?.info || "[Card Info]"}
+                {card?.info || "Card details unavailable"}
               </p>
             </div>
             <span
@@ -195,7 +196,7 @@ export default function BuyModal({ isOpen, onClose, card }: SellModalProps) {
               Set
             </div>
             <p className="text-white text-sm mt-0.5">
-              {card?.set || "One Piece Pack"}
+              {card?.set || "Set information unavailable"}
             </p>
           </div>
 
@@ -205,7 +206,7 @@ export default function BuyModal({ isOpen, onClose, card }: SellModalProps) {
               Card Info
             </div>
             <p className="text-white text-sm mt-0.5">
-              {card?.info || "[Card Info]"}
+              {card?.info || "Card details unavailable"}
             </p>
           </div>
 
@@ -213,7 +214,7 @@ export default function BuyModal({ isOpen, onClose, card }: SellModalProps) {
             <p className="text-white font-semibold text-sm mb-2">Description</p>
             <p className="text-[#8a9fc8] text-xs leading-relaxed">
               {card?.description ||
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."}
+                "This listing preview will show the full card description once marketplace metadata is available."}
             </p>
           </div>
 

@@ -53,8 +53,17 @@ function WalletButton({
   textSizeAddress?: string;
   px?: string;
 }) {
-  const { wallet, isConnecting, error, openPicker, disconnect, truncateAddress } =
-    useWallet();
+  const getWalletIndicator = (walletName: string) =>
+    walletName.toLowerCase().includes("meta") ? "🦊" : "🔵";
+
+  const {
+    wallet,
+    isConnecting,
+    error,
+    openPicker,
+    disconnect,
+    truncateAddress,
+  } = useWallet();
   const [showConfirm, setShowConfirm] = useState(false);
   const walletRef = useRef<HTMLDivElement>(null);
 
@@ -92,7 +101,7 @@ function WalletButton({
             <span
               className={`text-white/70 ${textSizeAccount} font-medium leading-tight truncate w-full text-center group-hover:text-white/90 transition-colors`}
             >
-              {wallet.type === "metamask" ? "🦊 " : "🔵 "}{wallet.name}
+              {getWalletIndicator(wallet.name)} {wallet.name}
             </span>
             <span
               className={`text-white font-mono ${textSizeAddress} leading-tight truncate w-full text-center group-hover:text-white/80 transition-colors`}
@@ -107,18 +116,25 @@ function WalletButton({
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 rounded-xl border border-white/10 bg-[#0d1230] shadow-2xl shadow-black/60 overflow-hidden z-50">
             <div className="px-4 py-3 border-b border-white/10">
               <p className="text-white/50 text-[10px] font-medium uppercase tracking-wider mb-0.5">
-                Connected via {wallet.type === "metamask" ? "MetaMask 🦊" : "Polkadot 🔵"}
+                Connected via {wallet.name} {getWalletIndicator(wallet.name)}
               </p>
-              <p className="text-white text-sm font-semibold truncate">{wallet.name}</p>
+              <p className="text-white text-sm font-semibold truncate">
+                {wallet.name}
+              </p>
               <p className="text-white/50 font-mono text-[10px] truncate">
                 {truncateAddress(wallet.address)}
               </p>
             </div>
             <div className="px-4 py-3">
-              <p className="text-white/70 text-xs mb-3">Disconnect your wallet?</p>
+              <p className="text-white/70 text-xs mb-3">
+                Disconnect your wallet?
+              </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => { disconnect(); setShowConfirm(false); }}
+                  onClick={() => {
+                    disconnect();
+                    setShowConfirm(false);
+                  }}
                   className="flex-1 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Disconnect
@@ -144,7 +160,12 @@ function WalletButton({
         disabled={isConnecting}
         className="flex justify-center items-center cursor-pointer transition-transform hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed relative"
       >
-        <Image src={connectSrc} alt={connectAlt} width={width} height={height} />
+        <Image
+          src={connectSrc}
+          alt={connectAlt}
+          width={width}
+          height={height}
+        />
         {isConnecting && (
           <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-semibold">
             Connecting…
@@ -152,12 +173,13 @@ function WalletButton({
         )}
       </button>
       {error && (
-        <p className="text-red-400 text-xs max-w-[260px] text-center leading-tight">{error}</p>
+        <p className="text-red-400 text-xs max-w-[260px] text-center leading-tight">
+          {error}
+        </p>
       )}
     </div>
   );
 }
-
 
 export default function HeroSection() {
   const cardStack = (
@@ -246,8 +268,8 @@ export default function HeroSection() {
               className="pointer-events-none"
             />
             <p className="text-center text-xl font-normal leading-5">
-              Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris
-              penatibus varius sagittis mi diam eget penatibus.
+              Open on-chain packs, own every pull, build your TCG lineup, and
+              battle through a Web3 gacha card system.
             </p>
             {/* Card stack scaled for mobile frame */}
             <div className="relative w-60 h-60">
@@ -273,8 +295,8 @@ export default function HeroSection() {
             className="pointer-events-none"
           />
           <p className="text-center text-lg font-bold max-w-xl">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            The cross anime trading card game where every card is an NFT, every
+            battle is real, and every collection lasts forever.
           </p>
           <div className="relative w-92 h-128.75">{cardStack}</div>
           <WalletButton

@@ -93,8 +93,9 @@ export default function TournamentFeature({
           {pageTitle}
         </h1>
         <p className="text-center text-gray-400 text-sm max-w-xl mx-auto mb-8">
-          Lorem ipsum dolor sit amet consectetur. Vitus vitae augue risus
-          phasellus sagittis in eros eget consectetur.
+          Compete in ranked seasons. Qualify for real events. Climb the
+          leaderboard, earn exclusive cards, and fight your way to the National
+          Championship. Every match counts.
         </p>
         <div className="w-full overflow-hidden">
           <Image

@@ -10,6 +10,9 @@ import {
 import { useWallet } from "@/context/wallet-context";
 
 export default function Navbar() {
+  const getWalletIndicator = (walletName: string) =>
+    walletName.toLowerCase().includes("meta") ? "🦊" : "🔵";
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Deck", href: "/deck" },
@@ -26,6 +29,7 @@ export default function Navbar() {
     openPicker,
     closePicker,
     connectMetaMask,
+    connectSubWallet,
     connectPolkadot,
     disconnect,
     truncateAddress,
@@ -93,7 +97,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-linear-to-b from-[#2d3548] to-[#030a30]">
+      <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-linear-to-b from-[#2d3548] to-[#030a30] pt-[env(safe-area-inset-top)]">
         <div className="px-6 lg:px-8 py-3 flex justify-between items-center">
           {/* Left Side: Logo */}
           <div className="flex items-center cursor-pointer">
@@ -146,11 +150,9 @@ export default function Navbar() {
                   />
                   <div className="absolute inset-0 flex flex-col items-center justify-center px-6 pointer-events-none">
                     <span className="text-white/70 text-[10px] font-medium leading-tight truncate w-full text-center group-hover:text-white/90 transition-colors flex items-center justify-center gap-1">
-                      {wallet.type === "metamask" ? (
-                        <span>🦊 {wallet.name}</span>
-                      ) : (
-                        <span>🔵 {wallet.name}</span>
-                      )}
+                      <span>
+                        {getWalletIndicator(wallet.name)} {wallet.name}
+                      </span>
                     </span>
                     <span className="text-white font-mono text-xs leading-tight truncate w-full text-center group-hover:text-white/80 transition-colors">
                       {truncateAddress(wallet.address)}
@@ -163,10 +165,8 @@ export default function Navbar() {
                   <div className="absolute top-full right-0 mt-2 w-56 rounded-xl border border-white/10 bg-[#0d1230] shadow-2xl shadow-black/60 overflow-hidden z-50">
                     <div className="px-4 py-3 border-b border-white/10">
                       <p className="text-white/50 text-[10px] font-medium uppercase tracking-wider mb-0.5">
-                        Connected via{" "}
-                        {wallet.type === "metamask"
-                          ? "MetaMask 🦊"
-                          : "Polkadot 🔵"}
+                        Connected via {wallet.name}{" "}
+                        {getWalletIndicator(wallet.name)}
                       </p>
                       <p className="text-white text-sm font-semibold truncate">
                         {wallet.name}
@@ -271,7 +271,7 @@ export default function Navbar() {
               <div>
                 <h2 className="text-white font-bold text-lg">Connect Wallet</h2>
                 <p className="text-white/50 text-xs mt-0.5">
-                  Choose your wallet provider
+                  Choose your EVM wallet
                 </p>
               </div>
               <button
@@ -293,15 +293,33 @@ export default function Navbar() {
                 <span className="text-3xl select-none">🦊</span>
                 <div className="flex flex-col items-start">
                   <span className="text-white font-semibold text-sm group-hover:text-orange-300 transition-colors">
-                    MetaMask
+                    MetaMask (EVM)
                   </span>
                   <span className="text-white/40 text-xs">
-                    EVM / Ethereum compatible
+                    Direct EVM wallet connection
                   </span>
                 </div>
               </button>
 
-              {/* SubWallet / Polkadot.js */}
+              <button
+                onClick={connectSubWallet}
+                disabled={isConnecting}
+                className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/50 transition-all group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="text-3xl select-none">S</span>
+                <div className="flex flex-col items-start">
+                  <span className="text-white font-semibold text-sm group-hover:text-cyan-300 transition-colors">
+                    SubWallet (EVM)
+                  </span>
+                  <span className="text-white/40 text-xs">
+                    Use SubWallet&apos;s injected EVM account
+                  </span>
+                </div>
+              </button>
+
+              {false && (
+                <>
+              {/* Native Polkadot */}
               <button
                 onClick={connectPolkadot}
                 disabled={isConnecting}
@@ -310,13 +328,15 @@ export default function Navbar() {
                 <span className="text-3xl select-none">🔵</span>
                 <div className="flex flex-col items-start">
                   <span className="text-white font-semibold text-sm group-hover:text-pink-300 transition-colors">
-                    SubWallet / Polkadot.js
+                    Native Polkadot
                   </span>
                   <span className="text-white/40 text-xs">
-                    Native Polkadot wallets
+                    Polkadot.js, Talisman, or SubWallet account mode
                   </span>
                 </div>
               </button>
+                </>
+              )}
 
               {/* Error */}
               {error && (
@@ -333,7 +353,7 @@ export default function Navbar() {
             </div>
 
             <p className="text-white/20 text-[10px] text-center pb-4 px-6">
-              By connecting, you agree to the terms of this dApp.
+              Use the EVM side of MetaMask or SubWallet for this dApp.
             </p>
           </div>
         </div>

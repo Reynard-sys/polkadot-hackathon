@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Footer from "@/components/footer";
 import Navbar from "@/components/navbar";
 import MobileBottomNav from "@/components/mobile-bottom-nav";
 import { WalletProvider } from "@/context/wallet-context";
@@ -31,9 +32,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <WalletProvider>
-          <Navbar />
-          {children}
-          <MobileBottomNav />
+          <div className="flex min-h-screen flex-col">
+            <Navbar />
+            <main className="flex-1 pb-[calc(76px+env(safe-area-inset-bottom))] pt-3 md:pb-0 md:pt-0">
+              {children}
+            </main>
+            <Footer />
+            <MobileBottomNav />
+          </div>
         </WalletProvider>
       </body>
     </html>

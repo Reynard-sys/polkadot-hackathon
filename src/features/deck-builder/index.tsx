@@ -892,9 +892,8 @@ function DeckDesktopEmptyState({ onCreateDeck }: { onCreateDeck: () => void }) {
             Deck Builder
           </h1>
           <p className="mx-auto mt-2 max-w-[719px] text-[16px] leading-[24px] font-bold text-white/80 lg:mt-[8px] lg:text-[18px] lg:leading-[27px]">
-            Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris penatibus
-            varius sagittis mi diam eget penatibus. Ut praesent ut auctor turpis
-            cursus id.
+            Build lineups, manage rarity caps, and save polished decks for
+            practice matches and tournament play.
           </p>
         </div>
         <Image
@@ -971,54 +970,15 @@ function DeckDesktopEmptyState({ onCreateDeck }: { onCreateDeck: () => void }) {
 
 function FigmaTopCard() {
   return (
-    <section className="relative mx-auto h-[113px] w-full max-w-[375px] overflow-hidden rounded-[9.668px] border-t-2 border-r-2 border-l-2 border-[#ABC3FF] bg-[linear-gradient(0deg,#010B7B_29.2%,#0060DE_123.01%)]">
-      <div className="absolute left-[14px] top-[14px] flex h-[34px] w-[34px] items-center justify-center rounded-[8.459px] bg-[rgba(206,206,206,0.13)]">
-        <Image
-          src="/assets/deck-builder/top-deck-icon.svg"
-          alt=""
-          width={17}
-          height={17}
-        />
-      </div>
-
+    <section className="mx-auto w-full max-w-[375px]">
       <Image
-        src="/assets/deck-builder/top-decor-group23.svg"
-        alt=""
-        width={105}
-        height={93}
-        className="pointer-events-none absolute left-[267px] top-[-20px] opacity-95"
+        src="/assets/mobile-game-features/mobile-deck-builder.svg"
+        alt="Deck Builder"
+        width={375}
+        height={113}
+        className="pointer-events-none h-auto w-full"
+        draggable={false}
       />
-      <div className="pointer-events-none absolute left-[236px] top-[-13px] h-[90px] w-[40px] rotate-[76.74deg]">
-        <Image
-          src="/assets/deck-builder/top-union-1.svg"
-          alt=""
-          fill
-          className="object-contain"
-        />
-      </div>
-      <div className="pointer-events-none absolute left-[294px] top-[-5px] h-[68px] w-[84px] rotate-[144.13deg]">
-        <Image
-          src="/assets/deck-builder/top-union-2.svg"
-          alt=""
-          fill
-          className="object-contain"
-        />
-      </div>
-      <div className="pointer-events-none absolute left-[218px] top-[-18px] h-[41px] w-[31px] rotate-[56.79deg]">
-        <Image
-          src="/assets/deck-builder/top-union-3.svg"
-          alt=""
-          fill
-          className="object-contain"
-        />
-      </div>
-
-      <h2 className="absolute left-[14px] top-[52px] text-[18px] leading-[27px] font-bold text-white">
-        Deck Builder
-      </h2>
-      <p className="absolute left-[14px] top-[82px] max-w-[346px] text-[12px] leading-[12.1px] font-light text-[#e8e8e8]">
-        Open exclusive packs to unlock legendary cards and skins
-      </p>
     </section>
   );
 }
@@ -3360,9 +3320,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                     Deck Builder
                   </h1>
                   <p className="mx-auto mt-2 max-w-[719px] text-[16px] leading-[24px] font-bold text-white/80 lg:mt-[8px] lg:text-[18px] lg:leading-[27px]">
-                    Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris
-                    penatibus varius sagittis mi diam eget penatibus. Ut
-                    praesent ut auctor turpis cursus id.
+                    Build lineups, manage rarity caps, and save polished decks
+                    for practice matches and tournament play.
                   </p>
                 </div>
                 <Image
@@ -3608,9 +3567,8 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
                     Deck Builder
                   </h1>
                   <p className="mx-auto mt-2 max-w-[719px] text-[16px] leading-[24px] font-bold text-white/80 lg:mt-[8px] lg:text-[18px] lg:leading-[27px]">
-                    Lorem ipsum dolor sit amet consectetur. Vitae vitae mauris
-                    penatibus varius sagittis mi diam eget penatibus. Ut
-                    praesent ut auctor turpis cursus id.
+                    Build lineups, manage rarity caps, and save polished decks
+                    for practice matches and tournament play.
                   </p>
                 </div>
                 <Image

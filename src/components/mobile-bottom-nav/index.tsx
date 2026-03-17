@@ -68,7 +68,7 @@ export default function MobileBottomNav() {
     const pathname = usePathname();
 
     return (
-        <nav className="fixed right-0 bottom-0 left-0 z-40 border-t border-white/30 bg-[#272727] md:hidden">
+        <nav className="fixed right-0 bottom-0 left-0 z-40 border-t border-white/30 bg-[#272727] pb-[env(safe-area-inset-bottom)] md:hidden">
             <ul className="mx-auto grid max-w-md grid-cols-5 px-2 py-2 text-[12px]">
                 {NAV_ITEMS.map(({ kind, label, href }) => {
                     const active = pathname === href;

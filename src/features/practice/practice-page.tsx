@@ -17,7 +17,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PageBackground from "@/components/page-background";
 import { useWallet } from "@/context/wallet-context";
 import {
@@ -33,6 +33,7 @@ import {
   activateLeaderAbility,
   activateStartTurnAura,
   advanceToBattlePhase,
+  canActivateStartTurnAura,
   canActivateUnitAbility,
   canUseLeaderAbility,
   endTurn,
@@ -42,7 +43,6 @@ import {
   getBattleUnitElement,
   getBattleUnitMaxHp,
   getNextBotTurnAction,
-  getPendingStartTurnAuraSlot,
   getPracticeCardById,
   getStartTurnAuraTargetState,
   getSlotLabel,
@@ -121,15 +121,18 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     body: [
       "Frontline protects the rest of your side. Backline stays safer until the Frontline is opened.",
       "Reserve cards can attack from safety, but enemy attacks still cannot target them.",
-      "Your Leader holds your side's 40 HP and can attack once battle opens.",
+      "Your Leader holds your side's 40 HP and can only attack after the enemy Frontline is cleared.",
     ],
     visual: "board",
+    imageSrc: "/assets/tutorial/deck_limits_tutorial.svg",
+    imageAlt: "The Board",
   },
   {
     title: "Your Leader Card",
     body: [
       "Leaders stay visible for the full match and use their own once-per-game leader ability.",
       "Leader abilities happen during Main Phase and do not cost mana.",
+      "Leader cards cannot attack until the enemy Frontline is gone.",
       "Save the leader effect for a turn that actually changes the board.",
     ],
     visual: "leader",
@@ -162,7 +165,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     title: "Attacking",
     body: [
       "You can drag a ready unit onto a valid target or tap the attack icon and then pick the target.",
-      "Leaders and Reserve cards can attack too, but Reserve cards still stay untargetable by attacks.",
+      "Reserve cards can attack too, but Reserve cards still stay untargetable by attacks. Leaders join only after the enemy Frontline is cleared.",
       "Frontline is always targetable. Backline opens only after Frontline is gone or if your attacker has Backline Strike.",
       "When you pick an attacker or a heal card, only legal targets light up.",
     ],
@@ -189,6 +192,8 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
       "If a card looks harmless, check its status text before you ignore it.",
     ],
     visual: "status",
+    imageSrc: "/assets/tutorial/power_tutorial.svg",
+    imageAlt: "Status Effects",
   },
   {
     title: "Winning and Losing",
@@ -356,7 +361,11 @@ function PracticeAttackIcon() {
 }
 
 function supportsHealDrag(card: BattleUnit | null) {
-  return card?.ability?.trigger === "OnSummon" && card.ability.type === "Heal";
+  return Boolean(
+    card &&
+    ((card.ability?.trigger === "OnSummon" && card.ability.type === "Heal") ||
+      hasManualStartTurnAura(card)),
+  );
 }
 
 function wait(ms: number) {
@@ -407,6 +416,20 @@ function MobileDetailBackButton({ onBack }: { onBack: () => void }) {
 
 function TutorialVisual({ page }: { page: PracticeTutorialPage }) {
   const pikachuCard = getPracticeCardById(36);
+
+  if (page.imageSrc) {
+    return (
+      <div className="relative mx-auto aspect-[16/10] w-full overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
+        <Image
+          src={page.imageSrc}
+          alt={page.imageAlt ?? page.title}
+          fill
+          className="object-contain"
+          unoptimized
+        />
+      </div>
+    );
+  }
 
   if (page.visual === "card" && pikachuCard) {
     return (
@@ -491,20 +514,6 @@ function TutorialVisual({ page }: { page: PracticeTutorialPage }) {
             {"Water -> Fire +1"}
           </div>
         </div>
-      </div>
-    );
-  }
-
-  if (page.imageSrc) {
-    return (
-      <div className="relative mx-auto aspect-[16/10] w-full overflow-hidden rounded-[18px] border border-white/10 bg-white/5">
-        <Image
-          src={page.imageSrc}
-          alt={page.imageAlt ?? page.title}
-          fill
-          className="object-contain"
-          unoptimized
-        />
       </div>
     );
   }
@@ -732,8 +741,9 @@ function getAbilityCardState(
     return null;
   }
 
+  const hasStartTurnAura = hasManualStartTurnAura(card);
   const ability = card.ability?.trigger === "OnSummon" ? card.ability : null;
-  if (!ability) {
+  if (!ability && !hasStartTurnAura) {
     return null;
   }
 
@@ -741,8 +751,24 @@ function getAbilityCardState(
     return "used";
   }
 
-  if (card.isSilenced || card.statusEffects.includes("Sealed")) {
+  if (
+    card.isSilenced ||
+    card.statusEffects.includes("Sealed") ||
+    card.statusEffects.includes("Disabled")
+  ) {
     return null;
+  }
+
+  if (hasStartTurnAura) {
+    return canActivateStartTurnAura(battleState, "player", card.slotIndex)
+      ? "ready"
+      : "locked";
+  }
+
+  if (isDrawManaCard(card)) {
+    return canActivateUnitAbility(battleState, "player", card.slotIndex)
+      ? "ready"
+      : "locked";
   }
 
   return battleState.players.player.mana >= card.mana ? "ready" : "locked";
@@ -913,7 +939,11 @@ function AbilityCardPopup({
         </button>
       </div>
       <div className="mt-2 flex items-center justify-between gap-2">
-        <p className="text-[11px] font-semibold text-white/70">{`Cost: ${content.cost} mana`}</p>
+        {content.cost > 0 ? (
+          <p className="text-[11px] font-semibold text-white/70">{`Cost: ${content.cost} mana`}</p>
+        ) : (
+          <span />
+        )}
         {content.hasActivation && !content.alreadyUsed ? (
           <button
             type="button"
@@ -946,12 +976,14 @@ function AbilityCardPopup({
 
 function PracticeMobileCardDetail({
   card,
+  onClose,
   canUseLeader,
   canUseAbility,
   onUseAbility,
   onUseLeaderAbility,
 }: {
   card: BattleUnit;
+  onClose: () => void;
   canUseLeader: boolean;
   canUseAbility: boolean;
   onUseAbility: () => void;
@@ -964,105 +996,116 @@ function PracticeMobileCardDetail({
   const currentZone = getSlotZone(card.slotIndex);
 
   return (
-    <section className="mx-auto w-full max-w-[375px] space-y-5 pb-8">
-      <div className="flex justify-center">
-        <div className="relative h-[507px] w-full max-w-[360px] overflow-hidden rounded-[12px] border border-white/15 shadow-[0_10px_24px_rgba(0,0,0,0.45)]">
-          <Image
-            src={card.art}
-            alt={card.name}
-            fill
-            className="object-cover"
-            unoptimized
-          />
+    <div className="fixed inset-x-0 bottom-[76px] top-[72px] z-[88] overflow-y-auto bg-black/60 px-4 py-4 md:hidden">
+      <button
+        type="button"
+        className="absolute inset-0"
+        onClick={onClose}
+        aria-label="Close overlay"
+      />
+      <MobileDetailBackButton onBack={onClose} />
+      <section className="relative z-10 mx-auto w-full max-w-[375px] space-y-5 rounded-[20px] border border-[#1f2540] bg-[#151932] p-4 pb-8 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.45)]">
+        <div className="flex justify-center">
+          <div className="relative h-[507px] w-full max-w-[360px] overflow-hidden rounded-[12px] border border-white/15 shadow-[0_10px_24px_rgba(0,0,0,0.45)]">
+            <Image
+              src={card.art}
+              alt={card.name}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </div>
         </div>
-      </div>
-      <div className="mx-auto flex w-full max-w-[365px] flex-col gap-5 px-[15.995px]">
-        <div className="min-w-0">
-          <p className="text-[18px] leading-[28px] font-bold text-white">
-            {card.name}
-          </p>
-          {card.subtitle ? (
-            <p className="text-[14px] leading-[20px] font-normal text-[#e8e8e8]">
-              {card.subtitle}
+        <div className="mx-auto flex w-full max-w-[365px] flex-col gap-5 px-[15.995px]">
+          <div className="min-w-0">
+            <p className="text-[18px] leading-[28px] font-bold text-white">
+              {card.name}
             </p>
+            {card.subtitle ? (
+              <p className="text-[14px] leading-[20px] font-normal text-[#e8e8e8]">
+                {card.subtitle}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <BattleCardStat label="Mana" value={String(card.mana)} />
+            <BattleCardStat label="Power" value={String(currentPower)} />
+            <BattleCardStat label="HP" value={`${card.currentHP} / ${maxHp}`} />
+            <BattleCardStat label="Element" value={currentElement} />
+            <BattleCardStat label="Position" value={currentZone} />
+            <BattleCardStat label="Rarity" value={card.rarity} />
+          </div>
+
+          {card.statusEffects.length > 0 ? (
+            <div className="w-full rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] py-4">
+              <p className="text-[12px] leading-[24px] font-bold text-white">
+                Status
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {card.statusEffects.map((status) => (
+                  <span
+                    key={status}
+                    className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-medium text-white"
+                  >
+                    {status}
+                  </span>
+                ))}
+              </div>
+            </div>
           ) : null}
-        </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <BattleCardStat label="Mana" value={String(card.mana)} />
-          <BattleCardStat label="Power" value={String(currentPower)} />
-          <BattleCardStat label="HP" value={`${card.currentHP} / ${maxHp}`} />
-          <BattleCardStat label="Element" value={currentElement} />
-          <BattleCardStat label="Position" value={currentZone} />
-          <BattleCardStat label="Rarity" value={card.rarity} />
-        </div>
-
-        {card.statusEffects.length > 0 ? (
-          <div className="w-full rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] py-4">
-            <p className="text-[12px] leading-[24px] font-bold text-white">
-              Status
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {card.statusEffects.map((status) => (
+          <div className="w-full max-w-[348px] space-y-1">
+            <p className="text-[12px] leading-[16px] text-[#e8e8e8]">Traits</p>
+            <div className="flex flex-wrap gap-1.5">
+              {detailTraits.map((trait) => (
                 <span
-                  key={status}
+                  key={trait}
                   className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-medium text-white"
                 >
-                  {status}
+                  {trait}
                 </span>
               ))}
             </div>
           </div>
-        ) : null}
 
-        <div className="w-full max-w-[348px] space-y-1">
-          <p className="text-[12px] leading-[16px] text-[#e8e8e8]">Traits</p>
-          <div className="flex flex-wrap gap-1.5">
-            {detailTraits.map((trait) => (
-              <span
-                key={trait}
-                className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-medium text-white"
+          <div className="w-full rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] pt-[17px] pb-4">
+            <p className="text-[12px] leading-[24px] font-bold text-white">
+              Description
+            </p>
+            <p className="mt-2 text-[13px] leading-[22px] font-normal text-[#99a1af]">
+              {getDisplayedAbilityDescription(
+                card.abilityDescription,
+                card.ability?.type,
+              )}
+            </p>
+            {card.leaderEligible && card.leaderDescription ? (
+              <p className="mt-4 text-[13px] leading-[22px] font-normal text-[#99a1af]">
+                {card.leaderDescription}
+              </p>
+            ) : null}
+            {canUseAbility ? (
+              <button
+                type="button"
+                onClick={onUseAbility}
+                className="mt-4 rounded-full bg-[#0f56d9] px-4 py-2 text-sm font-semibold text-white"
               >
-                {trait}
-              </span>
-            ))}
+                {getAbilityActionLabel(card)}
+              </button>
+            ) : null}
+            {canUseLeader ? (
+              <button
+                type="button"
+                onClick={onUseLeaderAbility}
+                className="mt-3 rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white"
+              >
+                Use Leader Ability
+              </button>
+            ) : null}
           </div>
         </div>
-
-        <div className="w-full rounded-[14px] border border-[#1f2540] bg-[#0f1329] px-[17px] pt-[17px] pb-4">
-          <p className="text-[12px] leading-[24px] font-bold text-white">
-            Description
-          </p>
-          <p className="mt-2 text-[13px] leading-[22px] font-normal text-[#99a1af]">
-            {card.abilityDescription ||
-              "No description available for this card."}
-          </p>
-          {card.leaderEligible && card.leaderDescription ? (
-            <p className="mt-4 text-[13px] leading-[22px] font-normal text-[#99a1af]">
-              {card.leaderDescription}
-            </p>
-          ) : null}
-          {canUseAbility ? (
-            <button
-              type="button"
-              onClick={onUseAbility}
-              className="mt-4 rounded-full bg-[#0f56d9] px-4 py-2 text-sm font-semibold text-white"
-            >
-              Use Ability ({card.mana} Mana)
-            </button>
-          ) : null}
-          {canUseLeader ? (
-            <button
-              type="button"
-              onClick={onUseLeaderAbility}
-              className="mt-3 rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white"
-            >
-              Use Leader Ability
-            </button>
-          ) : null}
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
 
@@ -1181,8 +1224,10 @@ function PracticeCardModal({
                 Description
               </p>
               <p className="mt-3 text-[14px] leading-[22.75px] text-[#99a1af]">
-                {card.abilityDescription ||
-                  "No description available for this card."}
+                {getDisplayedAbilityDescription(
+                  card.abilityDescription,
+                  card.ability?.type,
+                )}
               </p>
               {card.leaderEligible && card.leaderDescription ? (
                 <p className="mt-4 text-[14px] leading-[22.75px] text-[#99a1af]">
@@ -1195,7 +1240,7 @@ function PracticeCardModal({
                   onClick={onUseAbility}
                   className="mt-5 rounded-full bg-[#0f56d9] px-5 py-3 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
                 >
-                  Use Ability ({card.mana} Mana)
+                  {getAbilityActionLabel(card)}
                 </button>
               ) : null}
               {canUseLeader ? (
@@ -1269,6 +1314,44 @@ function formatAbilityLabel(value: string) {
     .trim();
 }
 
+function hasManualStartTurnAura(card: BattleUnit) {
+  return (
+    card.ability?.trigger === "Aura" && card.ability.type === "HealAllyPerTurn"
+  );
+}
+
+function isDrawManaCard(card: BattleUnit) {
+  return (
+    card.ability?.trigger === "OnSummon" && card.ability.type === "DrawCard"
+  );
+}
+
+function getAbilityActionLabel(card: BattleUnit) {
+  return hasManualStartTurnAura(card) || isDrawManaCard(card)
+    ? "Use Ability"
+    : `Use Ability (${card.mana} Mana)`;
+}
+
+function getDisplayedAbilityDescription(
+  description: string | null | undefined,
+  abilityType?: string | null,
+) {
+  if (!description) {
+    return "No description available for this skill.";
+  }
+
+  const normalized = description.replace(
+    /\b[Dd]raw\s+(\d+)\s+card(s)?\b/g,
+    (_match, amount: string) => `Gain ${amount} mana`,
+  );
+
+  if (abilityType === "DrawCard") {
+    return `${normalized} This ability is free and can be used every other turn.`;
+  }
+
+  return normalized;
+}
+
 function getBattleTargetLabel(battleState: BattleState, target: BattleTarget) {
   if (target.type === "player") {
     return target.owner === "bot" ? "the bot leader" : "your leader";
@@ -1309,12 +1392,53 @@ function getCardAbilityPopupContent(
     };
   }
 
+  if (hasManualStartTurnAura(card)) {
+    const alreadyUsed = card.abilityUsedThisTurn;
+    const canActivate = canActivateStartTurnAura(
+      battleState,
+      card.owner,
+      card.slotIndex,
+    );
+    const isSealed = card.statusEffects.includes("Sealed");
+    const statusBlockedReason = card.isSilenced
+      ? "Silenced"
+      : isSealed
+        ? "Sealed"
+        : card.statusEffects.includes("Disabled")
+          ? "Disabled"
+          : null;
+
+    return {
+      title: `${card.name} - ${formatAbilityLabel(card.ability?.type ?? "Ability")}`,
+      description:
+        getDisplayedAbilityDescription(card.abilityDescription) ||
+        "Restore 1 HP to a friendly card or your leader once each turn.",
+      cost: 0,
+      canActivate,
+      disabledReason: alreadyUsed
+        ? "Already used this turn"
+        : statusBlockedReason
+          ? statusBlockedReason
+          : battleState.turn <= 1
+            ? "Available from turn 2 onward"
+            : battleState.phase !== "Main"
+              ? "Main Phase only"
+              : battleState.activePlayer !== "player"
+                ? "Wait for your turn"
+                : null,
+      alreadyUsed,
+      hasActivation: true,
+    };
+  }
+
   const ability = card.ability?.trigger === "OnSummon" ? card.ability : null;
   if (!ability) {
     return {
       title: `${card.name} - Passive`,
-      description:
-        card.abilityDescription || "This card has no activatable skill.",
+      description: getDisplayedAbilityDescription(
+        card.abilityDescription,
+        card.ability?.type,
+      ),
       cost: card.mana,
       canActivate: false,
       disabledReason: "No activatable skill",
@@ -1324,9 +1448,15 @@ function getCardAbilityPopupContent(
   }
 
   const alreadyUsed = card.abilityUsedThisTurn;
-  const enoughMana = battleState.players.player.mana >= card.mana;
+  const isDrawMana = ability.type === "DrawCard";
+  const manaCost = isDrawMana ? 0 : card.mana;
+  const enoughMana = isDrawMana || battleState.players.player.mana >= card.mana;
   const isSealed = card.statusEffects.includes("Sealed");
   const blockedByStatus = card.isSilenced || isSealed;
+  const drawOnCooldown =
+    isDrawMana &&
+    card.lastDrawManaTurnStarted !== null &&
+    battleState.players.player.turnsStarted - card.lastDrawManaTurnStarted < 2;
   const statusBlockedReason = card.isSilenced
     ? "Silenced"
     : isSealed
@@ -1342,21 +1472,25 @@ function getCardAbilityPopupContent(
 
   return {
     title: `${card.name} - ${formatAbilityLabel(ability.type)}`,
-    description:
-      card.abilityDescription || "No description available for this skill.",
-    cost: card.mana,
+    description: getDisplayedAbilityDescription(
+      card.abilityDescription,
+      ability.type,
+    ),
+    cost: manaCost,
     canActivate,
     disabledReason: alreadyUsed
       ? "Already used this turn"
       : statusBlockedReason
         ? statusBlockedReason
-        : !enoughMana
-          ? `Not enough mana (need ${card.mana}, have ${battleState.players.player.mana})`
-          : battleState.phase !== "Main"
-            ? "Main Phase only"
-            : battleState.activePlayer !== "player"
-              ? "Wait for your turn"
-              : null,
+        : drawOnCooldown
+          ? "Every other turn only"
+          : !enoughMana
+            ? `Not enough mana (need ${card.mana}, have ${battleState.players.player.mana})`
+            : battleState.phase !== "Main"
+              ? "Main Phase only"
+              : battleState.activePlayer !== "player"
+                ? "Wait for your turn"
+                : null,
     alreadyUsed,
     hasActivation: true,
   };
@@ -2279,7 +2413,7 @@ function BattleLogPanel({
   const instructions = winner
     ? "Match finished. Battle logs clear after every completed practice game."
     : pendingAbilityMode === "startTurnAura"
-      ? "Bulbasaur is waiting on its start-of-turn heal. Choose any friendly card or your leader before continuing."
+      ? "Choose any friendly card or your leader for Bulbasaur's free heal."
       : pendingAbilityMode === "manual"
         ? "Choose the highlighted target for the selected ability. Main Phase abilities spend mana and can only be used once."
         : selectedAttackerSlot !== null
@@ -2340,9 +2474,6 @@ export default function PracticePageContent() {
   );
   const [pendingAbility, setPendingAbility] =
     useState<PendingUnitAbility | null>(null);
-  const [resolvedStartTurnAuraTurn, setResolvedStartTurnAuraTurn] = useState<
-    number | null
-  >(null);
   const [activeAttackDrag, setActiveAttackDrag] =
     useState<AttackDragData | null>(null);
   const [inspectedCard, setInspectedCard] = useState<BattleUnit | null>(null);
@@ -2394,7 +2525,8 @@ export default function PracticePageContent() {
       playerCards.flatMap((card, slotIndex) =>
         card &&
         supportsHealDrag(card) &&
-        canActivateUnitAbility(battleState, "player", slotIndex)
+        (canActivateUnitAbility(battleState, "player", slotIndex) ||
+          canActivateStartTurnAura(battleState, "player", slotIndex))
           ? [slotIndex]
           : [],
       ),
@@ -2426,11 +2558,6 @@ export default function PracticePageContent() {
             )
         : null,
     [battleState, pendingAbility],
-  );
-  const pendingStartTurnAuraSlot = useMemo(
-    () =>
-      battleState ? getPendingStartTurnAuraSlot(battleState, "player") : null,
-    [battleState],
   );
   const interactionTargets = abilityTargetState?.requiresTargets
     ? abilityTargetState.options
@@ -2486,7 +2613,12 @@ export default function PracticePageContent() {
       : false;
   const playerUnitAbilityCanTrigger =
     battleState && inspectedCard?.owner === "player"
-      ? canActivateUnitAbility(battleState, "player", inspectedCard.slotIndex)
+      ? canActivateUnitAbility(
+          battleState,
+          "player",
+          inspectedCard.slotIndex,
+        ) ||
+        canActivateStartTurnAura(battleState, "player", inspectedCard.slotIndex)
       : false;
   const getAbilityPopupContent = (card: BattleUnit) =>
     battleState ? getCardAbilityPopupContent(battleState, card) : null;
@@ -2526,40 +2658,6 @@ export default function PracticePageContent() {
 
     return undefined;
   }, [battleState, pendingAbility]);
-
-  useEffect(() => {
-    if (
-      !battleState ||
-      battleState.winner ||
-      battleState.activePlayer !== "player" ||
-      battleState.phase !== "Main" ||
-      pendingAbility ||
-      pendingStartTurnAuraSlot === null ||
-      resolvedStartTurnAuraTurn === battleState.turn
-    ) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      startTransition(() => {
-        setSelectedAttackerSlot(null);
-        setActiveAbilitySlot(null);
-        setPendingAbility({
-          kind: "startTurnAura",
-          slotIndex: pendingStartTurnAuraSlot,
-          targets: [],
-        });
-        setLiveBannerText("Choose a Bulbasaur heal target.");
-      });
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, [
-    battleState,
-    pendingAbility,
-    pendingStartTurnAuraSlot,
-    resolvedStartTurnAuraTurn,
-  ]);
 
   useEffect(() => {
     return () => {
@@ -2843,9 +2941,21 @@ export default function PracticePageContent() {
               })();
 
         if (isFullHealthTarget) {
-          setResolvedStartTurnAuraTurn(battleState.turn);
+          const sourceCard = battleState.board.player[slotIndex];
+          const nextState = activateStartTurnAura(
+            battleState,
+            "player",
+            slotIndex,
+            nextTargets,
+          );
+          commitPlayerStateUpdate(
+            battleState,
+            nextState,
+            sourceCard
+              ? [`${sourceCard.name} heal skipped.`]
+              : ["Heal skipped."],
+          );
           setPendingAbility(null);
-          setLiveBannerText("Bulbasaur heal skipped.");
           return;
         }
       }
@@ -2861,14 +2971,11 @@ export default function PracticePageContent() {
         sourceCard
           ? [
               kind === "startTurnAura"
-                ? `${sourceCard.name} used its start-of-turn heal.`
+                ? `${sourceCard.name} used its free heal.`
                 : `${sourceCard.name} used ${formatAbilityLabel(sourceCard.ability?.type ?? "Ability")}.`,
             ]
           : ["Ability used."],
       );
-      if (kind === "startTurnAura") {
-        setResolvedStartTurnAuraTurn(battleState.turn);
-      }
       setPendingAbility(null);
       return;
     }
@@ -2986,7 +3093,6 @@ export default function PracticePageContent() {
     setSelectedAttackerSlot(null);
     setActiveAbilitySlot(null);
     setPendingAbility(null);
-    setResolvedStartTurnAuraTurn(null);
     setInspectedCard(null);
     setIsResolvingBotTurn(false);
     setShowResultModal(false);
@@ -3033,30 +3139,31 @@ export default function PracticePageContent() {
       return;
     }
 
-    setActiveAbilitySlot(null);
-    const targetState = getUnitAbilityTargetState(
+    const isStartTurnAura = canActivateStartTurnAura(
       battleState,
       "player",
       slotIndex,
-      [],
     );
+    setActiveAbilitySlot(null);
+    const targetState = isStartTurnAura
+      ? getStartTurnAuraTargetState(battleState, "player", slotIndex, [])
+      : getUnitAbilityTargetState(battleState, "player", slotIndex, []);
     setSelectedAttackerSlot(null);
     setInspectedCard(null);
 
     if (targetState.complete && !targetState.requiresTargets) {
       const sourceCard = battleState.board.player[slotIndex];
-      const nextState = activateUnitAbility(
-        battleState,
-        "player",
-        slotIndex,
-        [],
-      );
+      const nextState = isStartTurnAura
+        ? activateStartTurnAura(battleState, "player", slotIndex, [])
+        : activateUnitAbility(battleState, "player", slotIndex, []);
       commitPlayerStateUpdate(
         battleState,
         nextState,
         sourceCard
           ? [
-              `${sourceCard.name} used ${formatAbilityLabel(sourceCard.ability?.type ?? "Ability")}.`,
+              isStartTurnAura
+                ? `${sourceCard.name} used its free heal.`
+                : `${sourceCard.name} used ${formatAbilityLabel(sourceCard.ability?.type ?? "Ability")}.`,
             ]
           : ["Ability used."],
       );
@@ -3066,7 +3173,7 @@ export default function PracticePageContent() {
 
     if (targetState.options.length > 0) {
       setPendingAbility({
-        kind: "manual",
+        kind: isStartTurnAura ? "startTurnAura" : "manual",
         slotIndex,
         targets: [],
       });
@@ -3292,13 +3399,7 @@ export default function PracticePageContent() {
   return (
     <PageBackground>
       <div className="bg-transparent py-10 font-sans">
-        {inspectedCard ? (
-          <MobileDetailBackButton onBack={() => setInspectedCard(null)} />
-        ) : null}
-
-        <div
-          className={`${inspectedCard ? "hidden" : "block"} px-4 pb-4 pt-18 lg:hidden`}
-        >
+        <div className="px-4 pb-4 pt-18 lg:hidden">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-[2rem] font-bold text-white">
@@ -3320,8 +3421,9 @@ export default function PracticePageContent() {
                 Training Grounds
               </h1>
               <p className="mx-auto mb-8 max-w-xl text-center text-sm text-gray-400">
-                Build pressure, manage tempo, and test your lineup against a
-                rules-compliant bot.
+                Master your deck, test your strategy against the bot, and
+                sharpen your skills before stepping into the arena. No WND
+                required.
               </p>
             </div>
           </div>
@@ -3338,236 +3440,233 @@ export default function PracticePageContent() {
         </div>
 
         <div className="mx-auto max-w-6xl p-4 pb-2 lg:px-0 lg:py-12">
-          {inspectedCard ? (
-            <div className="md:hidden">
-              <PracticeMobileCardDetail
-                card={inspectedCard}
-                canUseLeader={Boolean(playerLeaderCanTrigger)}
-                canUseAbility={Boolean(playerUnitAbilityCanTrigger)}
-                onUseAbility={() =>
-                  beginAbilityActivation(inspectedCard.slotIndex)
-                }
-                onUseLeaderAbility={handlePlayerLeaderAbility}
-              />
-            </div>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleAttackDragStart}
-              onDragEnd={handleAttackDragEnd}
-              onDragCancel={handleAttackDragCancel}
-            >
-              <div className="mt-10 space-y-4">
-                {controlsPanel}
-                <div className="rounded-[32px] border border-[#8085BD] bg-[linear-gradient(to_top,#120C35_8%,#143C87_45%,#13245E_98%)] px-4 py-5 md:px-6 md:py-6 lg:-mx-6 lg:mt-0 lg:w-[calc(100%+3rem)] xl:-mx-10 xl:w-[calc(100%+5rem)]">
-                  <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_220px_minmax(0,1fr)] lg:items-center">
-                    <div className="order-1 lg:order-3">
-                      <ArenaGrid
-                        side="bot"
-                        title="Bot Deck"
-                        battleState={battleState}
-                        cards={botCards}
-                        directTargetable={directTargetable}
-                        playerTargetable={false}
-                        onDirectAttack={() =>
-                          handleTargetSelection({
-                            type: "player",
-                            owner: "bot",
-                          })
-                        }
-                        onPlayerTargetSelect={() => undefined}
-                        onInspect={setInspectedCard}
-                        selectedAttackerSlot={selectedAttackerSlot}
-                        attackableSlots={new Set<number>()}
-                        abilityDragSlots={new Set<number>()}
-                        selectionMode={selectionMode}
-                        targetableKeys={targetableKeys}
-                        targetableOwners={targetableOwners}
-                        activeAbilitySlot={visibleAbilitySlot}
-                        getAbilityPopupContent={getAbilityPopupContent}
-                        onSelectAttacker={() => undefined}
-                        onOpenAbilityPopup={() => undefined}
-                        onActivateAbilityPopup={() => undefined}
-                        onCloseAbilityPopup={() => undefined}
-                        onAttackTarget={handleTargetSelection}
-                      />
-                    </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleAttackDragStart}
+            onDragEnd={handleAttackDragEnd}
+            onDragCancel={handleAttackDragCancel}
+          >
+            <div className="mt-10 space-y-4">
+              {controlsPanel}
+              <div className="rounded-[32px] border border-[#8085BD] bg-[linear-gradient(to_top,#120C35_8%,#143C87_45%,#13245E_98%)] px-4 py-5 md:px-6 md:py-6 lg:-mx-6 lg:mt-0 lg:w-[calc(100%+3rem)] xl:-mx-10 xl:w-[calc(100%+5rem)]">
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_220px_minmax(0,1fr)] lg:items-center">
+                  <div className="order-1 lg:order-3">
+                    <ArenaGrid
+                      side="bot"
+                      title="Bot Deck"
+                      battleState={battleState}
+                      cards={botCards}
+                      directTargetable={directTargetable}
+                      playerTargetable={false}
+                      onDirectAttack={() =>
+                        handleTargetSelection({
+                          type: "player",
+                          owner: "bot",
+                        })
+                      }
+                      onPlayerTargetSelect={() => undefined}
+                      onInspect={setInspectedCard}
+                      selectedAttackerSlot={selectedAttackerSlot}
+                      attackableSlots={new Set<number>()}
+                      abilityDragSlots={new Set<number>()}
+                      selectionMode={selectionMode}
+                      targetableKeys={targetableKeys}
+                      targetableOwners={targetableOwners}
+                      activeAbilitySlot={visibleAbilitySlot}
+                      getAbilityPopupContent={getAbilityPopupContent}
+                      onSelectAttacker={() => undefined}
+                      onOpenAbilityPopup={() => undefined}
+                      onActivateAbilityPopup={() => undefined}
+                      onCloseAbilityPopup={() => undefined}
+                      onAttackTarget={handleTargetSelection}
+                    />
+                  </div>
 
-                    <div className="order-4 flex flex-col items-center justify-center gap-4 text-center lg:order-2">
-                      <div className="flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2 text-[11px] font-semibold tracking-[0.16em] text-[#9dc1ff] uppercase">
-                        <span>Turn {battleState?.turn ?? 1}</span>
-                        <span className="text-white/30">/</span>
-                        <span>{battleState?.phase ?? "Lobby"}</span>
+                  <div className="order-4 flex flex-col items-center justify-center gap-4 text-center lg:order-2">
+                    <div className="flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2 text-[11px] font-semibold tracking-[0.16em] text-[#9dc1ff] uppercase">
+                      <span>Turn {battleState?.turn ?? 1}</span>
+                      <span className="text-white/30">/</span>
+                      <span>{battleState?.phase ?? "Lobby"}</span>
+                    </div>
+                    <div className="rounded-full border border-white/12 bg-white/6 px-6 py-2 text-[28px] font-black text-white/80">
+                      VS
+                    </div>
+                    <div className="w-full rounded-[24px] border border-white/10 bg-white/6 p-4 text-left">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[12px] font-semibold tracking-[0.14em] text-[#9dc1ff] uppercase">
+                          Battle Arena
+                        </p>
+                        <PracticeTutorialButton
+                          compact
+                          onClick={openTutorial}
+                        />
                       </div>
-                      <div className="rounded-full border border-white/12 bg-white/6 px-6 py-2 text-[28px] font-black text-white/80">
-                        VS
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <BattleCardStat
+                          label="Player Leader HP"
+                          value={String(battleState?.players.player.hp ?? 40)}
+                        />
+                        <BattleCardStat
+                          label="Bot Leader HP"
+                          value={String(battleState?.players.bot.hp ?? 40)}
+                        />
+                        <ManaBattleStat
+                          label="Player Mana"
+                          currentMana={battleState?.players.player.mana ?? 2}
+                          manaMax={battleState?.players.player.manaMax ?? 2}
+                        />
+                        <ManaBattleStat
+                          label="Bot Mana"
+                          currentMana={battleState?.players.bot.mana ?? 2}
+                          manaMax={battleState?.players.bot.manaMax ?? 2}
+                        />
+                        <BattleCardStat
+                          label="Active"
+                          value={
+                            battleState
+                              ? battleState.activePlayer === "player"
+                                ? "Player"
+                                : "Bot"
+                              : "Lobby"
+                          }
+                        />
+                        <BattleCardStat
+                          label="Phase"
+                          value={battleState?.phase ?? "Lobby"}
+                        />
                       </div>
-                      <div className="w-full rounded-[24px] border border-white/10 bg-white/6 p-4 text-left">
+                      <div className="mt-4 rounded-[18px] border border-white/10 bg-[#0b1024] px-4 py-3">
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-[12px] font-semibold tracking-[0.14em] text-[#9dc1ff] uppercase">
-                            Battle Arena
+                          <p className="text-[12px] font-semibold tracking-[0.12em] text-[#9dc1ff] uppercase">
+                            Attacks
                           </p>
-                          <PracticeTutorialButton
-                            compact
-                            onClick={openTutorial}
-                          />
+                          <p className="text-sm font-semibold text-white">
+                            {`${attacksUsedThisTurn} / ${MAX_ATTACKS_PER_TURN}`}
+                          </p>
                         </div>
-                        <div className="mt-4 grid grid-cols-2 gap-3">
-                          <BattleCardStat
-                            label="Player Leader HP"
-                            value={String(battleState?.players.player.hp ?? 40)}
-                          />
-                          <BattleCardStat
-                            label="Bot Leader HP"
-                            value={String(battleState?.players.bot.hp ?? 40)}
-                          />
-                          <ManaBattleStat
-                            label="Player Mana"
-                            currentMana={battleState?.players.player.mana ?? 2}
-                            manaMax={battleState?.players.player.manaMax ?? 2}
-                          />
-                          <ManaBattleStat
-                            label="Bot Mana"
-                            currentMana={battleState?.players.bot.mana ?? 2}
-                            manaMax={battleState?.players.bot.manaMax ?? 2}
-                          />
-                          <BattleCardStat
-                            label="Active"
-                            value={
-                              battleState
-                                ? battleState.activePlayer === "player"
-                                  ? "Player"
-                                  : "Bot"
-                                : "Lobby"
-                            }
-                          />
-                          <BattleCardStat
-                            label="Phase"
-                            value={battleState?.phase ?? "Lobby"}
-                          />
-                        </div>
-                        <div className="mt-4 rounded-[18px] border border-white/10 bg-[#0b1024] px-4 py-3">
-                          <div className="flex items-center justify-between gap-3">
-                            <p className="text-[12px] font-semibold tracking-[0.12em] text-[#9dc1ff] uppercase">
-                              Attacks
-                            </p>
-                            <p className="text-sm font-semibold text-white">
-                              {`${attacksUsedThisTurn} / ${MAX_ATTACKS_PER_TURN}`}
-                            </p>
-                          </div>
-                          {showAttackLimitReached ? (
-                            <p className="mt-2 text-xs font-semibold text-[#ffcf6f]">
-                              Attack limit reached.
-                            </p>
+                        {showAttackLimitReached ? (
+                          <p className="mt-2 text-xs font-semibold text-[#ffcf6f]">
+                            Attack limit reached.
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="mt-4 rounded-[18px] border border-white/10 bg-[#0b1024] p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-[12px] font-semibold tracking-[0.12em] text-[#9dc1ff] uppercase">
+                            Live Feed
+                          </p>
+                          {isResolvingBotTurn ? (
+                            <span className="text-[11px] font-semibold tracking-[0.12em] text-[#ffb26b] uppercase">
+                              Opponent Acting
+                            </span>
                           ) : null}
                         </div>
-                        <div className="mt-4 rounded-[18px] border border-white/10 bg-[#0b1024] p-4">
-                          <div className="flex items-center justify-between gap-3">
-                            <p className="text-[12px] font-semibold tracking-[0.12em] text-[#9dc1ff] uppercase">
-                              Live Feed
-                            </p>
-                            {isResolvingBotTurn ? (
-                              <span className="text-[11px] font-semibold tracking-[0.12em] text-[#ffb26b] uppercase">
-                                Opponent Acting
-                              </span>
-                            ) : null}
+                        <p className="mt-3 text-sm font-semibold text-white">
+                          {liveBannerText ??
+                            (battleState
+                              ? battleState.activePlayer === "player"
+                                ? "Your turn. Use abilities, attack, then pass with Next Turn."
+                                : "Waiting for the opponent to act."
+                              : "Select a deck to begin practice.")}
+                        </p>
+                        <div className="mt-3 max-h-[112px] overflow-y-auto rounded-[14px] border border-white/10 bg-white/5 p-3">
+                          <div className="space-y-2">
+                            {(liveEventFeed.length > 0
+                              ? liveEventFeed.slice().reverse()
+                              : [
+                                  battleState
+                                    ? "Battle feed updates here during opponent turns."
+                                    : "No live events yet.",
+                                ]
+                            ).map((entry, index) => (
+                              <p
+                                key={`${index}-${entry}`}
+                                className="text-xs leading-5 text-white/62"
+                              >
+                                {entry}
+                              </p>
+                            ))}
                           </div>
-                          <p className="mt-3 text-sm font-semibold text-white">
-                            {liveBannerText ??
-                              (battleState
-                                ? battleState.activePlayer === "player"
-                                  ? "Your turn. Use abilities, attack, then pass with Next Turn."
-                                  : "Waiting for the opponent to act."
-                                : "Select a deck to begin practice.")}
-                          </p>
-                          <div className="mt-3 max-h-[112px] overflow-y-auto rounded-[14px] border border-white/10 bg-white/5 p-3">
-                            <div className="space-y-2">
-                              {(liveEventFeed.length > 0
-                                ? liveEventFeed.slice().reverse()
-                                : [
-                                    battleState
-                                      ? "Battle feed updates here during opponent turns."
-                                      : "No live events yet.",
-                                  ]
-                              ).map((entry, index) => (
-                                <p
-                                  key={`${index}-${entry}`}
-                                  className="text-xs leading-5 text-white/62"
-                                >
-                                  {entry}
-                                </p>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-4 hidden space-y-3 lg:block">
-                          {actionControls}
                         </div>
                       </div>
+                      <div className="mt-4 hidden space-y-3 lg:block">
+                        {actionControls}
+                      </div>
                     </div>
+                  </div>
 
-                    <div className="order-2 rounded-[24px] border border-white/10 bg-white/6 p-4 text-center lg:hidden">
-                      <div className="space-y-3">{actionControls}</div>
-                    </div>
+                  <div className="order-2 rounded-[24px] border border-white/10 bg-white/6 p-4 text-center lg:hidden">
+                    <div className="space-y-3">{actionControls}</div>
+                  </div>
 
-                    <div className="order-3 lg:order-1">
-                      <ArenaGrid
-                        side="player"
-                        title={selectedDeck?.name ?? "Saved Deck"}
-                        battleState={battleState}
-                        cards={playerCards}
-                        directTargetable={false}
-                        playerTargetable={playerTargetable}
-                        onDirectAttack={() => undefined}
-                        onPlayerTargetSelect={() =>
-                          handleTargetSelection({
-                            type: "player",
-                            owner: "player",
-                          })
-                        }
-                        onInspect={setInspectedCard}
-                        selectedAttackerSlot={selectedAttackerSlot}
-                        attackableSlots={effectiveAttackableSlots}
-                        abilityDragSlots={abilityDragSlots}
-                        selectionMode={selectionMode}
-                        targetableKeys={targetableKeys}
-                        targetableOwners={targetableOwners}
-                        activeAbilitySlot={visibleAbilitySlot}
-                        getAbilityPopupContent={getAbilityPopupContent}
-                        onSelectAttacker={(slotIndex) =>
-                          setSelectedAttackerSlot((current) =>
-                            current === slotIndex ? null : slotIndex,
-                          )
-                        }
-                        onOpenAbilityPopup={openAbilityPopup}
-                        onActivateAbilityPopup={activateAbilityFromPopup}
-                        onCloseAbilityPopup={() => setActiveAbilitySlot(null)}
-                        onAttackTarget={handleTargetSelection}
-                      />
-                    </div>
+                  <div className="order-3 lg:order-1">
+                    <ArenaGrid
+                      side="player"
+                      title={selectedDeck?.name ?? "Saved Deck"}
+                      battleState={battleState}
+                      cards={playerCards}
+                      directTargetable={false}
+                      playerTargetable={playerTargetable}
+                      onDirectAttack={() => undefined}
+                      onPlayerTargetSelect={() =>
+                        handleTargetSelection({
+                          type: "player",
+                          owner: "player",
+                        })
+                      }
+                      onInspect={setInspectedCard}
+                      selectedAttackerSlot={selectedAttackerSlot}
+                      attackableSlots={effectiveAttackableSlots}
+                      abilityDragSlots={abilityDragSlots}
+                      selectionMode={selectionMode}
+                      targetableKeys={targetableKeys}
+                      targetableOwners={targetableOwners}
+                      activeAbilitySlot={visibleAbilitySlot}
+                      getAbilityPopupContent={getAbilityPopupContent}
+                      onSelectAttacker={(slotIndex) =>
+                        setSelectedAttackerSlot((current) =>
+                          current === slotIndex ? null : slotIndex,
+                        )
+                      }
+                      onOpenAbilityPopup={openAbilityPopup}
+                      onActivateAbilityPopup={activateAbilityFromPopup}
+                      onCloseAbilityPopup={() => setActiveAbilitySlot(null)}
+                      onAttackTarget={handleTargetSelection}
+                    />
                   </div>
                 </div>
               </div>
+            </div>
 
-              <BattleLogPanel
-                logs={battleState?.logs ?? []}
-                winner={battleState?.winner ?? null}
-                pendingAbilityMode={pendingAbility?.kind ?? null}
-                selectedAttackerSlot={selectedAttackerSlot}
-                phase={battleState?.phase ?? "Lobby"}
-                activePlayer={battleState?.activePlayer ?? "none"}
-              />
+            <BattleLogPanel
+              logs={battleState?.logs ?? []}
+              winner={battleState?.winner ?? null}
+              pendingAbilityMode={pendingAbility?.kind ?? null}
+              selectedAttackerSlot={selectedAttackerSlot}
+              phase={battleState?.phase ?? "Lobby"}
+              activePlayer={battleState?.activePlayer ?? "none"}
+            />
 
-              <DragOverlay>
-                {activeAttackDrag?.card ? (
-                  <AttackDragOverlay card={activeAttackDrag.card} />
-                ) : null}
-              </DragOverlay>
-              <BotAttackOverlay animation={botAttackAnimation} />
-            </DndContext>
-          )}
+            <DragOverlay>
+              {activeAttackDrag?.card ? (
+                <AttackDragOverlay card={activeAttackDrag.card} />
+              ) : null}
+            </DragOverlay>
+            <BotAttackOverlay animation={botAttackAnimation} />
+          </DndContext>
         </div>
+
+        {inspectedCard ? (
+          <PracticeMobileCardDetail
+            card={inspectedCard}
+            onClose={() => setInspectedCard(null)}
+            canUseLeader={Boolean(playerLeaderCanTrigger)}
+            canUseAbility={Boolean(playerUnitAbilityCanTrigger)}
+            onUseAbility={() => beginAbilityActivation(inspectedCard.slotIndex)}
+            onUseLeaderAbility={handlePlayerLeaderAbility}
+          />
+        ) : null}
 
         <PracticeDeckModal
           open={showDeckModal}

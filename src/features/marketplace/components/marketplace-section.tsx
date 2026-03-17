@@ -405,9 +405,9 @@ export default function MarketplaceSection() {
           Marketplace
         </h1>
         <p className="text-center text-gray-400 text-sm max-w-xl mx-auto mb-8">
-          Lorem ipsum dolor sit amet consectetur. Vitae volutus mauris penatibus
-          varius sagittis mi diam eget penatibus. Ut praesent at auctor turpis
-          cursus id.
+          Trade cards with players around the world. No shipping. No customs. No
+          middlemen. Every transaction is instant, transparent, and secured
+          on-chain.
         </p>
         <div className="w-full overflow-hidden">
           <Image

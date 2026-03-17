@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useMemo, useState, useCallback } from "react";
 import SvgButton from "@/components/svg-button";
 import { motion, AnimatePresence } from "motion/react";
-import Footer from "@/components/footer";
 import { useWallet } from "@/context/wallet-context";
 import {
   useInventory,
@@ -323,7 +322,8 @@ function UpcomingSellingModal({ onClose }: { onClose: () => void }) {
         </div>
         <h2 className="text-white font-bold text-xl">Upcoming Feature</h2>
         <p className="text-[#8a9fc8] text-sm leading-relaxed">
-          Selling cards is coming soon! Stay tuned for updates.
+          Player-to-player selling is not live yet. Inventory listing tools
+          will arrive in a future marketplace update.
         </p>
         <SvgButton onClick={onClose} className="w-full h-[60px] mt-2">
           Go back
@@ -1103,9 +1103,6 @@ export default function Inventory() {
           </div>
         </section>
       </div>
-
-      <Footer />
-
       {/* Desktop modals */}
       {desktopSelectedCard && (
         <DesktopCardModal

@@ -332,14 +332,26 @@ export function usePackOpening() {
 
     try {
       if (!simMode) {
-        if (!wallet || wallet.type !== "metamask") {
-          setError("Pack opening requires MetaMask.");
+        if (!wallet) {
+          setError("Connect an EVM wallet like MetaMask or SubWallet.");
           return;
         }
 
-        await switchToWestend();
-        const provider = await getEthersProvider();
-        if (!provider) throw new Error("Could not get provider.");
+        if (wallet.type !== "metamask") {
+          setError(
+            "Pack opening requires the EVM side of MetaMask or SubWallet.",
+          );
+          return;
+        }
+
+        const provider = await getEthersProvider(
+          wallet.evmProviderPreference ?? "metamask",
+        );
+        if (!provider) {
+          setError("Could not get provider.");
+          return;
+        }
+        await switchToWestend(provider);
 
         const signer = await provider.getSigner();
         const signerAddress = await signer.getAddress();
@@ -439,7 +451,9 @@ export function usePackOpening() {
       let walletSignature: string | undefined;
 
       if (wallet?.type === "metamask") {
-        const provider = await getEthersProvider();
+        const provider = await getEthersProvider(
+          wallet.evmProviderPreference ?? "metamask",
+        );
         if (provider) {
           const signer = await provider.getSigner();
           const addr = await signer.getAddress();

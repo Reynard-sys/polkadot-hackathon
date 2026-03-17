@@ -120,7 +120,9 @@ export default function OpenPacks() {
   );
 
   const walletConnected = !!wallet;
-  const isMetaMask = wallet?.type === "metamask";
+  const isEvmWallet = wallet?.type === "metamask";
+  const isPolkadotWallet = wallet?.type === "polkadot";
+  const connectedWalletLabel = wallet?.name ?? "Wallet";
 
   return (
     <PageBackground>
@@ -172,23 +174,24 @@ export default function OpenPacks() {
                 onClick={openPicker}
                 className="text-xs text-[#8855FF] underline underline-offset-2 cursor-pointer"
               >
-                Connect MetaMask ↗
+                Connect Wallet ↗
               </button>
             </div>
           )}
-          {simMode && walletConnected && isMetaMask && (
+          {simMode && walletConnected && isEvmWallet && (
             <p className="text-green-400 text-xs mt-1">
-              ✅ MetaMask connected — sign to seed your roll!
+              ✅ {connectedWalletLabel} connected — sign to seed your roll!
             </p>
           )}
-          {simMode && walletConnected && !isMetaMask && (
+          {simMode && walletConnected && isPolkadotWallet && (
             <p className="text-white/40 text-xs mt-1">
-              🎲 Simulation mode active (connect MetaMask to sign your roll)
+              🎲 Simulation mode active. Connect the EVM side of MetaMask or
+              SubWallet to sign your roll.
             </p>
           )}
-          {!simMode && walletConnected && !isMetaMask && (
+          {!simMode && walletConnected && isPolkadotWallet && (
             <p className="text-yellow-400 text-xs mt-1">
-              ⚠️ MetaMask required for on-chain transactions.
+              ⚠️ Pack opening requires the EVM side of MetaMask or SubWallet.
             </p>
           )}
         </motion.div>
@@ -218,9 +221,9 @@ export default function OpenPacks() {
             animate={{ opacity: 1 }}
           >
             {!simMode
-              ? "Confirm in MetaMask, then waiting for on-chain confirmation… ⛓️"
-              : simMode && isMetaMask
-                ? "Sign in MetaMask to seed your roll… ✍️"
+              ? `Confirm in ${connectedWalletLabel}, then waiting for on-chain confirmation… ⛓️`
+              : simMode && isEvmWallet
+                ? `Sign in ${connectedWalletLabel} to seed your roll… ✍️`
                 : "Rolling your cards… ✨"}
           </motion.p>
         )}
@@ -324,9 +327,9 @@ export default function OpenPacks() {
           {isOpening && (
             <p className="text-white/60 text-sm text-center animate-pulse">
               {!simMode
-                ? "Confirm in MetaMask, waiting for Westend confirmation… ⛓️"
-                : simMode && isMetaMask
-                  ? "Sign in MetaMask… ✍️"
+                ? `Confirm in ${connectedWalletLabel}, waiting for Westend confirmation… ⛓️`
+                : simMode && isEvmWallet
+                  ? `Sign in ${connectedWalletLabel}… ✍️`
                   : "Rolling your cards… ✨"}
             </p>
           )}

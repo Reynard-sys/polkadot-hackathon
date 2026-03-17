@@ -150,6 +150,7 @@ export type BattleUnit = PracticeCard & {
   grantedRushThisTurn: boolean;
   grantedAttackTwiceThisTurn: boolean;
   abilityUsedThisTurn: boolean;
+  lastDrawManaTurnStarted: number | null;
   declaredElement: Element | null;
 };
 
@@ -547,6 +548,7 @@ function createBattleUnit(
     grantedRushThisTurn: false,
     grantedAttackTwiceThisTurn: false,
     abilityUsedThisTurn: false,
+    lastDrawManaTurnStarted: null,
     declaredElement: null,
   };
 }
@@ -802,6 +804,25 @@ function getManualAbility(unit: BattleUnit | null) {
   return unit?.ability?.trigger === "OnSummon" ? unit.ability : null;
 }
 
+function isDrawManaAbility(ability: CatalogAbility | null | undefined) {
+  return ability?.type === "DrawCard";
+}
+
+function canUseDrawManaAbilityThisTurn(
+  state: BattleState,
+  owner: Owner,
+  unit: BattleUnit,
+) {
+  if (!isDrawManaAbility(unit.ability)) {
+    return true;
+  }
+
+  return (
+    unit.lastDrawManaTurnStarted === null ||
+    state.players[owner].turnsStarted - unit.lastDrawManaTurnStarted >= 2
+  );
+}
+
 function getStartTurnAuraAbility(unit: BattleUnit | null) {
   if (!unit) {
     return null;
@@ -812,6 +833,27 @@ function getStartTurnAuraAbility(unit: BattleUnit | null) {
       (ability) =>
         ability.trigger === "Aura" && ability.type === "HealAllyPerTurn",
     ) ?? null
+  );
+}
+
+export function canActivateStartTurnAura(
+  state: BattleState,
+  owner: Owner,
+  slotIndex: number,
+) {
+  const source = getUnit(state, owner, slotIndex);
+  const ability = getStartTurnAuraAbility(source);
+  if (!source || !ability) {
+    return false;
+  }
+
+  return (
+    !state.winner &&
+    state.activePlayer === owner &&
+    state.phase === "Main" &&
+    state.turn > 1 &&
+    !source.abilityUsedThisTurn &&
+    canUsePassiveAbility(state, source)
   );
 }
 
@@ -990,6 +1032,10 @@ function chooseMostDamagedFriendlyUnitSlot(
 
 function healPlayer(state: BattleState, owner: Owner, value: number) {
   setPlayerHp(state, owner, state.players[owner].hp + value);
+}
+
+function gainMana(state: BattleState, owner: Owner, value: number) {
+  state.players[owner].mana = Math.min(7, state.players[owner].mana + value);
 }
 
 function healUnit(unit: BattleUnit, value: number) {
@@ -1361,15 +1407,18 @@ export function canActivateUnitAbility(
     return false;
   }
 
+  const manaCost = isDrawManaAbility(ability) ? 0 : source.mana;
+
   return (
     !state.winner &&
     state.activePlayer === owner &&
     state.phase === "Main" &&
     !source.abilityUsedThisTurn &&
+    canUseDrawManaAbilityThisTurn(state, owner, source) &&
     !source.isSilenced &&
     !hasStatus(source, "Sealed") &&
     !isReserveSuppressed(state, source) &&
-    state.players[owner].mana >= source.mana
+    state.players[owner].mana >= manaCost
   );
 }
 
@@ -1507,16 +1556,14 @@ export function getPendingStartTurnAuraSlot(
   if (
     state.winner ||
     state.activePlayer !== owner ||
-    state.phase !== "Main" ||
-    state.turn <= 1
+    state.phase !== "Main"
   ) {
     return null;
   }
 
   return (
     getAllLivingUnits(state, owner).find(({ unit }) => {
-      const ability = getStartTurnAuraAbility(unit);
-      return Boolean(ability) && canUsePassiveAbility(state, unit);
+      return canActivateStartTurnAura(state, owner, unit.slotIndex);
     })?.slotIndex ?? null
   );
 }
@@ -1532,10 +1579,7 @@ export function getStartTurnAuraTargetState(
   if (
     !source ||
     !ability ||
-    !canUsePassiveAbility(state, source) ||
-    state.winner ||
-    state.activePlayer !== owner ||
-    state.phase !== "Main"
+    !canActivateStartTurnAura(state, owner, slotIndex)
   ) {
     return {
       options: [],
@@ -1582,20 +1626,24 @@ export function activateStartTurnAura(
   const draft = cloneState(state);
   const source = getUnit(draft, owner, slotIndex);
   const ability = getStartTurnAuraAbility(source);
-  if (!source || !ability || !canUsePassiveAbility(draft, source)) {
+  if (!source || !ability || !canActivateStartTurnAura(draft, owner, slotIndex)) {
     return state;
   }
 
+  source.abilityUsedThisTurn = true;
+
   const selectedTarget = selectedTargets[0];
   if (selectedTarget?.type === "player") {
-    healPlayer(draft, owner, ability.value ?? 1);
-    appendLog(
-      draft,
-      `${source.name} restored ${ability.value ?? 1} HP to ${owner === "player" ? "you" : "the bot"}.`,
-    );
+    if (draft.players[owner].hp < MAX_PLAYER_HP) {
+      healPlayer(draft, owner, ability.value ?? 1);
+      appendLog(
+        draft,
+        `${source.name} restored ${ability.value ?? 1} HP to ${owner === "player" ? "you" : "the bot"}.`,
+      );
+    }
   } else if (selectedTarget?.type === "slot") {
     const target = getUnit(draft, selectedTarget.owner, selectedTarget.slotIndex);
-    if (target) {
+    if (target && target.currentHP < getMaxHp(target)) {
       healUnit(target, ability.value ?? 1);
       appendLog(
         draft,
@@ -1729,12 +1777,12 @@ function resolveOnSummonAbility(
       break;
     }
     case "DrawCard": {
-      for (const { unit: ally } of getAllLivingUnits(state, owner)) {
-        ally.permanentHpBonus += 1;
-        ally.currentHP += 1;
-        clampUnitHp(ally);
-      }
-      appendLog(state, `${source.name} strengthened the whole team by 1 HP.`);
+      const manaGain = ability.value ?? 1;
+      gainMana(state, owner, manaGain);
+      appendLog(
+        state,
+        `${source.name} granted ${manaGain} mana to ${owner === "player" ? "you" : "the bot"}.`,
+      );
       break;
     }
     case "DamageMultiple": {
@@ -1995,6 +2043,7 @@ function tickStartPhaseAuraEffects(state: BattleState, owner: Owner) {
           const target = getUnit(state, owner, targetSlot);
           if (target) {
             healUnit(target, ability.value ?? 1);
+            unit.abilityUsedThisTurn = true;
             appendLog(state, `${unit.name} healed ${target.name} for 1.`);
           }
         }
@@ -2073,15 +2122,14 @@ function startTurn(state: BattleState, owner: Owner) {
   playerState.turnsStarted += 1;
   playerState.mana = playerState.manaMax;
   state.players[owner].attacksUsedThisTurn = 0;
-  revivePendingUnits(state, owner);
-  tickStartPhaseAuraEffects(state, owner);
-  tickStatuses(state, owner);
-  applyAuraBonuses(state);
-
   for (const { unit } of getAllLivingUnits(state, owner)) {
     unit.attacksThisTurn = 0;
     unit.abilityUsedThisTurn = false;
   }
+  revivePendingUnits(state, owner);
+  tickStartPhaseAuraEffects(state, owner);
+  tickStatuses(state, owner);
+  applyAuraBonuses(state);
   refreshOwnerAttackState(state, owner);
   updateWinner(state);
 }
@@ -2102,17 +2150,25 @@ export function getAttackableSlots(state: BattleState, owner: Owner) {
     return [] as number[];
   }
 
+  const enemyFrontlineAlive = getUnits(state, opponentOf(owner), {
+    includeReserve: false,
+  }).some(({ slotIndex }) => getSlotZone(slotIndex) === "Frontline");
+
   const candidates = getFriendlyBattleSlots(state, owner)
     .map(({ unit, slotIndex }) => ({
       unit,
       slotIndex,
     }))
-    .filter(({ unit }) => {
+    .filter(({ unit, slotIndex }) => {
       if (!unit.canAttack) {
         return false;
       }
 
       if (unitIsAttackLocked(unit)) {
+        return false;
+      }
+
+      if (slotIndex === 0 && enemyFrontlineAlive) {
         return false;
       }
 
@@ -2240,10 +2296,18 @@ function applyRandomEffect(
       }
       break;
     case "Heal":
-    case "DrawCard":
       healPlayer(state, owner, randomEffect.value ?? 1);
       appendLog(state, `${attacker.name}'s random effect restored 1 HP.`);
       break;
+    case "DrawCard": {
+      const manaGain = randomEffect.value ?? 1;
+      gainMana(state, owner, manaGain);
+      appendLog(
+        state,
+        `${attacker.name}'s random effect granted ${manaGain} mana.`,
+      );
+      break;
+    }
     default:
       break;
   }
@@ -2716,8 +2780,12 @@ export function activateUnitAbility(
     return state;
   }
 
-  draft.players[owner].mana = Math.max(0, draft.players[owner].mana - source.mana);
+  const manaCost = isDrawManaAbility(ability) ? 0 : source.mana;
+  draft.players[owner].mana = Math.max(0, draft.players[owner].mana - manaCost);
   source.abilityUsedThisTurn = true;
+  if (isDrawManaAbility(ability)) {
+    source.lastDrawManaTurnStarted = draft.players[owner].turnsStarted;
+  }
   resolveOnSummonAbility(draft, owner, slotIndex, ability, selectedTargets);
   applyAuraBonuses(draft);
   refreshOwnerAttackState(draft, owner);

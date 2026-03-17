@@ -31,8 +31,15 @@ export default function Footer() {
         <div className="flex flex-col gap-3">
           <h3 className="font-bold text-base">About</h3>
           <p className="text-sm leading-6 text-white">
-            Lorem ipsum dolor sit amet consectetur. Nisl id eget arcu quam
-            libero ipsum amet. Vel aliquet vel eget feugiat scelerisque est.
+            AniVerse Nexus is a Web3 trading card game built on Polkadot Asset
+            Hub.
+            <br /> Pull cards from your favorite anime series, build your
+            strategy,
+            <br />
+            and battle opponents — with true on-chain ownership of every card
+            you collect.
+            <br />
+            Built for the Polkadot Hackathon 2025.
           </p>
         </div>
 
