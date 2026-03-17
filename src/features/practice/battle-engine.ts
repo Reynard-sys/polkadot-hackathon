@@ -136,6 +136,7 @@ export type BattleUnit = PracticeCard & {
   shieldsRemaining: number;
   statusEffects: StatusEffect[];
   statusDurations: Partial<Record<StatusEffect, number>>;
+  statusAppliedTurns: Partial<Record<StatusEffect, number>>;
   isSilenced: boolean;
   cloneActive: boolean;
   cloneHP: number;
@@ -534,6 +535,7 @@ function createBattleUnit(
     shieldsRemaining: 0,
     statusEffects: [],
     statusDurations: {},
+    statusAppliedTurns: {},
     isSilenced: false,
     cloneActive: false,
     cloneHP: 0,
@@ -585,6 +587,7 @@ function cloneUnit(unit: BattleUnit | null) {
     copiedAbility: cloneAbility(unit.copiedAbility),
     statusEffects: [...unit.statusEffects],
     statusDurations: { ...unit.statusDurations },
+    statusAppliedTurns: { ...unit.statusAppliedTurns },
     leaderAbility: unit.leaderAbility ? { ...unit.leaderAbility } : null,
   };
 }
@@ -753,6 +756,7 @@ function addStatus(
   unit: BattleUnit,
   status: StatusEffect,
   duration?: number | null,
+  appliedTurn?: number | null,
 ) {
   if (!unit.statusEffects.includes(status)) {
     unit.statusEffects.push(status);
@@ -765,11 +769,16 @@ function addStatus(
   if (typeof duration === "number") {
     unit.statusDurations[status] = duration;
   }
+
+  if (typeof appliedTurn === "number") {
+    unit.statusAppliedTurns[status] = appliedTurn;
+  }
 }
 
 function removeStatus(unit: BattleUnit, status: StatusEffect) {
   unit.statusEffects = unit.statusEffects.filter((entry) => entry !== status);
   delete unit.statusDurations[status];
+  delete unit.statusAppliedTurns[status];
   if (status === "Silenced") {
     unit.isSilenced = false;
   }
@@ -1076,6 +1085,7 @@ function scheduleBrookRevive(
   revivedUnit.currentHP = 1;
   revivedUnit.statusEffects = [];
   revivedUnit.statusDurations = {};
+  revivedUnit.statusAppliedTurns = {};
   revivedUnit.cloneActive = false;
   revivedUnit.cloneHP = 0;
   revivedUnit.clonePower = 0;
@@ -1674,38 +1684,38 @@ function applyStatusByAbility(
   switch (type) {
     case "Disable":
     case "Bind":
-      addStatus(target, "Disabled", value ?? 1);
+      addStatus(target, "Disabled", value ?? 1, state.turn);
       appendLog(state, `${source.name} disabled ${target.name}.`);
       break;
     case "SealAbility":
-      addStatus(target, "Sealed", value ?? 1);
+      addStatus(target, "Sealed", value ?? 1, state.turn);
       appendLog(state, `${source.name} sealed ${target.name}'s ability.`);
       break;
     case "Sleep":
-      addStatus(target, "Sleep", value ?? 2);
+      addStatus(target, "Sleep", value ?? 2, state.turn);
       appendLog(state, `${source.name} put ${target.name} to sleep.`);
       break;
     case "Stun":
-      addStatus(target, "Stun", value ?? 1);
+      addStatus(target, "Stun", value ?? 1, state.turn);
       appendLog(state, `${source.name} stunned ${target.name}.`);
       break;
     case "Burn":
     case "BurnAndScale":
-      addStatus(target, "Burn", 2);
+      addStatus(target, "Burn", 2, state.turn);
       appendLog(state, `${source.name} burned ${target.name}.`);
       break;
     case "Poison":
-      addStatus(target, "Poison");
+      addStatus(target, "Poison", null, state.turn);
       appendLog(state, `${source.name} poisoned ${target.name}.`);
       break;
     case "PermanentSilence":
-      addStatus(target, "Silenced");
+      addStatus(target, "Silenced", null, state.turn);
       appendLog(state, `${source.name} silenced ${target.name}.`);
       break;
     case "Stone":
-      addStatus(target, "Stun", 1);
-      addStatus(target, "Disabled", 1);
-      addStatus(target, "Stoned", 1);
+      addStatus(target, "Stun", 1, state.turn);
+      addStatus(target, "Disabled", 1, state.turn);
+      addStatus(target, "Stoned", 1, state.turn);
       appendLog(state, `${source.name} turned ${target.name} to stone.`);
       break;
     default:
@@ -2061,7 +2071,7 @@ function tickStartPhaseAuraEffects(state: BattleState, owner: Owner) {
   }
 }
 
-function tickStatuses(state: BattleState, owner: Owner) {
+function tickStartTurnStatuses(state: BattleState, owner: Owner) {
   for (const { unit, slotIndex } of [...getAllLivingUnits(state, owner)]) {
     if (hasStatus(unit, "Burn")) {
       applyDamageToUnit(state, owner, slotIndex, 1, {
@@ -2086,11 +2096,16 @@ function tickStatuses(state: BattleState, owner: Owner) {
       });
     }
   }
+}
 
+function tickEndTurnControlStatuses(state: BattleState, owner: Owner) {
   for (const { unit } of getAllLivingUnits(state, owner)) {
     for (const status of ["Stun", "Sleep", "Disabled", "Sealed", "Stoned"] as const) {
       const current = unit.statusDurations[status];
       if (typeof current === "number") {
+        if (unit.statusAppliedTurns[status] === state.turn) {
+          continue;
+        }
         const nextDuration = current - 1;
         if (nextDuration <= 0) {
           removeStatus(unit, status);
@@ -2128,7 +2143,7 @@ function startTurn(state: BattleState, owner: Owner) {
   }
   revivePendingUnits(state, owner);
   tickStartPhaseAuraEffects(state, owner);
-  tickStatuses(state, owner);
+  tickStartTurnStatuses(state, owner);
   applyAuraBonuses(state);
   refreshOwnerAttackState(state, owner);
   updateWinner(state);
@@ -2977,6 +2992,7 @@ export function endTurn(state: BattleState) {
   }
 
   const currentOwner = draft.activePlayer;
+  tickEndTurnControlStatuses(draft, currentOwner);
   clearOwnerTurnBonuses(draft, currentOwner);
   applyAuraBonuses(draft);
 

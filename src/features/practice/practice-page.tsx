@@ -108,9 +108,12 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
   {
     title: "Reading a Card",
     body: [
-      "Mana gates abilities, not placement. Cards are already on the board from turn 1.",
-      "Power is attack damage, HP is how much a card can take, and Element can add +1 damage in the right matchup.",
-      "Zone tells you whether the card belongs in Frontline, Backline, or Reserve.",
+      "Each card has a similar layout showing information you need in a real battle.",
+      "Mana: amount of mana required to activate an ability.",
+      "Power: basic attack damage",
+      "Health: how much a card can take",
+      "Element: can add +1 damage in the right matchup.",
+      "Zone: tells you whether the card belongs in Frontline, Backline, or Reserve.",
     ],
     visual: "card",
     imageSrc: "/assets/tutorial/card_tutorial.svg",
@@ -119,17 +122,17 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
   {
     title: "The Board",
     body: [
+      "Your board is the reflection of the deck you built. Plan it strategically.",
       "Frontline protects the rest of your side. Backline stays safer until the Frontline is opened.",
       "Reserve cards can attack from safety, but enemy attacks still cannot target them.",
       "Your Leader holds your side's 40 HP and can only attack after the enemy Frontline is cleared.",
     ],
     visual: "board",
-    imageSrc: "/assets/tutorial/deck_limits_tutorial.svg",
-    imageAlt: "The Board",
   },
   {
     title: "Your Leader Card",
     body: [
+      "Leader card is the player representation. Protect it at all cost.",
       "Leaders stay visible for the full match and use their own once-per-game leader ability.",
       "Leader abilities happen during Main Phase and do not cost mana.",
       "Leader cards cannot attack until the enemy Frontline is gone.",
@@ -143,7 +146,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     title: "How a Turn Works",
     body: [
       "Each turn runs Start, Main, Battle, and End in order.",
-      "Each side starts at 2 mana. At the start of your turn, your mana max goes up by 1 and refills to that new cap until it reaches 7.",
+      "Each side starts at 2 mana. At the start of the next turn, you gain 1 mana every turn until you reach 7 mana.",
       "Attacks are available from turn 1 once you move into Battle Phase.",
     ],
     visual: "turns",
@@ -153,13 +156,25 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
   {
     title: "Activating Abilities",
     body: [
-      "Aura, Passive, and CombatTrigger abilities resolve automatically while their conditions are live.",
+      "Each card have unique abilities that can turn the tide of battle.",
+      "Aura, Passive, and Combat Trigger abilities resolve automatically while their conditions are live.",
       "OnSummon abilities are manual in Main Phase: spend that card's mana once, choose targets, then resolve the effect.",
       "Reserve Aura cards still matter even if they never swing.",
     ],
     visual: "abilities",
     imageSrc: "/assets/tutorial/abilities_tutorial.svg",
     imageAlt: "Activating Abilities",
+  },
+  {
+    title: "Debuffs and Status Effects",
+    body: [
+      "Debuffs are effects of a card skill",
+      "Disabled, Sealed, and Silenced interfere with attacks or abilities, so always check the icons on a card.",
+      "Shield can absorb hits, and Guard can force attacks into a specific target first.",
+    ],
+    visual: "status",
+    imageSrc: "/assets/tutorial/effect_tutorial.svg",
+    imageAlt: "Debuffs and Status Effects",
   },
   {
     title: "Attacking",
@@ -176,6 +191,7 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
   {
     title: "The Element System",
     body: [
+      "Card elements can turn the tide of the battle.",
       "Fire beats Air, Air beats Earth, Earth beats Water, and Water beats Fire for +1 damage.",
       "There is no penalty for hitting into a stronger element.",
       "Element advantage is a clean way to finish units that should barely survive.",
@@ -183,17 +199,6 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
     visual: "elements",
     imageSrc: "/assets/tutorial/elements_tutorial.svg",
     imageAlt: "The Element System",
-  },
-  {
-    title: "Status Effects",
-    body: [
-      "Stun, Sleep, and Disabled stop attacks. Burn and Poison chip away over time.",
-      "Silenced removes abilities, Shield blocks the next hit, and Guard changes who can be attacked first.",
-      "If a card looks harmless, check its status text before you ignore it.",
-    ],
-    visual: "status",
-    imageSrc: "/assets/tutorial/power_tutorial.svg",
-    imageAlt: "Status Effects",
   },
   {
     title: "Winning and Losing",
@@ -209,7 +214,9 @@ export const PRACTICE_TUTORIAL_PAGES: readonly PracticeTutorialPage[] = [
   {
     title: "Quick Tips Before You Play",
     body: [
+      "Explore and have fun with Aniverse Nexus",
       "Protect at least one Frontline unit whenever possible.",
+      "Burn and Poison deal chip damage over time, while Stun and Sleep stop a unit from acting.",
       "Do not waste leader value early if the board is still even.",
       "Read your battle cards before the match so you know which effects need mana and which are always on.",
     ],

@@ -185,13 +185,12 @@ export default function OpenPacks() {
           )}
           {simMode && walletConnected && isPolkadotWallet && (
             <p className="text-white/40 text-xs mt-1">
-              🎲 Simulation mode active. Connect the EVM side of MetaMask or
-              SubWallet to sign your roll.
+              🎲 Simulation mode active. Connect MetaMask to sign your roll.
             </p>
           )}
           {!simMode && walletConnected && isPolkadotWallet && (
             <p className="text-yellow-400 text-xs mt-1">
-              ⚠️ Pack opening requires the EVM side of MetaMask or SubWallet.
+              ⚠️ Pack opening requires MetaMask.
             </p>
           )}
         </motion.div>

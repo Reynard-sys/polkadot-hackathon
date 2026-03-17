@@ -333,14 +333,12 @@ export function usePackOpening() {
     try {
       if (!simMode) {
         if (!wallet) {
-          setError("Connect an EVM wallet like MetaMask or SubWallet.");
+          setError("Connect MetaMask to open packs.");
           return;
         }
 
         if (wallet.type !== "metamask") {
-          setError(
-            "Pack opening requires the EVM side of MetaMask or SubWallet.",
-          );
+          setError("Pack opening requires MetaMask.");
           return;
         }
 
