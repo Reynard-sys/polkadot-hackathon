@@ -96,7 +96,7 @@ export default function Navbar() {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-linear-to-b from-[#2d3548] to-[#030a30] pt-[env(safe-area-inset-top)]">
-        <div className="px-6 lg:px-8 py-3 flex justify-between items-center">
+        <div className="relative px-6 py-3 lg:px-8 flex justify-between items-center">
           {/* Left Side: Logo */}
           <div className="flex items-center cursor-pointer">
             <Image
@@ -110,7 +110,7 @@ export default function Navbar() {
           </div>
 
           {/* Center: Navigation Links */}
-          <div className="hidden lg:flex justify-center items-center gap-8 xl:gap-10">
+          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 justify-center items-center gap-8 xl:gap-10">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
