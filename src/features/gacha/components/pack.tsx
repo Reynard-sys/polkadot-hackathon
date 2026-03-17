@@ -7,7 +7,6 @@ interface PackProps {
   imageSrc: string;
   imageAlt?: string;
   packName: string;
-  packInfo: string;
   packDesc?: string;
   variant?: "mobile" | "desktop";
   href?: string;
@@ -17,7 +16,6 @@ export default function Pack({
   imageSrc,
   imageAlt = "Pack",
   packName,
-  packInfo,
   packDesc,
   variant = "mobile",
   href = "/open-packs",
@@ -48,7 +46,6 @@ export default function Pack({
           <h2 className="text-white font-bold text-lg leading-tight">
             {packName}
           </h2>
-          <p className="text-white/60 text-sm">{packInfo}</p>
           <p className="text-white/50 text-sm leading-relaxed mt-1">
             {packDesc ??
               "Open packs to collect unique anime NFT cards on Westend AssetHub."}
@@ -106,7 +103,6 @@ export default function Pack({
         <h2 className="text-white font-bold text-lg leading-tight">
           {packName}
         </h2>
-        <p className="text-white/60 text-sm mt-1">{packInfo}</p>
         <p className="text-white/50 text-sm mt-3 leading-relaxed">
           {packDesc ??
             "Open packs to collect unique anime NFT cards on Westend AssetHub."}
