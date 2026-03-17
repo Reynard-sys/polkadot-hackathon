@@ -16,6 +16,7 @@ import {
 // ── Rarity metadata (Figma design) ────────────────────────────────────────────
 
 type Rarity = "common" | "rare" | "legendary" | "mythic";
+type RaritySortOrder = "mythicToCommon" | "commonToMythic";
 
 const RARITY_META: Record<
   Rarity,
@@ -104,6 +105,37 @@ const ANIME_FILTERS: Array<{ id: "all" | CardAnime; label: string }> = [
   { id: "Pokemon", label: "Pokemon" },
 ];
 
+const RARITY_SORT_OPTIONS: Array<{
+  id: RaritySortOrder;
+  label: string;
+}> = [
+  { id: "mythicToCommon", label: "Mythic to Common" },
+  { id: "commonToMythic", label: "Common to Mythic" },
+];
+
+const RARITY_SORT_WEIGHT: Record<CardRarity, number> = {
+  Mythic: 0,
+  Legendary: 1,
+  Rare: 2,
+  Common: 3,
+};
+
+function sortOwnedCardsByRarity(
+  cards: OwnedCard[],
+  sortOrder: RaritySortOrder,
+) {
+  return [...cards].sort((a, b) => {
+    const rarityDelta =
+      RARITY_SORT_WEIGHT[a.rarity] - RARITY_SORT_WEIGHT[b.rarity];
+
+    if (rarityDelta !== 0) {
+      return sortOrder === "mythicToCommon" ? rarityDelta : -rarityDelta;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
+}
+
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
 function BackIcon() {
@@ -176,20 +208,6 @@ function CloseIcon() {
     >
       <path d="M6 6l12 12" />
       <path d="M18 6l-12 12" />
-    </svg>
-  );
-}
-
-function DownIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5 text-[#707b90]"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-    >
-      <path d="M6 9l6 6 6-6" />
     </svg>
   );
 }
@@ -496,6 +514,8 @@ function DesktopFilterModal({
   setRarity,
   anime,
   setAnime,
+  sortOrder,
+  setSortOrder,
   onClose,
   onReset,
   onApply,
@@ -504,11 +524,16 @@ function DesktopFilterModal({
   setRarity: (value: "all" | CardRarity) => void;
   anime: "all" | CardAnime;
   setAnime: (value: "all" | CardAnime) => void;
+  sortOrder: RaritySortOrder;
+  setSortOrder: (value: RaritySortOrder) => void;
   onClose: () => void;
   onReset: () => void;
   onApply: () => void;
 }) {
-  const activeCount = (rarity === "all" ? 0 : 1) + (anime === "all" ? 0 : 1);
+  const activeCount =
+    (rarity === "all" ? 0 : 1) +
+    (anime === "all" ? 0 : 1) +
+    (sortOrder === "mythicToCommon" ? 0 : 1);
 
   return (
     <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/60 p-6">
@@ -562,14 +587,21 @@ function DesktopFilterModal({
             </div>
           </div>
           <div>
-            <p className="mb-3 text-[18.79px] text-[#d2d2d2]/70">Amount</p>
-            <button
-              type="button"
-              className="flex h-[70px] w-full items-center justify-between rounded-[6px] border border-[#f4f4f4] bg-[linear-gradient(180deg,#2D3548_0%,#030A30_100%)] px-4 text-[16px] text-[#e8e8e8]"
-            >
-              Low to High (Lowest First)
-              <DownIcon />
-            </button>
+            <p className="mb-3 text-[18.79px] text-[#d2d2d2]/70">
+              Rarity Order
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {RARITY_SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setSortOrder(option.id)}
+                  className={`h-[40px] rounded-[6px] px-[16px] text-[16.075px] font-bold text-white ${sortOrder === option.id ? "bg-[linear-gradient(180deg,#0144BD_0%,#192871_100%)]" : "bg-[linear-gradient(180deg,#2D3548_0%,#030A30_100%)]"}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="mx-auto mt-6 w-full max-w-[660px]">
@@ -748,8 +780,12 @@ export default function Inventory() {
   const [desktopSearch, setDesktopSearch] = useState("");
   const [desktopRarity, setDesktopRarity] = useState<"all" | CardRarity>("all");
   const [desktopAnime, setDesktopAnime] = useState<"all" | CardAnime>("all");
+  const [desktopSortOrder, setDesktopSortOrder] =
+    useState<RaritySortOrder>("mythicToCommon");
   const [draftRarity, setDraftRarity] = useState<"all" | CardRarity>("all");
   const [draftAnime, setDraftAnime] = useState<"all" | CardAnime>("all");
+  const [draftSortOrder, setDraftSortOrder] =
+    useState<RaritySortOrder>("mythicToCommon");
   const [desktopFilterOpen, setDesktopFilterOpen] = useState(false);
   const [desktopPage, setDesktopPage] = useState(1);
   const [desktopSelectedCard, setDesktopSelectedCard] =
@@ -792,8 +828,14 @@ export default function Inventory() {
           c.name.toLowerCase().includes(q) ||
           c.anime.toLowerCase().includes(q)),
     );
-    return expandCards(filtered);
-  }, [ownedCards, desktopSearch, desktopRarity, desktopAnime]);
+    return expandCards(sortOwnedCardsByRarity(filtered, desktopSortOrder));
+  }, [
+    ownedCards,
+    desktopSearch,
+    desktopRarity,
+    desktopAnime,
+    desktopSortOrder,
+  ]);
 
   const desktopTotalPages = Math.max(
     1,
@@ -823,6 +865,7 @@ export default function Inventory() {
   const openFilters = () => {
     setDraftRarity(desktopRarity);
     setDraftAnime(desktopAnime);
+    setDraftSortOrder(desktopSortOrder);
     setDesktopFilterOpen(true);
   };
 
@@ -1116,14 +1159,18 @@ export default function Inventory() {
           setRarity={setDraftRarity}
           anime={draftAnime}
           setAnime={setDraftAnime}
+          sortOrder={draftSortOrder}
+          setSortOrder={setDraftSortOrder}
           onClose={() => setDesktopFilterOpen(false)}
           onReset={() => {
             setDraftRarity("all");
             setDraftAnime("all");
+            setDraftSortOrder("mythicToCommon");
           }}
           onApply={() => {
             setDesktopRarity(draftRarity);
             setDesktopAnime(draftAnime);
+            setDesktopSortOrder(draftSortOrder);
             setDesktopPage(1);
             setDesktopFilterOpen(false);
           }}

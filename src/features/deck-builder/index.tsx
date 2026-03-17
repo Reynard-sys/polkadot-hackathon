@@ -30,6 +30,7 @@ import { useInventory, type OwnedCard } from "@/hooks/useInventory";
 
 type CardVariant = "rare" | "mythic" | "common" | "legendary";
 type CardZone = "Frontline" | "Backline" | "Reserve";
+type RaritySortOrder = "mythicToCommon" | "commonToMythic";
 
 type CardItem = {
   id: number;
@@ -230,6 +231,14 @@ const ZONE_FILTERS: Array<{ id: "all" | CardZone; label: string }> = [
   { id: "Frontline", label: "Frontline" },
   { id: "Backline", label: "Backline" },
   { id: "Reserve", label: "Reserve" },
+];
+
+const RARITY_SORT_OPTIONS: Array<{
+  id: RaritySortOrder;
+  label: string;
+}> = [
+  { id: "mythicToCommon", label: "Mythic to Common" },
+  { id: "commonToMythic", label: "Common to Mythic" },
 ];
 
 const AVAILABLE_LIST_DROP_ID = "available-list";
@@ -440,7 +449,7 @@ function padGrid<T>(items: T[], columns: number): Array<T | null> {
   return [...items, ...Array.from({ length: columns - remainder }, () => null)];
 }
 
-function sortInventoryCards(cards: CardItem[]) {
+function sortInventoryCards(cards: CardItem[], sortOrder: RaritySortOrder) {
   const rarityOrder: Record<CardVariant, number> = {
     mythic: 0,
     legendary: 1,
@@ -450,7 +459,9 @@ function sortInventoryCards(cards: CardItem[]) {
 
   return [...cards].sort((a, b) => {
     const rarityDelta = rarityOrder[a.variant] - rarityOrder[b.variant];
-    if (rarityDelta !== 0) return rarityDelta;
+    if (rarityDelta !== 0) {
+      return sortOrder === "mythicToCommon" ? rarityDelta : -rarityDelta;
+    }
     return a.name.localeCompare(b.name);
   });
 }
@@ -1670,20 +1681,6 @@ function CloseIcon() {
   );
 }
 
-function DownIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5 text-[#707b90]"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  );
-}
-
 function BackIcon() {
   return (
     <svg
@@ -2009,6 +2006,8 @@ function DeckBuilderFilterModal({
   setRarity,
   zone,
   setZone,
+  sortOrder,
+  setSortOrder,
   onClose,
   onReset,
   onApply,
@@ -2017,11 +2016,16 @@ function DeckBuilderFilterModal({
   setRarity: (value: "all" | OwnedCard["rarity"]) => void;
   zone: "all" | CardZone;
   setZone: (value: "all" | CardZone) => void;
+  sortOrder: RaritySortOrder;
+  setSortOrder: (value: RaritySortOrder) => void;
   onClose: () => void;
   onReset: () => void;
   onApply: () => void;
 }) {
-  const activeCount = (rarity === "all" ? 0 : 1) + (zone === "all" ? 0 : 1);
+  const activeCount =
+    (rarity === "all" ? 0 : 1) +
+    (zone === "all" ? 0 : 1) +
+    (sortOrder === "mythicToCommon" ? 0 : 1);
 
   return (
     <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/60 p-6">
@@ -2075,14 +2079,21 @@ function DeckBuilderFilterModal({
             </div>
           </div>
           <div>
-            <p className="mb-3 text-[18.79px] text-[#d2d2d2]/70">Amount</p>
-            <button
-              type="button"
-              className="flex h-[70px] w-full items-center justify-between rounded-[6px] border border-[#f4f4f4] bg-[linear-gradient(180deg,#2D3548_0%,#030A30_100%)] px-4 text-[16px] text-[#e8e8e8]"
-            >
-              Low to High (Lowest First)
-              <DownIcon />
-            </button>
+            <p className="mb-3 text-[18.79px] text-[#d2d2d2]/70">
+              Rarity Order
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {RARITY_SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setSortOrder(option.id)}
+                  className={`h-[40px] rounded-[6px] px-[16px] text-[16.075px] font-bold text-white ${sortOrder === option.id ? "bg-[linear-gradient(180deg,#0144BD_0%,#192871_100%)]" : "bg-[linear-gradient(180deg,#2D3548_0%,#030A30_100%)]"}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="mx-auto mt-6 w-full max-w-[660px]">
@@ -2934,10 +2945,14 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
     "all" | OwnedCard["rarity"]
   >("all");
   const [desktopZone, setDesktopZone] = useState<"all" | CardZone>("all");
+  const [desktopSortOrder, setDesktopSortOrder] =
+    useState<RaritySortOrder>("mythicToCommon");
   const [draftRarity, setDraftRarity] = useState<"all" | OwnedCard["rarity"]>(
     "all",
   );
   const [draftZone, setDraftZone] = useState<"all" | CardZone>("all");
+  const [draftSortOrder, setDraftSortOrder] =
+    useState<RaritySortOrder>("mythicToCommon");
   const [desktopFilterOpen, setDesktopFilterOpen] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
   const [tutorialPage, setTutorialPage] = useState(0);
@@ -2955,8 +2970,12 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   );
 
   const inventoryCards = useMemo(
-    () => sortInventoryCards(ownedCards.map(mapOwnedCardToCardItem)),
-    [ownedCards],
+    () =>
+      sortInventoryCards(
+        ownedCards.map(mapOwnedCardToCardItem),
+        desktopSortOrder,
+      ),
+    [ownedCards, desktopSortOrder],
   );
   const ownedCountById = useMemo(
     () =>
@@ -3190,6 +3209,7 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
   const openDesktopFilters = () => {
     setDraftRarity(desktopRarity);
     setDraftZone(desktopZone);
+    setDraftSortOrder(desktopSortOrder);
     setDesktopFilterOpen(true);
   };
 
@@ -3906,14 +3926,18 @@ function DeckBuilderScreen({ wallet, openPicker }: DeckBuilderScreenProps) {
             setRarity={setDraftRarity}
             zone={draftZone}
             setZone={setDraftZone}
+            sortOrder={draftSortOrder}
+            setSortOrder={setDraftSortOrder}
             onClose={() => setDesktopFilterOpen(false)}
             onReset={() => {
               setDraftRarity("all");
               setDraftZone("all");
+              setDraftSortOrder("mythicToCommon");
             }}
             onApply={() => {
               setDesktopRarity(draftRarity);
               setDesktopZone(draftZone);
+              setDesktopSortOrder(draftSortOrder);
               setDesktopAvailablePage(1);
               setDesktopFilterOpen(false);
             }}
