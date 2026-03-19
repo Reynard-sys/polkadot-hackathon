@@ -83,15 +83,15 @@ export default function Footer() {
 
         <div className="flex items-center gap-4">
           <a
-            href="https://www.instagram.com/rey_rbnx/"
+            href="https://www.instagram.com/aniverse_nexus/"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="LinkedIn"
+            aria-label="Instagram"
             className="opacity-70 hover:opacity-100 transition-opacity"
           >
             <Image
               src="/assets/logo-instagram.svg"
-              alt="LinkedIn"
+              alt="Instagram"
               width={24}
               height={24}
             />

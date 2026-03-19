@@ -33,7 +33,7 @@ async function main() {
     "https://ipfs.io/ipfs/bafybeigaosmk75u5pefapg5ar243m4rgyuajlwgbzdebi5odogm4vv6cka/";
 
   console.log("===========================================");
-  console.log("  Aniverse Nexus - Contract Deployment");
+  console.log("  Anime Gacha TCG — Contract Deployment");
   console.log("===========================================");
   console.log("Deployer: ", deployer.address);
   console.log("Network:  ", network.name, `(chainId ${network.chainId})`);
@@ -107,4 +107,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-
