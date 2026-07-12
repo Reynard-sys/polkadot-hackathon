@@ -268,8 +268,8 @@ export default function HeroSection() {
               className="pointer-events-none"
             />
             <p className="text-center text-xl font-normal leading-5">
-              Open on-chain packs, own every pull, build your TCG lineup, and
-              battle through a Web3 gacha card system.
+              Buy Stellar-powered packs, own every pull in backend inventory,
+              trade duplicates, and battle through a crossover TCG loop.
             </p>
             {/* Card stack scaled for mobile frame */}
             <div className="relative w-60 h-60">
@@ -295,8 +295,9 @@ export default function HeroSection() {
             className="pointer-events-none"
           />
           <p className="text-center text-lg font-bold max-w-xl">
-            The cross anime trading card game where every card is an NFT, every
-            battle is real, and every collection lasts forever.
+            The crossover trading card game where Stellar settles checkout,
+            collectors trade real listings, and every battle-ready pull keeps
+            its gameplay value.
           </p>
           <div className="relative w-92 h-128.75">{cardStack}</div>
           <WalletButton

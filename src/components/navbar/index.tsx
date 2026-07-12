@@ -11,7 +11,7 @@ import { useWallet } from "@/context/wallet-context";
 
 export default function Navbar() {
   const getWalletIndicator = (walletName: string) =>
-    walletName.toLowerCase().includes("meta") ? "🦊" : "🔵";
+    walletName.toLowerCase().includes("freighter") ? "🚀" : "💠";
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -269,7 +269,7 @@ export default function Navbar() {
               <div>
                 <h2 className="text-white font-bold text-lg">Connect Wallet</h2>
                 <p className="text-white/50 text-xs mt-0.5">
-                  Use MetaMask to continue
+                  Use Freighter to continue
                 </p>
               </div>
               <button
@@ -286,15 +286,15 @@ export default function Navbar() {
               <button
                 onClick={connectMetaMask}
                 disabled={isConnecting}
-                className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-orange-400/50 transition-all group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-sky-400/50 transition-all group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="text-3xl select-none">🦊</span>
+                <span className="text-3xl select-none">🚀</span>
                 <div className="flex flex-col items-start">
-                  <span className="text-white font-semibold text-sm group-hover:text-orange-300 transition-colors">
-                    MetaMask (EVM)
+                  <span className="text-white font-semibold text-sm group-hover:text-sky-300 transition-colors">
+                    Freighter (Stellar)
                   </span>
                   <span className="text-white/40 text-xs">
-                    Direct EVM wallet connection
+                    Stellar wallet sign-in and checkout
                   </span>
                 </div>
               </button>
@@ -314,7 +314,7 @@ export default function Navbar() {
             </div>
 
             <p className="text-white/20 text-[10px] text-center pb-4 px-6">
-              Use MetaMask for this dApp.
+              Use Freighter for this Stellar-powered build.
             </p>
           </div>
         </div>

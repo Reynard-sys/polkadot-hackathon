@@ -8,6 +8,7 @@ import cardsData from "@/data/cards.json";
 import type { PackSeries } from "@/hooks/usePackOpening";
 import { useWallet } from "@/context/wallet-context";
 import { useInventory } from "@/hooks/useInventory";
+import { getFastCardImageUrl } from "@/lib/card-images";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface CardEntry {
@@ -123,6 +124,7 @@ function RevealFlipCard({
               className={`${faceClassName} ${RARITY_GLOW[card.rarity] ?? ""}`}
               draggable={false}
               priority
+              unoptimized
               onError={onImageError}
             />
           ) : (
@@ -149,6 +151,7 @@ export default function CardReveal() {
   const resolvedCardsRef = useRef<RevealCard[] | null>(null);
   const resolvedTokenIdsRef = useRef<number[] | null>(null);
   const resolvedSeriesRef = useRef<PackSeries>("naruto");
+  const isDemoResultRef = useRef(false);
   const inventorySavedRef = useRef(false);
 
   // Load token IDs from sessionStorage on mount
@@ -163,7 +166,7 @@ export default function CardReveal() {
           setSeries(resolvedSeriesRef.current);
           setCards(resolvedCardsRef.current);
 
-          if (!inventorySavedRef.current) {
+          if (!inventorySavedRef.current && isDemoResultRef.current) {
             inventorySavedRef.current = true;
             addPulledCards(
               resolvedTokenIdsRef.current,
@@ -179,9 +182,10 @@ export default function CardReveal() {
           return;
         }
 
-        const { tokenIds, series: storedSeries } = JSON.parse(raw) as {
+        const { tokenIds, series: storedSeries, demoMode } = JSON.parse(raw) as {
           tokenIds: number[];
           series?: PackSeries;
+          demoMode?: boolean;
         };
         if (!tokenIds || tokenIds.length === 0) {
           setNoData(true);
@@ -204,7 +208,7 @@ export default function CardReveal() {
               subtitle: entry.subtitle,
               rarity: entry.rarity,
               anime: entry.anime,
-              imageUrl: entry.imageUrl,
+              imageUrl: getFastCardImageUrl(entry.imageUrl),
             };
           }
           return {
@@ -220,11 +224,12 @@ export default function CardReveal() {
         resolvedCardsRef.current = resolved;
         resolvedTokenIdsRef.current = tokenIds;
         resolvedSeriesRef.current = resolvedSeries;
+        isDemoResultRef.current = Boolean(demoMode);
 
         setSeries(resolvedSeries);
         setCards(resolved);
 
-        if (!inventorySavedRef.current) {
+        if (!inventorySavedRef.current && Boolean(demoMode)) {
           inventorySavedRef.current = true;
           addPulledCards(tokenIds, initialInventoryAddressRef.current);
         }
@@ -317,6 +322,7 @@ export default function CardReveal() {
             height={1030}
             className="hidden"
             priority
+            unoptimized
             aria-hidden
           />
         ) : null,

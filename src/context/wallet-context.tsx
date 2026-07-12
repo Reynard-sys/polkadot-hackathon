@@ -1,172 +1,83 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { useStellarWallet } from "@/context/stellar-wallet-context";
+import { useAuthSession } from "@/context/auth-session-context";
 
-export type WalletType = "metamask";
-type EvmProviderPreference = "auto" | "metamask";
-
-type InjectedEvmProvider = {
-    request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-    isMetaMask?: boolean;
-    providers?: InjectedEvmProvider[];
-};
+export type WalletType = "freighter";
 
 export interface ConnectedWallet {
-    type: WalletType;
-    address: string;
-    /** Display name shown in the shared wallet UI. */
-    name: string;
-    evmProviderPreference?: Exclude<EvmProviderPreference, "auto">;
+  type: WalletType;
+  address: string;
+  name: string;
 }
 
 interface WalletContextValue {
-    wallet: ConnectedWallet | null;
-    isConnecting: boolean;
-    error: string | null;
-    showPicker: boolean;
-    openPicker: () => void;
-    closePicker: () => void;
-    connectMetaMask: () => Promise<void>;
-    disconnect: () => void;
-    truncateAddress: (address: string) => string;
-    getEthersProvider: (
-        preference?: EvmProviderPreference,
-    ) => Promise<import("ethers").BrowserProvider | null>;
+  wallet: ConnectedWallet | null;
+  isConnecting: boolean;
+  error: string | null;
+  showPicker: boolean;
+  openPicker: () => void;
+  closePicker: () => void;
+  connectMetaMask: () => Promise<void>;
+  disconnect: () => void;
+  truncateAddress: (address: string) => string;
 }
 
 const WalletContext = createContext<WalletContextValue | null>(null);
 
-function getInjectedProviders(
-    win: typeof window & { ethereum?: InjectedEvmProvider },
-) {
-    const rootProvider = win.ethereum;
-    if (!rootProvider) return [] as InjectedEvmProvider[];
+export function WalletProvider({ children }: { children: ReactNode }) {
+  const [showPicker, setShowPicker] = useState(false);
+  const stellar = useStellarWallet();
+  const session = useAuthSession();
 
-    const providers = Array.isArray(rootProvider.providers)
-        ? rootProvider.providers
-        : [rootProvider];
-
-    return providers.filter(
-        (provider, index) => providers.indexOf(provider) === index,
-    );
-}
-
-function findInjectedProvider(
-    preference: EvmProviderPreference,
-    win: typeof window & { ethereum?: InjectedEvmProvider },
-) {
-    const providers = getInjectedProviders(win);
-    const rootProvider = win.ethereum ?? null;
-
-    if (preference === "metamask") {
-        return (
-            providers.find((provider) => provider.isMetaMask) ??
-            rootProvider ??
-            null
-        );
-    }
-
-    return rootProvider ?? providers[0] ?? null;
-}
-
-export function WalletProvider({ children }: { children: React.ReactNode }) {
-    const [wallet, setWallet] = useState<ConnectedWallet | null>(null);
-    const [isConnecting, setIsConnecting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [showPicker, setShowPicker] = useState(false);
-
-    const openPicker = useCallback(() => {
-        setError(null);
-        setShowPicker(true);
-    }, []);
-
-    const closePicker = useCallback(() => setShowPicker(false), []);
-
-    const connectInjectedEvmWallet = useCallback(
-        async (
-            provider: InjectedEvmProvider,
-            walletName: string,
-            preference: Exclude<EvmProviderPreference, "auto">,
-        ) => {
-            const accounts = (await provider.request({
-                method: "eth_requestAccounts",
-            })) as string[];
-            if (!accounts || accounts.length === 0) {
-                throw new Error(`No ${walletName} accounts found.`);
-            }
-            setWallet({
-                type: "metamask",
-                address: accounts[0],
-                name: walletName,
-                evmProviderPreference: preference,
-            });
-            setShowPicker(false);
-        },
-        [],
-    );
-
-    const connectMetaMask = useCallback(async () => {
-        setIsConnecting(true);
-        setError(null);
-        try {
-            if (typeof window === "undefined") return;
-            const win = window as typeof window & { ethereum?: InjectedEvmProvider };
-            const provider = findInjectedProvider("metamask", win);
-            if (!provider) {
-                setError("MetaMask not found. Please install the MetaMask browser extension.");
-                setIsConnecting(false);
-                return;
-            }
-            await connectInjectedEvmWallet(provider, "MetaMask", "metamask");
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : String(err);
-            setError(`MetaMask error: ${msg}`);
-        } finally {
-            setIsConnecting(false);
+  const value = useMemo<WalletContextValue>(
+    () => ({
+      wallet: stellar.publicKey
+        ? {
+            type: "freighter",
+            address: stellar.publicKey,
+            name: "Freighter",
+          }
+        : null,
+      isConnecting: stellar.isConnecting || session.isAuthenticating,
+      error: stellar.error ?? session.error,
+      showPicker,
+      openPicker: () => setShowPicker(true),
+      closePicker: () => setShowPicker(false),
+      connectMetaMask: async () => {
+        const address = await stellar.connect();
+        if (!session.isAuthenticated || session.walletAddress !== address) {
+          await session.authenticate(address);
         }
-    }, [connectInjectedEvmWallet]);
+        setShowPicker(false);
+      },
+      disconnect: () => {
+        stellar.disconnect();
+        void session.logout();
+      },
+      truncateAddress: (address: string) => stellar.truncateAddress(address),
+    }),
+    [
+      session,
+      showPicker,
+      stellar,
+    ],
+  );
 
-    const disconnect = useCallback(() => {
-        setWallet(null);
-        setError(null);
-    }, []);
-
-    const truncateAddress = (address: string) =>
-        address.length > 16
-            ? `${address.slice(0, 8)}...${address.slice(-6)}`
-            : address;
-
-    const getEthersProvider = useCallback(async (preference: EvmProviderPreference = "auto") => {
-        if (typeof window === "undefined") return null;
-        const win = window as typeof window & { ethereum?: InjectedEvmProvider };
-        const provider = findInjectedProvider(preference, win);
-        if (!provider) return null;
-        const { BrowserProvider } = await import("ethers");
-        return new BrowserProvider(provider);
-    }, []);
-
-    return (
-        <WalletContext.Provider
-            value={{
-                wallet,
-                isConnecting,
-                error,
-                showPicker,
-                openPicker,
-                closePicker,
-                connectMetaMask,
-                disconnect,
-                truncateAddress,
-                getEthersProvider,
-            }}
-        >
-            {children}
-        </WalletContext.Provider>
-    );
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
 export function useWallet() {
-    const ctx = useContext(WalletContext);
-    if (!ctx) throw new Error("useWallet must be used inside <WalletProvider>");
-    return ctx;
+  const context = useContext(WalletContext);
+  if (!context) {
+    throw new Error("useWallet must be used inside <WalletProvider>");
+  }
+  return context;
 }

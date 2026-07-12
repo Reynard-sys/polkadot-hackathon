@@ -1,349 +1,174 @@
 # Aniverse Nexus
 
-Aniverse Nexus is a Web3 trading card game built on a Polkadot EVM-compatible test network. Players open anime-themed packs, reveal cards, manage a collection, build legal decks, and test those decks in a playable practice battle system.
+Aniverse Nexus is a game-first digital trading card platform built with Next.js, Stellar, Freighter, Prisma, and Supabase Postgres. Players can open themed packs, reveal and collect cards, build legal decks, practice against a bot, and trade cards or original artwork in a wallet-authenticated marketplace.
 
-The product is positioned as a game-first consumer dApp rather than a mint-only NFT demo. The core loop is:
+The project is designed around a complete playable loop rather than a standalone NFT minting demo:
 
-1. Connect MetaMask
-2. Open a pack
-3. Reveal the pulled cards
-4. Store and review the collection
-5. Build a rules-compliant deck
-6. Practice against a bot
-7. Expand toward tournaments and marketplace activity
+1. Connect and authenticate with Freighter.
+2. Buy or simulate a card pack.
+3. Reveal the cards and add them to an inventory.
+4. Build a rules-compliant deck.
+5. Play a practice match.
+6. List cards or original artwork in the marketplace.
 
-## Table of Contents
+## Highlights
 
-- [Project Summary](#project-summary)
-- [Why This Project Exists](#why-this-project-exists)
-- [Current Scope](#current-scope)
-- [Core Features](#core-features)
-- [Tech Stack](#tech-stack)
-- [Repository Structure](#repository-structure)
-- [Quick Start](#quick-start)
-- [Smart Contract Workflow](#smart-contract-workflow)
-- [Demo Flow](#demo-flow)
-- [Current Limitations](#current-limitations)
-- [Documentation Map](#documentation-map)
-- [Contributing](#contributing)
-- [License](#license)
+- Stellar Testnet payments with XLM and configurable Stellar USDC
+- Freighter wallet authentication using signed challenges
+- Server-verified payment amount, asset, memo, sender, and recipient
+- Prisma-backed inventory, ownership history, pack purchases, and listings
+- Responsive card reveal, inventory, deck builder, and practice battle experiences
+- Seller-to-buyer marketplace settlement with ownership transfer history
+- Original artwork publishing with a marketplace listing created atomically
+- Demo pack mode when a platform Stellar address is not configured
 
-## Project Summary
+## Technology
 
-Aniverse Nexus combines three product behaviors into a single Web3 system:
+- Next.js 16 and React 19
+- TypeScript with strict type checking
+- Tailwind CSS 4 and Motion
+- Stellar SDK and Freighter API
+- Prisma ORM and Supabase Postgres
+- dnd-kit for deck-building interactions
 
-- collecting through gacha-style pack opening
-- strategizing through deck construction and battle mechanics
-- ecosystem growth through tournament and marketplace expansion
+The repository also retains an earlier Solidity/Hardhat prototype in `contracts/` as supporting research. The active application and payment flow use Stellar.
 
-Instead of treating blockchain as a cosmetic ownership layer, this project connects wallet interaction to actual gameplay systems:
+## Application Architecture
 
-- pack opening is handled through Solidity contracts
-- pack results feed into reveal and collection flows
-- the card catalog powers deck construction and battle rules
-- the practice system turns owned cards into tactical gameplay
+```text
+Freighter wallet
+      |
+      | signed challenge / signed payment
+      v
+Next.js UI and route handlers
+      |                    |
+      | Prisma             | Horizon transaction verification
+      v                    v
+Supabase Postgres      Stellar Testnet
+```
 
-The app currently supports three themed series for demo purposes:
+Important backend guarantees:
 
-- Naruto
-- One Piece
-- Pokemon
+- Wallet sessions are stored in signed, HTTP-only cookies.
+- Marketplace payments are verified against the seller wallet—not a shared platform address.
+- Pack and marketplace memos and transaction hashes are unique.
+- Inventory, listing, purchase, and ownership updates use database transactions.
+- A card must be owned by the authenticated seller before it can be listed.
 
-## Why This Project Exists
-
-Many NFT collectible products stop at minting and display. That gives users ownership, but not necessarily retention. Aniverse Nexus is designed to answer a stronger product question:
-
-> What happens after the mint?
-
-This project answers that with an actual game loop:
-
-- cards have roles
-- cards have rarity and supply
-- cards have elements, abilities, and leader interactions
-- cards are organized into a legal 12-card deck
-- decks are playable in a turn-based battle simulation
-
-The broader vision is a wallet-owned cross franchise TCG ecosystem with collection, strategy, competition, and economy layers.
-
-## Current Scope
-
-This repository already contains a substantial playable and presentable product surface:
-
-- branded landing page and responsive shell
-- MetaMask-based wallet connection flow
-- gacha pack selection and opening flow
-- card reveal screen
-- inventory browser
-- rules-based deck builder
-- practice battle mode with bot opponent
-- tournament hub shell
-- marketplace shell
-
-Some modules are already deeply interactive, while others are intentionally positioned as product-direction scaffolding for later phases.
-
-## Core Features
-
-### 1. Gacha Pack Opening
-
-- supports Naruto, One Piece, and Pokemon pack series
-- supports Standard, Premium, and Ultra pack tiers
-- integrates with Solidity contracts through `ethers`
-- includes a client-side simulation fallback when pack contract addresses are absent
-
-### 2. Card Reveal
-
-- dedicated reveal experience after opening
-- card-by-card browsing
-- designed to feel like a game moment, not a raw transaction response
-
-### 3. Inventory
-
-- per-wallet browser storage keyed by address
-- collection review and filtering
-- bridge between acquisition and deck building
-
-### 4. Deck Builder
-
-- 12-card deck structure
-- slot-based validation
-- rarity restrictions for battle slots
-- saved deck management
-- tutorial system
-- mobile and desktop responsive layouts
-
-Current deck structure:
-
-- 1 Leader
-- 3 Frontline
-- 4 Backline
-- 4 Reserve
-
-### 5. Practice Match System
-
-- player-versus-bot battle arena
-- turn phases
-- mana progression
-- leader HP representation
-- attack targeting rules
-- abilities and debuffs
-- tutorial flow
-- mobile and desktop board layouts
-
-The practice engine is one of the strongest parts of the repo because it demonstrates actual gameplay utility for the card assets.
-
-### 6. Tournament and Marketplace Direction
-
-- tournament page communicates the competitive direction
-- practice entry is integrated into the tournament experience
-- marketplace page communicates the intended card economy direction
-
-Current state:
-
-- tournament and marketplace are product shells/prototypes, not fully integrated backend or contract systems
-
-## Tech Stack
-
-### Frontend
-
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Motion
-- dnd-kit
-- ethers v6
-
-### Smart Contracts
-
-- Solidity 0.8.24
-- Hardhat
-- OpenZeppelin Contracts v5
-- TypeChain
-
-### Network Target
-
-- Westend AssetHub EVM
-- MetaMask-compatible flow
-
-## Repository Structure
+## Repository Layout
 
 ```text
 .
-|-- contracts/                  # Solidity contracts, Hardhat config, scripts
-|   |-- contracts/              # GachaNFT, GachaPack, CardRegistry
-|   |-- scripts/                # Deploy, seed, smoke test, metadata helpers
-|   `-- hardhat.config.ts
-|-- docs/                       # Project, architecture, setup, demo, gameplay docs
-|-- public/                     # Static assets, SVGs, tutorial art, pack art
+|-- docs/                    # Setup, architecture, product, and demo documentation
+|-- prisma/                  # Schema, migrations, and seed data
+|-- public/                  # Static application assets
 |-- src/
-|   |-- app/                    # Next.js App Router pages
-|   |-- components/             # Shared UI components
-|   |-- context/                # Wallet context
-|   |-- data/                   # Card catalog JSON
-|   |-- features/               # Feature-based UI modules
-|   |-- hooks/                  # Inventory and pack-opening hooks
-|   `-- lib/                    # ABI loaders, chain switching, pack simulator
-|-- .env.example                # Frontend env template
-`-- README.md
+|   |-- app/                 # Pages and backend route handlers
+|   |-- components/          # Shared UI components
+|   |-- context/             # Wallet and authenticated-session providers
+|   |-- data/                # Card catalog
+|   |-- features/            # Product feature modules
+|   |-- hooks/               # Pack-opening and inventory orchestration
+|   `-- lib/                 # Database, Stellar, auth, and game-domain logic
+|-- contracts/               # Archived EVM/Hardhat prototype workspace
+|-- prisma.config.ts         # Prisma CLI configuration
+`-- next.config.ts           # Next.js and image configuration
 ```
 
-## Quick Start
+## Local Setup
 
-### Prerequisites
+### Requirements
 
 - Node.js 20 or newer
 - npm 10 or newer
-- MetaMask
-- access to Westend AssetHub EVM if you want to test the live pack-opening flow
+- A Supabase project
+- Freighter browser extension
 
-### 1. Install frontend dependencies
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Create your frontend environment file
+### 2. Configure environment variables
 
-Copy `.env.example` to `.env.local` and fill in the contract addresses you want the app to use.
+Copy `.env.example` to `.env.local` and replace the placeholders:
 
-```bash
-copy .env.example .env.local
+```powershell
+Copy-Item .env.example .env.local
 ```
-
-Frontend environment variables:
 
 ```env
-NEXT_PUBLIC_GACHA_NFT_ADDRESS=0x...
-NEXT_PUBLIC_GACHA_PACK_ADDRESS=0x...
+NEXT_PUBLIC_STELLAR_NETWORK=testnet
+NEXT_PUBLIC_STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
+NEXT_PUBLIC_PLATFORM_STELLAR_ADDRESS=G...
+NEXT_PUBLIC_USDC_ASSET_CODE=USDC
+NEXT_PUBLIC_USDC_ISSUER=G...
+DATABASE_URL=postgresql://...
+SESSION_SECRET=replace-with-a-long-random-secret
 ```
 
-Notes:
+If `NEXT_PUBLIC_PLATFORM_STELLAR_ADDRESS` is empty, pack opening uses demo mode. Database-backed authentication, inventory, and marketplace features still require `DATABASE_URL` and `SESSION_SECRET`.
 
-- if these addresses are empty or set to the zero address, the app falls back to client-side simulation mode for pack opening
-- if they point to live deployed contracts, the app will attempt live pack opening through MetaMask
+### 3. Prepare the database
 
-### 3. Start the app
+For a new database:
+
+```bash
+npm run prisma:generate
+npm run prisma:migrate -- --name init
+npm run prisma:seed
+```
+
+### 4. Start the application
 
 ```bash
 npm run dev
 ```
 
-Then open:
+Open `http://localhost:3000` and set Freighter to Testnet before connecting.
 
-```text
-http://localhost:3000
-```
+## Quality Checks
 
-### 4. Connect MetaMask
-
-The current wallet UX is MetaMask-focused. The app will prompt MetaMask to switch to or add Westend AssetHub EVM when pack opening is triggered.
-
-Westend AssetHub EVM parameters used by the app:
-
-- Chain name: `Westend AssetHub`
-- Chain ID: `420420421`
-- Hex chain ID: `0x190f1b45`
-- RPC URL: `https://westend-asset-hub-eth-rpc.polkadot.io`
-- Explorer: `https://assethub-westend.subscan.io`
-
-## Smart Contract Workflow
-
-The contract workspace lives in `contracts/`.
-
-### 1. Install contract dependencies
+Run the review gate before submitting changes:
 
 ```bash
-cd contracts
-npm install
+npm run check
+npm run build
 ```
 
-### 2. Create `contracts/.env`
+`npm run check` runs ESLint, strict TypeScript checking, and Prisma schema validation. The production build additionally verifies all application routes and static pages.
 
-Copy `contracts/.env.example` to `contracts/.env` and fill in your values:
+## Demo Route
 
-```env
-PRIVATE_KEY=<deployer-private-key-without-0x>
-WESTEND_RPC_URL=https://westend-asset-hub-eth-rpc.polkadot.io
-BASE_URI=https://ipfs.io/ipfs/<your-cid>/
-CARD_REGISTRY_ADDRESS=
-NEXT_PUBLIC_GACHA_NFT_ADDRESS=
-NEXT_PUBLIC_GACHA_PACK_ADDRESS=
-```
+For a short judge-facing walkthrough:
 
-### 3. Compile contracts
+1. Connect Freighter on Stellar Testnet.
+2. Open a pack and reveal the cards.
+3. Visit Inventory and inspect the backend-owned card instances.
+4. Build a deck and launch a practice battle.
+5. List an owned card in Marketplace.
+6. Open **Sell Your Artwork** and publish an original piece.
 
-```bash
-npm run compile
-```
+See [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md) for the extended presentation flow.
 
-### 4. Deploy to Westend AssetHub EVM
+## Documentation
 
-```bash
-npm run deploy:westend
-```
+- [Documentation index](docs/README.md)
+- [Supabase and Freighter Testnet setup](docs/SUPABASE_AND_FREIGHTER_TESTNET_TUTORIAL.md)
+- [Prisma and Postgres setup](docs/PRISMA_POSTGRES_SETUP.md)
+- [Product requirements and system specification](docs/PRODUCT_REQUIREMENTS_AND_SYSTEM_SPEC.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Practice battle system](docs/PRACTICE_BATTLE_SYSTEM.md)
+- [Hackathon submission checklist](docs/HACKATHON_SUBMISSION_CHECKLIST.md)
 
-This deploys:
+## Security Notes
 
-- `CardRegistry`
-- `GachaNFT`
-- `GachaPack`
-
-### 5. Seed the registry with the 48-card catalog
-
-```bash
-npm run seed:westend
-```
-
-### 6. Sync env files
-
-After deployment, copy the emitted addresses into:
-
-- `contracts/.env`
-- root `.env.local`
-
-Alternatively, use the helper script:
-
-```bash
-npx hardhat run scripts/createEnv.ts --network westend_assethub
-```
-
-### 7. Optional helper scripts
-
-```bash
-npx hardhat run scripts/fullSmokeTest.ts --network westend_assethub
-npx hardhat run scripts/openPackDemo.ts --network westend_assethub
-npx hardhat run scripts/setBaseUri.ts --network westend_assethub
-```
-
-## Current Limitations
-
-The project is strong, but it is not claiming more than the current branch actually does.
-
-### Current limitations and trade-offs
-
-- the wallet UI is currently MetaMask-only
-- marketplace is currently mock/prototype data, not a live trading engine
-- tournament pages are currently presentation/product-direction shells rather than a full multiplayer backend
-- practice mode is local single-player against a bot, not live PvP
-
-## Documentation Map
-
-Detailed documentation lives in `docs/`.
-
-- [docs/README.md](docs/README.md) - documentation index
-- [docs/HACKATHON_PROJECT_OVERVIEW.md](docs/HACKATHON_PROJECT_OVERVIEW.md) - business, pitch, and hackathon framing
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - system architecture and data flow
-- [docs/SETUP_AND_DEPLOYMENT.md](docs/SETUP_AND_DEPLOYMENT.md) - environment, local setup, deployment, troubleshooting
-- [docs/SMART_CONTRACTS.md](docs/SMART_CONTRACTS.md) - Solidity contract design and deployment flow
-- [docs/PRACTICE_BATTLE_SYSTEM.md](docs/PRACTICE_BATTLE_SYSTEM.md) - detailed practice battle rules
-- [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md) - recommended demo sequence for judges and reviewers
-- [docs/HACKATHON_SUBMISSION_CHECKLIST.md](docs/HACKATHON_SUBMISSION_CHECKLIST.md) - submission readiness checklist
-- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - contribution workflow and branch conventions
-
-## Contributing
-
-See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
+- Never commit `.env`, `.env.local`, database passwords, wallet seed phrases, or private keys.
+- Use a unique, high-entropy `SESSION_SECRET` in deployed environments.
+- Keep the app on Testnet until production assets, issuers, monitoring, and operational controls are ready.
+- Rotate any credential that has been pasted into a terminal recording, issue, chat, or public log.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
+Licensed under the [MIT License](LICENSE).

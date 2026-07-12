@@ -1,6 +1,8 @@
 "use client";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import cardsData from "@/data/cards.json";
+import { getFastCardImageUrl } from "@/lib/card-images";
+import type { InventoryCardInstanceDto } from "@/lib/stellar/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -19,6 +21,15 @@ export interface OwnedCard {
   abilityDescription:  string;
   leaderEligible:      boolean;
   leaderDescription:   string | null;
+  sourceType?:         "demo" | "artist" | "ip";
+  sourceName?:         string;
+  playable?:           boolean;
+  supplyCap?:          number | null;
+  issuedCount?:        number | null;
+  serialNumber?:       number | null;
+  instanceIds?:        string[];
+  availableInstanceIds?: string[];
+  listedInstanceIds?:  string[];
 }
 
 // ── localStorage key ──────────────────────────────────────────────────────────
@@ -52,20 +63,119 @@ const CARD_LOOKUP = new Map<number, RawCard>(
 
 export function useInventory(walletAddress: string | null) {
   const [ownedCards, setOwnedCards] = useState<OwnedCard[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryCardInstanceDto[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load from localStorage when wallet changes
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     if (!walletAddress || typeof window === "undefined") {
       setOwnedCards([]);
+      setInventoryItems([]);
       return;
     }
+
+    setIsLoading(true);
+    setError(null);
     try {
-      const raw = localStorage.getItem(storageKey(walletAddress));
-      setOwnedCards(raw ? JSON.parse(raw) : []);
-    } catch {
-      setOwnedCards([]);
+      const response = await fetch("/api/inventory", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Inventory session unavailable.");
+      }
+      const payload = (await response.json()) as { items?: InventoryCardInstanceDto[] };
+      const items = payload.items ?? [];
+      setInventoryItems(items);
+
+      const aggregated = new Map<string, OwnedCard>();
+      for (const item of items) {
+        const key = item.catalogId;
+        const existing = aggregated.get(key);
+        if (existing) {
+          existing.count += 1;
+          existing.instanceIds = [...(existing.instanceIds ?? []), item.instanceId];
+          if (item.status === "owned") {
+            existing.availableInstanceIds = [
+              ...(existing.availableInstanceIds ?? []),
+              item.instanceId,
+            ];
+          } else if (item.status === "listed") {
+            existing.listedInstanceIds = [
+              ...(existing.listedInstanceIds ?? []),
+              item.instanceId,
+            ];
+          }
+          continue;
+        }
+
+        aggregated.set(key, {
+          tokenId: item.tokenId ?? 0,
+          name: item.name,
+          subtitle: item.subtitle ?? "",
+          rarity: item.rarity as CardRarity,
+          anime: item.anime as CardAnime,
+          imageUrl: getFastCardImageUrl(item.imageUrl),
+          count: 1,
+          traits: item.traits,
+          abilityDescription:
+            (item.ability as { description?: string } | null)?.description ?? "",
+          leaderEligible: item.leaderEligible,
+          leaderDescription:
+            (item.leaderAbility as { description?: string } | null)?.description ?? null,
+          sourceType: item.sourceType,
+          sourceName: item.sourceName,
+          playable: item.playable,
+          supplyCap: item.supplyCap,
+          issuedCount: item.issuedCount,
+          serialNumber: item.serialNumber,
+          instanceIds: [item.instanceId],
+          availableInstanceIds: item.status === "owned" ? [item.instanceId] : [],
+          listedInstanceIds: item.status === "listed" ? [item.instanceId] : [],
+        });
+      }
+
+      // Demo packs are intentionally stored in the browser. Merge those copies
+      // with database-backed instances so a healthy API response does not hide
+      // the local collection. `max` avoids double-counting legacy copies after
+      // they have been imported into the database.
+      try {
+        const raw = localStorage.getItem(storageKey(walletAddress));
+        const localCards = raw ? (JSON.parse(raw) as OwnedCard[]) : [];
+        const backendByTokenId = new Map(
+          [...aggregated.values()].map((card) => [card.tokenId, card]),
+        );
+
+        for (const localCard of localCards) {
+          localCard.imageUrl = getFastCardImageUrl(localCard.imageUrl);
+          const backendCard = backendByTokenId.get(localCard.tokenId);
+
+          if (backendCard) {
+            backendCard.count = Math.max(backendCard.count, localCard.count);
+          } else {
+            aggregated.set(`local:${localCard.tokenId}`, localCard);
+          }
+        }
+      } catch {
+        // Ignore malformed legacy browser data; backend inventory remains valid.
+      }
+
+      setOwnedCards([...aggregated.values()]);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Failed to load inventory.");
+      try {
+        const raw = localStorage.getItem(storageKey(walletAddress));
+        setOwnedCards(raw ? JSON.parse(raw) : []);
+      } catch {
+        setOwnedCards([]);
+      }
+    } finally {
+      setIsLoading(false);
     }
   }, [walletAddress]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
   // Persist to localStorage
   const persist = useCallback(
@@ -107,7 +217,7 @@ export function useInventory(walletAddress: string | null) {
             subtitle:           meta.subtitle,
             rarity:             meta.rarity  as CardRarity,
             anime:              meta.anime   as CardAnime,
-            imageUrl:           meta.imageUrl,
+            imageUrl:           getFastCardImageUrl(meta.imageUrl),
             count:              1,
             traits:             meta.traits ?? [],
             abilityDescription: meta.ability?.description ?? "",
@@ -122,5 +232,49 @@ export function useInventory(walletAddress: string | null) {
     [persist]
   );
 
-  return { ownedCards, addPulledCards };
+  const migrationAvailable = useMemo(() => {
+    if (!walletAddress || typeof window === "undefined") return false;
+    const local = localStorage.getItem(storageKey(walletAddress));
+    if (!local) return false;
+    try {
+      const parsed = JSON.parse(local) as OwnedCard[];
+      return parsed.length > 0 && inventoryItems.length === 0;
+    } catch {
+      return false;
+    }
+  }, [inventoryItems.length, walletAddress]);
+
+  const migrateLegacyInventory = useCallback(async () => {
+    if (!walletAddress || typeof window === "undefined") return;
+    const raw = localStorage.getItem(storageKey(walletAddress));
+    const parsed = raw ? (JSON.parse(raw) as OwnedCard[]) : [];
+    const tokenIds = parsed.flatMap((card) =>
+      Array.from({ length: card.count }, () => card.tokenId),
+    );
+
+    const response = await fetch("/api/inventory", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ tokenIds }),
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json()) as { error?: string };
+      throw new Error(payload.error ?? "Failed to migrate legacy inventory.");
+    }
+
+    await refresh();
+  }, [refresh, walletAddress]);
+
+  return {
+    ownedCards,
+    inventoryItems,
+    isLoading,
+    error,
+    addPulledCards,
+    refresh,
+    migrationAvailable,
+    migrateLegacyInventory,
+  };
 }

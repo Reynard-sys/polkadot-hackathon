@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CardSourceType {
+  demo
+  artist
+  ip
+}
+
+enum DropStatus {
+  draft
+  published
+  paused
+  sold_out
+}
+
+enum CardInstanceStatus {
+  owned
+  listed
+  locked
+  burned
+}
+
+enum PaymentAsset {
+  XLM
+  USDC
+}
+
+enum PackPurchaseStatus {
+  pending
+  paid
+  failed
+  fulfilled
+}
+
+enum ListingStatus {
+  active
+  sold
+  cancelled
+}
+
+enum MarketplacePurchaseStatus {
+  pending
+  paid
+  settled
+  failed
+}
+
+enum OwnershipReason {
+  pack_opening
+  marketplace_purchase
+  admin_migration
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  walletAddress      String   @unique
+  displayName        String?
+  inventoryMigratedAt DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model CardCatalog {
+  id             String         @id @default(cuid())
+  slug           String         @unique
+  tokenId        Int?           @unique
+  name           String
+  subtitle       String?
+  anime          String
+  sourceType     CardSourceType
+  sourceName     String
+  rarity         String
+  element        String?
+  mana           Int?
+  power          Int?
+  hp             Int?
+  zone           String?
+  zones          Json
+  leaderEligible Boolean        @default(false)
+  keywords       Json
+  ability        Json?
+  leaderAbility  Json?
+  traits         Json
+  imageUrl       String
+  playable       Boolean        @default(true)
+  supplyCap      Int?
+  maxSupply      Int?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  cardInstances CardInstance[]
+}
+
+model CardDrop {
+  id                   String         @id @default(cuid())
+  title                String
+  description          String?
+  creatorWalletAddress String?
+  sourceType           CardSourceType
+  status               DropStatus     @default(published)
+  priceXlm             String?
+  priceUsdc            String?
+  phpDisplayPrice      Float?
+  supplyCap            Int?
+  issuedCount          Int            @default(0)
+  oddsConfig           Json
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  cardInstances CardInstance[]
+}
+
+model CardInstance {
+  id                 String             @id @default(cuid())
+  cardCatalogId      String
+  ownerWalletAddress String
+  sourceDropId       String?
+  packPurchaseId     String?
+  serialNumber       Int?
+  status             CardInstanceStatus @default(owned)
+  acquiredAt         DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  cardCatalog  CardCatalog           @relation(fields: [cardCatalogId], references: [id], onDelete: Restrict)
+  sourceDrop   CardDrop?             @relation(fields: [sourceDropId], references: [id], onDelete: SetNull)
+  packPurchase PackPurchase?         @relation(fields: [packPurchaseId], references: [id], onDelete: SetNull)
+  listing      MarketplaceListing?
+  history      OwnershipHistory[]
+  purchase     MarketplacePurchase?
+
+  @@index([ownerWalletAddress, status])
+  @@index([cardCatalogId])
+}
+
+model PackPurchase {
+  id                     String             @id @default(cuid())
+  buyerWalletAddress     String
+  seriesOrDropId         String
+  packTier               String
+  paymentAsset           PaymentAsset
+  amount                 String
+  phpEquivalent          Float?
+  stellarTransactionHash String?            @unique
+  memo                   String             @unique
+  status                 PackPurchaseStatus @default(pending)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  cardInstances CardInstance[]
+}
+
+model MarketplaceListing {
+  id                String        @id @default(cuid())
+  cardInstanceId    String        @unique
+  sellerWalletAddress String
+  priceAsset        PaymentAsset
+  priceAmount       String
+  phpEquivalent     Float?
+  status            ListingStatus @default(active)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  cardInstance CardInstance            @relation(fields: [cardInstanceId], references: [id], onDelete: Restrict)
+  purchase     MarketplacePurchase?
+
+  @@index([status, createdAt])
+}
+
+model MarketplacePurchase {
+  id                     String                    @id @default(cuid())
+  listingId              String                    @unique
+  cardInstanceId         String                    @unique
+  buyerWalletAddress     String
+  sellerWalletAddress    String
+  paymentAsset           PaymentAsset
+  amount                 String
+  stellarTransactionHash String?                   @unique
+  memo                   String                    @unique
+  status                 MarketplacePurchaseStatus @default(pending)
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+
+  listing      MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  cardInstance CardInstance       @relation(fields: [cardInstanceId], references: [id], onDelete: Restrict)
+}
+
+model OwnershipHistory {
+  id                     String          @id @default(cuid())
+  cardInstanceId         String
+  fromWalletAddress      String?
+  toWalletAddress        String
+  reason                 OwnershipReason
+  relatedTransactionHash String?
+  createdAt              DateTime        @default(now())
+
+  cardInstance CardInstance @relation(fields: [cardInstanceId], references: [id], onDelete: Cascade)
+
+  @@index([cardInstanceId, createdAt])
+}

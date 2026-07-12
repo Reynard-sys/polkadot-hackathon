@@ -4,6 +4,8 @@ import "./globals.css";
 import Footer from "@/components/footer";
 import Navbar from "@/components/navbar";
 import MobileBottomNav from "@/components/mobile-bottom-nav";
+import { AuthSessionProvider } from "@/context/auth-session-context";
+import { StellarWalletProvider } from "@/context/stellar-wallet-context";
 import { WalletProvider } from "@/context/wallet-context";
 
 const geistSans = Geist({
@@ -17,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Create Next App",
-  description: "Hackathon project for Polkadot",
+  title: "Aniverse Nexus",
+  description: "Stellar-powered TCG collectibles, marketplace, and crossover practice battles.",
 };
 
 export default function RootLayout({
@@ -31,16 +33,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <WalletProvider>
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1 pb-[calc(76px+env(safe-area-inset-bottom))] pt-3 md:pb-0 md:pt-0">
-              {children}
-            </main>
-            <Footer />
-            <MobileBottomNav />
-          </div>
-        </WalletProvider>
+        <StellarWalletProvider>
+          <AuthSessionProvider>
+            <WalletProvider>
+              <div className="flex min-h-screen flex-col">
+                <Navbar />
+                <main className="flex-1 pb-[calc(76px+env(safe-area-inset-bottom))] pt-3 md:pb-0 md:pt-0">
+                  {children}
+                </main>
+                <Footer />
+                <MobileBottomNav />
+              </div>
+            </WalletProvider>
+          </AuthSessionProvider>
+        </StellarWalletProvider>
       </body>
     </html>
   );

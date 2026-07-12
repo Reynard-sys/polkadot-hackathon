@@ -4,6 +4,9 @@ This folder contains the project documentation for Aniverse Nexus.
 
 ## Core Documents
 
+- [PRODUCT_REQUIREMENTS_AND_SYSTEM_SPEC.md](./PRODUCT_REQUIREMENTS_AND_SYSTEM_SPEC.md)
+  Consolidated PRD, user flows, system flows, feature list, storage model, contract summary, limitations, and roadmap.
+
 - [HACKATHON_PROJECT_OVERVIEW.md](./HACKATHON_PROJECT_OVERVIEW.md)
   Product narrative, value proposition, business model, scope, and hackathon framing.
 
@@ -12,6 +15,12 @@ This folder contains the project documentation for Aniverse Nexus.
 
 - [SETUP_AND_DEPLOYMENT.md](./SETUP_AND_DEPLOYMENT.md)
   Frontend setup, contract deployment, environment files, and troubleshooting.
+
+- [SUPABASE_PRISMA_SETUP.md](./SUPABASE_PRISMA_SETUP.md)
+  Step-by-step setup for using Supabase as the Prisma Postgres provider.
+
+- [SUPABASE_AND_FREIGHTER_TESTNET_TUTORIAL.md](./SUPABASE_AND_FREIGHTER_TESTNET_TUTORIAL.md)
+  Focused troubleshooting for Supabase connection issues, Freighter Testnet setup, and local login verification.
 
 - [SMART_CONTRACTS.md](./SMART_CONTRACTS.md)
   Detailed explanation of `GachaNFT`, `CardRegistry`, `GachaPack`, and the deployment scripts.
@@ -27,10 +36,11 @@ This folder contains the project documentation for Aniverse Nexus.
 If you are new to the project:
 
 1. Read the root `README.md`
-2. Read [HACKATHON_PROJECT_OVERVIEW.md](./HACKATHON_PROJECT_OVERVIEW.md)
-3. Read [ARCHITECTURE.md](./ARCHITECTURE.md)
-4. Use [SETUP_AND_DEPLOYMENT.md](./SETUP_AND_DEPLOYMENT.md) to run the app
-5. Use [SMART_CONTRACTS.md](./SMART_CONTRACTS.md) if you need to deploy or extend the contract layer
+2. Read [PRODUCT_REQUIREMENTS_AND_SYSTEM_SPEC.md](./PRODUCT_REQUIREMENTS_AND_SYSTEM_SPEC.md)
+3. Read [HACKATHON_PROJECT_OVERVIEW.md](./HACKATHON_PROJECT_OVERVIEW.md)
+4. Read [ARCHITECTURE.md](./ARCHITECTURE.md)
+5. Use [SETUP_AND_DEPLOYMENT.md](./SETUP_AND_DEPLOYMENT.md) to run the app
+6. Use [SMART_CONTRACTS.md](./SMART_CONTRACTS.md) if you need to deploy or extend the contract layer
 
 If you are evaluating the project for a hackathon:
 

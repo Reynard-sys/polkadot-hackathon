@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  turbopack: {
+    root: process.cwd(),
+  },
   images: {
     // Cloudflare IPFS gateway (CDN-backed, much faster than ipfs.io)
     remotePatterns: [
@@ -14,6 +17,11 @@ const nextConfig: NextConfig = {
         // Keep ipfs.io as a fallback for any old references
         protocol: "https",
         hostname: "ipfs.io",
+        pathname: "/ipfs/**",
+      },
+      {
+        protocol: "https",
+        hostname: "gateway.pinata.cloud",
         pathname: "/ipfs/**",
       },
     ],

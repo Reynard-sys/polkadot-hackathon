@@ -48,7 +48,7 @@ export default function Pack({
           </h2>
           <p className="text-white/50 text-sm leading-relaxed mt-1">
             {packDesc ??
-              "Open packs to collect unique anime NFT cards on Westend AssetHub."}
+              "Open Stellar-powered packs to collect crossover battle cards and collector drops."}
           </p>
 
           <Link href={href}>
@@ -105,7 +105,7 @@ export default function Pack({
         </h2>
         <p className="text-white/50 text-sm mt-3 leading-relaxed">
           {packDesc ??
-            "Open packs to collect unique anime NFT cards on Westend AssetHub."}
+            "Open Stellar-powered packs to collect crossover battle cards and collector drops."}
         </p>
         <Link href={href}>
           <button className="flex justify-center items-center pt-4">

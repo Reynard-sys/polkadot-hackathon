@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// for future purposes
 const features = [
   { label: "Deck Builder", href: "/deck-builder" },
   { label: "Gacha", href: "/gacha" },
@@ -13,9 +12,7 @@ const features = [
 export default function Footer() {
   return (
     <footer className="hidden lg:block w-full p-10 bg-linear-to-b from-[#2D3548] to-[#030A30]">
-      {/* 4-column grid */}
       <div className="flex gap-45 justify-between">
-        {/* Col 1 — Logo */}
         <div>
           <Image
             src="/logo.svg"
@@ -27,40 +24,34 @@ export default function Footer() {
           />
         </div>
 
-        {/* Col 2 — About */}
         <div className="flex flex-col gap-3">
           <h3 className="font-bold text-base">About</h3>
           <p className="text-sm leading-6 text-white">
-            AniVerse Nexus is a Web3 trading card game built on Polkadot Asset
-            Hub.
-            <br /> Pull cards from your favorite anime series, build your
-            strategy,
+            AniVerse Nexus is a Stellar-powered trading card experience built
+            around pack opening, backend-owned inventory, real marketplace
+            listings, and crossover-ready practice battles.
             <br />
-            and battle opponents — with true on-chain ownership of every card
-            you collect.
-            <br />
-            Built for the Polkadot Hackathon 2025.
+            Pull cards, list duplicates, and keep collectible value plus
+            gameplay value in one loop.
           </p>
         </div>
 
-        {/* Col 3 — Features */}
         <div className="flex flex-col gap-3">
           <h3 className="font-bold text-base">Features</h3>
           <ul className="flex flex-col gap-2">
-            {features.map((f) => (
-              <li key={f.href}>
+            {features.map((feature) => (
+              <li key={feature.href}>
                 <Link
-                  href={f.href}
+                  href={feature.href}
                   className="text-sm text-white hover:underline transition-all"
                 >
-                  {f.label}
+                  {feature.label}
                 </Link>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Col 4 — Contact */}
         <div className="flex flex-col gap-3">
           <h3 className="font-bold text-base">Contact Us</h3>
           <a
@@ -72,10 +63,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Horizontal rule */}
       <hr className="my-10 border-white" />
 
-      {/* Bottom bar */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-white/60">
           AniVerse Nexus &copy; 2026. All rights reserved.

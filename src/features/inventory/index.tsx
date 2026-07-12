@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, useCallback } from "react";
-import SvgButton from "@/components/svg-button";
 import { motion, AnimatePresence } from "motion/react";
 import { useWallet } from "@/context/wallet-context";
+import { useAuthSession } from "@/context/auth-session-context";
 import {
   useInventory,
   type OwnedCard,
@@ -254,7 +254,6 @@ function CardSprite({
           alt={card.name}
           fill
           className="object-cover"
-          unoptimized
           sizes="(max-width: 768px) 50vw, 33vw"
         />
       ) : (
@@ -277,7 +276,7 @@ function DetailCard({ card }: { card: OwnedCard }) {
           alt={card.name}
           fill
           className="object-cover"
-          unoptimized
+          sizes="360px"
         />
       ) : (
         <div className="w-full h-full bg-[#1a2040] flex items-center justify-center">
@@ -290,62 +289,136 @@ function DetailCard({ card }: { card: OwnedCard }) {
 
 // ── Upcoming selling modal ─────────────────────────────────────────────────────
 
-function UpcomingSellingModal({ onClose }: { onClose: () => void }) {
+function ListCardModal({
+  card,
+  onClose,
+  onListed,
+}: {
+  card: OwnedCard;
+  onClose: () => void;
+  onListed: () => void;
+}) {
+  const [priceAsset, setPriceAsset] = useState<"XLM" | "USDC">("XLM");
+  const [priceAmount, setPriceAmount] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const availableInstanceId = card.availableInstanceIds?.[0] ?? null;
+  const backendAvailableCopies = card.availableInstanceIds?.length ?? 0;
+  const backendTrackedCopies = card.instanceIds?.length ?? 0;
+  const localOnlyCopies = Math.max(0, card.count - backendTrackedCopies);
+  const requiresImport = backendAvailableCopies === 0 && localOnlyCopies > 0;
+
+  const handleList = async () => {
+    if (requiresImport) {
+      setError(
+        "This copy only exists in local demo inventory. Import it into backend inventory before listing.",
+      );
+      return;
+    }
+    if (!availableInstanceId) {
+      setError("No unlisted copy is available for this card.");
+      return;
+    }
+    if (!priceAmount.trim()) {
+      setError("Enter a listing price.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/marketplace/listings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          cardInstanceId: availableInstanceId,
+          priceAsset,
+          priceAmount,
+        }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Failed to create listing.");
+      }
+      onListed();
+    } catch (listingError) {
+      setError(
+        listingError instanceof Error
+          ? listingError.message
+          : "Failed to create listing.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative z-10 bg-gradient-to-b from-[#0e1e4a] to-[#0a1228] border border-[#1e3a6e] rounded-2xl p-8 max-w-sm w-full flex flex-col items-center gap-4 text-center shadow-2xl">
-        <div className="w-16 h-16 rounded-full bg-[#1A56DB]/20 border border-[#1A56DB]/40 flex items-center justify-center">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect
-              x="4"
-              y="4"
-              width="11"
-              height="11"
-              rx="2"
-              stroke="white"
-              strokeWidth="1.5"
-            />
-            <rect
-              x="17"
-              y="4"
-              width="11"
-              height="11"
-              rx="2"
-              stroke="white"
-              strokeWidth="1.5"
-            />
-            <rect
-              x="4"
-              y="17"
-              width="11"
-              height="11"
-              rx="2"
-              stroke="white"
-              strokeWidth="1.5"
-            />
-            <rect
-              x="17"
-              y="17"
-              width="11"
-              height="11"
-              rx="2"
-              stroke="white"
-              strokeWidth="1.5"
-            />
-          </svg>
-        </div>
-        <h2 className="text-white font-bold text-xl">Upcoming Feature</h2>
-        <p className="text-[#8a9fc8] text-sm leading-relaxed">
-          Player-to-player selling is not live yet. Inventory listing tools
-          will arrive in a future marketplace update.
+      <div className="relative z-10 bg-gradient-to-b from-[#0e1e4a] to-[#0a1228] border border-[#1e3a6e] rounded-2xl p-8 max-w-sm w-full flex flex-col gap-4 shadow-2xl">
+        <h2 className="text-white font-bold text-xl text-center">List Card</h2>
+        <p className="text-[#8a9fc8] text-sm text-center leading-relaxed">
+          Create a live marketplace listing for your next available copy of {card.name}.
         </p>
-        <SvgButton onClick={onClose} className="w-full h-[60px] mt-2">
-          Go back
-        </SvgButton>
+        <div className="flex gap-2">
+          {(["XLM", "USDC"] as const).map((asset) => (
+            <button
+              key={asset}
+              type="button"
+              onClick={() => setPriceAsset(asset)}
+              className={`flex-1 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors ${
+                priceAsset === asset
+                  ? "border-[#6ea8ff] bg-[#12326e] text-white"
+                  : "border-white/10 bg-white/5 text-white/70"
+              }`}
+            >
+              {asset}
+            </button>
+          ))}
+        </div>
+        <input
+          value={priceAmount}
+          onChange={(event) => setPriceAmount(event.target.value)}
+          placeholder={`Price in ${priceAsset}`}
+          className="w-full rounded-xl border border-white/10 bg-[#0f1329] px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none"
+        />
+        <div className="space-y-1 text-xs">
+          <p className="text-white/45">
+            Backend-listable copies: {backendAvailableCopies}
+          </p>
+          {localOnlyCopies > 0 ? (
+            <p className="text-amber-200/80">
+              Local demo copies: {localOnlyCopies}. Import legacy inventory before selling these copies.
+            </p>
+          ) : null}
+        </div>
+        {error ? <p className="text-sm text-red-300">{error}</p> : null}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-white"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleList()}
+            disabled={isSubmitting || requiresImport || !availableInstanceId}
+            className="flex-1 rounded-xl bg-[#1A56DB] px-4 py-3 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {isSubmitting
+              ? "Listing..."
+              : requiresImport
+                ? "Import To List"
+                : "Create Listing"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -406,9 +479,11 @@ function SellButtonDesktop({ onClick }: { onClick: () => void }) {
 function DesktopCardModal({
   card,
   onClose,
+  onListed,
 }: {
   card: OwnedCard;
   onClose: () => void;
+  onListed: () => void;
 }) {
   const [showSellModal, setShowSellModal] = useState(false);
   const figmaRarity = toFigmaRarity(card.rarity);
@@ -501,7 +576,14 @@ function DesktopCardModal({
         </div>
       </div>
       {showSellModal && (
-        <UpcomingSellingModal onClose={() => setShowSellModal(false)} />
+        <ListCardModal
+          card={card}
+          onClose={() => setShowSellModal(false)}
+          onListed={() => {
+            setShowSellModal(false);
+            onListed();
+          }}
+        />
       )}
     </div>
   );
@@ -768,7 +850,14 @@ function Pagination({
 
 export default function Inventory() {
   const { wallet, openPicker } = useWallet();
-  const { ownedCards } = useInventory(wallet?.address ?? null);
+  const authSession = useAuthSession();
+  const {
+    ownedCards,
+    isLoading,
+    refresh,
+    migrationAvailable,
+    migrateLegacyInventory,
+  } = useInventory(wallet?.address ?? null);
 
   // Mobile state
   const [activeFilter, setActiveFilter] = useState<"all" | CardRarity>("all");
@@ -790,6 +879,8 @@ export default function Inventory() {
   const [desktopPage, setDesktopPage] = useState(1);
   const [desktopSelectedCard, setDesktopSelectedCard] =
     useState<OwnedCard | null>(null);
+  const [migrationError, setMigrationError] = useState<string | null>(null);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   // Expand each card by its count so every copy appears as its own grid slot
   const expandCards = (cards: OwnedCard[]) =>
@@ -869,6 +960,28 @@ export default function Inventory() {
     setDesktopFilterOpen(true);
   };
 
+  const handleLegacyImport = useCallback(async () => {
+    setIsMigrating(true);
+    setMigrationError(null);
+
+    try {
+      if (!authSession.isAuthenticated) {
+        await authSession.authenticate();
+      }
+
+      await migrateLegacyInventory();
+      await refresh();
+    } catch (error) {
+      setMigrationError(
+        error instanceof Error
+          ? error.message
+          : "Failed to import legacy inventory.",
+      );
+    } finally {
+      setIsMigrating(false);
+    }
+  }, [authSession, migrateLegacyInventory, refresh]);
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#171717] pb-32 pt-0 text-white md:pb-0 md:pt-24">
       {/* Mobile background glows */}
@@ -890,10 +1003,33 @@ export default function Inventory() {
 
       {/* ── Mobile layout ── */}
       <div className="relative z-10 mx-auto w-full max-w-[412px] px-[18px] pt-[101px] md:hidden">
+        {migrationAvailable ? (
+          <div className="mb-4 rounded-xl border border-[#1A56DB]/40 bg-[#0f1329] p-4">
+            <p className="text-sm font-semibold text-white">Import legacy collection</p>
+            <p className="mt-1 text-xs text-white/60">
+              We found locally saved cards for this wallet. Import them once into backend inventory.
+            </p>
+            {migrationError ? (
+              <p className="mt-2 text-xs text-red-300">{migrationError}</p>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => void handleLegacyImport()}
+              disabled={isMigrating}
+              className="mt-3 rounded-lg bg-[#1A56DB] px-4 py-2 text-xs font-bold text-white"
+            >
+              {isMigrating ? "Importing..." : "Import Legacy Cards"}
+            </button>
+          </div>
+        ) : null}
         {ownedCards.length === 0 ? (
           <section className="space-y-4">
             <InventoryTopCard />
-            <EmptyState walletConnected={!!wallet} />
+            {isLoading ? (
+              <p className="text-center text-sm text-white/60">Loading inventory...</p>
+            ) : (
+              <EmptyState walletConnected={!!wallet} />
+            )}
           </section>
         ) : !selectedCard ? (
           <section className="space-y-4">
@@ -1035,8 +1171,13 @@ export default function Inventory() {
                 />
               </div>
               {showMobileSellModal && (
-                <UpcomingSellingModal
+                <ListCardModal
+                  card={selectedCard}
                   onClose={() => setShowMobileSellModal(false)}
+                  onListed={() => {
+                    setShowMobileSellModal(false);
+                    void refresh();
+                  }}
                 />
               )}
             </div>
@@ -1047,6 +1188,25 @@ export default function Inventory() {
       {/* ── Desktop layout ── */}
       <div className="relative z-10 mx-auto hidden w-full max-w-[1257px] px-6 pb-24 pt-6 md:block">
         <section className="space-y-8 text-center">
+          {migrationAvailable ? (
+            <div className="mx-auto max-w-[1113px] rounded-xl border border-[#1A56DB]/40 bg-[#0f1329] p-4 text-left">
+              <p className="text-sm font-semibold text-white">Import legacy collection</p>
+              <p className="mt-1 text-xs text-white/60">
+                We found local cards for this wallet. Import them once into backend inventory so they can be listed and purchased.
+              </p>
+              {migrationError ? (
+                <p className="mt-2 text-xs text-red-300">{migrationError}</p>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => void handleLegacyImport()}
+                disabled={isMigrating}
+                className="mt-3 rounded-lg bg-[#1A56DB] px-4 py-2 text-xs font-bold text-white"
+              >
+                {isMigrating ? "Importing..." : "Import Legacy Cards"}
+              </button>
+            </div>
+          ) : null}
           <h1 className="text-[68px] leading-[1.05] font-bold text-white">
             Inventory
           </h1>
@@ -1151,6 +1311,10 @@ export default function Inventory() {
         <DesktopCardModal
           card={desktopSelectedCard}
           onClose={() => setDesktopSelectedCard(null)}
+          onListed={() => {
+            setDesktopSelectedCard(null);
+            void refresh();
+          }}
         />
       )}
       {desktopFilterOpen && (

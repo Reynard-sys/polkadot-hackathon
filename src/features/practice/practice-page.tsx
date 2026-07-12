@@ -3429,7 +3429,7 @@ export default function PracticePageContent() {
               </h1>
               <p className="mx-auto mb-8 max-w-xl text-center text-sm text-gray-400">
                 Master your deck, test your strategy against the bot, and
-                sharpen your skills before stepping into the arena. No WND
+                sharpen your skills before stepping into the arena. No payment
                 required.
               </p>
             </div>
